@@ -12,26 +12,6 @@ local function __TS__New(target, ...)
     instance:____constructor(...)
     return instance
 end
-
-local function __TS__ArrayIncludes(self, searchElement, fromIndex)
-    if fromIndex == nil then
-        fromIndex = 0
-    end
-    local len = #self
-    local k = fromIndex
-    if fromIndex < 0 then
-        k = len + fromIndex
-    end
-    if k < 0 then
-        k = 0
-    end
-    for i = k + 1, len do
-        if self[i] == searchElement then
-            return true
-        end
-    end
-    return false
-end
 -- End of Lua Library inline imports
 local ____exports = {}
 ____exports.Commands = __TS__Class()
@@ -74,30 +54,89 @@ commands:AddCommand(
         SendConsoleMessage(ply, text .. "------------------------------------------------------------")
     end
 )
+local botConsoleMessages = {
+    usage = "Usage: zp_addbot [1-16] or /bot [1-16].",
+    singleplayer = "Bots require multiplayer. Start a local game with at least 2 player slots.",
+    full = "No player slots available.",
+    created = "Added %d idle test bot(s).",
+    failed = "Could not create a bot. Check server player slots."
+}
+local function reportBots(ply, result, count)
+    local args = count == nil and ({}) or ({count})
+    if IsValid(ply) then
+        SendConsoleMessage(ply, {Phrase = "zombieplague.bot" .. result, Arguments = args})
+    else
+        print("[ZP] " .. string.format(
+            botConsoleMessages[result],
+            unpack(args)
+        ))
+    end
+end
+local function addIdleBots(ply, args)
+    if IsValid(ply) and not ply:IsSuperAdmin() then
+        SendPopupMessage(ply, {Phrase = "zombieplague.commandnotaccess"})
+        return
+    end
+    local count = args[1] == nil and 1 or tonumber(args[1])
+    if #args > 1 or count == nil or count < 1 or count > 16 or count % 1 ~= 0 then
+        reportBots(ply, "usage")
+        return
+    end
+    if game.SinglePlayer() then
+        reportBots(ply, "singleplayer")
+        return
+    end
+    local available = math.max(
+        0,
+        game.MaxPlayers() - player.GetCount()
+    )
+    if available == 0 then
+        reportBots(ply, "full")
+        return
+    end
+    local created = 0
+    do
+        local index = 0
+        while index < math.min(count, available) do
+            local bot = player.CreateNextBot("ZP Test Bot " .. tostring(#player.GetBots() + 1))
+            if not IsValid(bot) then
+                reportBots(ply, "failed")
+                break
+            end
+            bot.ZPIdleTestBot = true
+            RoundManager:AddPlayerToPlay(bot)
+            created = created + 1
+            index = index + 1
+        end
+    end
+    if created > 0 then
+        reportBots(ply, "created", created)
+    end
+end
 if BOT_MODE then
     commands:AddCommand(
         "bot",
-        "Add a bot to the server",
-        function()
-            RunConsoleCommand("bot")
-            timer.Create(
-                "bot",
-                1,
-                1,
-                function()
-                    local manager = RoundManager
-                    local participants = manager:GetPlayersToPlay()
-                    for ____, bot in ipairs(player.GetBots()) do
-                        if not __TS__ArrayIncludes(participants, bot) then
-                            manager:AddPlayerToPlay(bot)
-                        end
-                    end
-                end
-            )
-        end,
-        "",
+        "Add idle test bots to the match",
+        addIdleBots,
+        "[1-16]",
         true,
         function(ply) return ply:IsSuperAdmin() end
+    )
+    concommand.Add(
+        "zp_addbot",
+        function(ply, _command, args) return addIdleBots(ply, args) end
+    )
+    hook.Add(
+        "StartCommand",
+        "ZPIdleTestBots",
+        function(ply, command)
+            if not ply:IsBot() or not ply.ZPIdleTestBot then
+                return
+            end
+            command:ClearButtons()
+            command:ClearMovement()
+            command:SetImpulse(0)
+        end
     )
 end
 hook.Add(

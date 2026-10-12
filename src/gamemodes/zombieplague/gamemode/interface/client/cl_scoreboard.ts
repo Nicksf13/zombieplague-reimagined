@@ -1,124 +1,93 @@
-export {};
-type TextSource = string | number | ((this: void) => string | number);
-interface Update {
-    Component: GLuaPanel;
-    ShouldUpdateFunction: ZPActionPredicate;
-    UpdateFunction: ZPAction;
-}
-type ZPActionPredicate = (this: void) => boolean;
-let frame: GLuaPanel | undefined;
-let updates: Update[] = [];
-const centerLabel = (label: GLuaPanel, text: string | number, font: string, x: number, maxWidth: number): void => {
-    const [measured] = HudManager.CalculateTextSize(tostring(text), font), width = Math.min(measured, maxWidth);
-    label.SetSize(width, 25);
-    label.SetPos(x + (maxWidth - width) / 2, 0);
-    label.SetText(tostring(text));
-};
-const label = (source: TextSource, font: string, color: GLuaColor, x: number, maxWidth: number): GLuaPanel => {
-    const panel = vgui.Create("DLabel");
-    if (typeof source === "function")
-        updates.push({ Component: panel, ShouldUpdateFunction: () => true, UpdateFunction: () => centerLabel(panel, source(), font, x, maxWidth) });
-    centerLabel(panel, typeof source === "function" ? source() : source, font, x, maxWidth);
-    panel.SetFont(font);
-    panel.SetColor(color);
-    return panel;
-};
-const playerLine = (values: readonly TextSource[], muted: ZPClientPlayer | undefined, color: GLuaColor): GLuaPanel => {
-    const panel = vgui.Create("DPanel");
-    panel.SetSize(600, 20);
-    panel.Paint = function (): void { };
-    const positions = [[0, 190], [200, 80], [290, 80], [380, 70], [460, 80]] as const;
-    positions.forEach(([x, width], index) => panel.Add(label(values[index] ?? "", "DermaDefault", color, x, width)));
-    if (muted && IsValid(muted) && muted !== LocalPlayer()) {
-        const button = vgui.Create("DButton");
-        button.SetSize(20, 20);
-        button.SetPos(530, 0);
-        button.SetText("");
-        const refresh = (): void => button.SetImage(muted.IsMuted() ? "icon16/sound_mute.png" : "icon16/sound.png");
-        refresh();
-        button.DoClick = function (): void { if (!IsValid(muted))
-            return; muted.SetMuted(!muted.IsMuted()); refresh(); };
-        button.Paint = function (): void { };
-        panel.Add(button);
+// Collect engine data once per refresh. Presentations receive no Player references.
+export class ScoreboardController implements ZPScoreboardController {
+    private opened: boolean = false;
+    private presentation: ZPScoreboardPresentation | undefined;
+    // Test bots have no voice stream; keep their UI state per connection instead of engine mute identity.
+    private botMuted: Record<number, boolean | undefined> = {};
+
+    GetState(): ZPScoreboardState {
+        const groups: ZPScoreboardTeam[] = [
+            { ID: TEAM_HUMANS, Label: "zombieplague.scoreboardtitlehumans", Players: [] },
+            { ID: TEAM_ZOMBIES, Label: "zombieplague.scoreboardtitlezombies", Players: [] },
+            { ID: TEAM_SPECTATOR, Label: "zombieplague.scoreboardtitlespectators", Players: [] },
+        ];
+        const players = player.GetAll();
+        const localPlayer = LocalPlayer();
+        const teams = groups.map(group => {
+            const entries: ZPScoreboardPlayer[] = [];
+            for (const ply of players) {
+                if (!IsValid(ply) || ply.Team() !== group.ID)
+                    continue;
+                entries.push({ ID: ply.UserID(), Name: ply.Name(), Points: ply.GetPoints(), Deaths: ply.Deaths(),
+                    Ping: ply.Ping(), Status: group.ID === TEAM_SPECTATOR ? "spectating" : ply.Alive() ? "alive" : "dead",
+                    Local: ply === localPlayer, CanMute: ply !== localPlayer, CanViewProfile: !ply.IsBot(),
+                    Muted: ply.IsBot() ? this.botMuted[ply.UserID()] ?? false : ply.IsMuted() });
+            }
+            entries.sort((a, b) => a.Points !== b.Points ? b.Points - a.Points :
+                a.Name < b.Name ? -1 : a.Name > b.Name ? 1 : a.ID - b.ID);
+            return { ID: group.ID, Label: group.Label, Players: entries };
+        });
+        return { Open: this.opened, Theme: ZPThemes.GetActiveID(), Width: ScrW(), Height: ScrH(), Teams: teams };
     }
-    return panel;
-};
-const createTeam = (teamID: number): GLuaPanel => {
-    const panel = vgui.Create("DPanel");
-    panel.Paint = function (): void { };
-    let height = 0;
-    const add = (child: GLuaPanel): void => { child.SetPos(0, height); const [, h] = child.GetSize(); panel.Add(child); height += h; };
-    const phrase = teamID === TEAM_HUMANS ? "ScoreBoardTitleHumans" : teamID === TEAM_ZOMBIES ? "ScoreBoardTitleZombies" : "ScoreBoardTitleSpectators";
-    const title = vgui.Create("DLabel"), text = language.GetPhrase("zombieplague." + string.lower(phrase));
-    title.SetText(text);
-    title.SetFont("DermaLarge");
-    const [titleWidth, titleHeight] = HudManager.CalculateTextSize(text, "DermaLarge");
-    title.SetSize(titleWidth, titleHeight);
-    add(title);
-    const color = team.GetColor(teamID);
-    add(playerLine(["ScoreBoardHeaderName", "ScoreBoardHeaderPoints", "ScoreBoardHeaderDeaths", "ScoreBoardHeaderStatus", "ScoreBoardHeaderPing"].map(id => language.GetPhrase("zombieplague." + string.lower(id))), undefined, color));
-    const line = vgui.Create("DPanel");
-    line.SetSize(560, 2);
-    line.Paint = function (width, h): void { HudManager.CreateBox(0, 2, undefined, color, 0, 0, width, h); };
-    add(line);
-    const players = team.GetPlayers(teamID) as ZPClientPlayer[];
-    players.sort((a, b) => b.GetPoints() - a.GetPoints());
-    for (const ply of players)
-        if (IsValid(ply))
-            add(playerLine([
-                () => IsValid(ply) ? ply.Name() : "", () => IsValid(ply) ? ply.GetPoints() : "", () => IsValid(ply) ? ply.Deaths() : "",
-                () => !IsValid(ply) ? "" : language.GetPhrase("zombieplague." + string.lower(ply.Team() === TEAM_SPECTATOR ? "ScoreBoardStatusSpectating" : ply.Alive() ? "ScoreBoardStatusAlive" : "ScoreBoardStatusDead")),
-                () => IsValid(ply) ? ply.Ping() : "",
-            ], ply, color));
-    panel.SetSize(600, height);
-    return panel;
-};
-GM.ScoreboardShow = function (): void {
-    if (frame && IsValid(frame))
-        frame.Close();
-    updates = [];
-    frame = vgui.Create("DFrame");
-    frame.SetDraggable(false);
-    frame.ShowCloseButton(false);
-    frame.SetDeleteOnClose(true);
-    frame.SetTitle("");
-    frame.SetSize(600, 600);
-    frame.Center();
-    frame.Paint = function (width, height): void { HudManager.CreateBox(0, 2, Color(0, 0, 0, 0), Color(0, 0, 0, 250), 0, 0, width, height); };
-    const scroll = vgui.Create("DScrollPanel", frame);
-    scroll.SetPos(0, 20);
-    scroll.SetSize(600, 560);
-    scroll.Paint = function (): void { };
-    const counts: Record<number, number> = {};
-    const fill = (): void => {
-        updates = updates.filter(update => update.Component === scroll);
-        scroll.Clear();
-        let y = 0;
-        for (const teamID of [TEAM_HUMANS, TEAM_ZOMBIES, TEAM_SPECTATOR]) {
-            counts[teamID] = team.GetPlayers(teamID).length;
-            if (counts[teamID] === 0)
-                continue;
-            const panel = createTeam(teamID);
-            panel.SetPos(20, y);
-            scroll.Add(panel);
-            const [, h] = panel.GetSize();
-            y += h + (teamID === TEAM_SPECTATOR ? 0 : 10);
+
+    Show(): void {
+        if (this.opened) {
+            this.Refresh();
+            return;
         }
-    };
-    fill();
-    updates.push({ Component: scroll, ShouldUpdateFunction: () => [TEAM_HUMANS, TEAM_ZOMBIES, TEAM_SPECTATOR].some(id => counts[id] !== team.GetPlayers(id).length), UpdateFunction: fill });
-    frame.MakePopup();
-    timer.Create("ScoreBoardUpdater", 1, 0, () => {
-        updates = updates.filter(update => IsValid(update.Component));
-        for (const update of [...updates])
-            if (IsValid(update.Component) && update.ShouldUpdateFunction())
-                update.UpdateFunction();
-    });
-};
-GM.ScoreboardHide = function (): void {
-    updates = [];
-    timer.Destroy("ScoreBoardUpdater");
-    if (frame && IsValid(frame))
-        frame.Close();
-    frame = undefined;
-};
+        this.opened = true;
+        this.Rebuild();
+        timer.Create("ScoreBoardUpdater", 0.5, 0, () => this.Refresh());
+    }
+
+    Hide(): void {
+        this.opened = false;
+        timer.Destroy("ScoreBoardUpdater");
+        this.presentation?.Destroy();
+        this.presentation = undefined;
+    }
+
+    Rebuild(): void {
+        if (!this.opened)
+            return;
+        this.presentation?.Destroy();
+        this.presentation = undefined;
+        const theme = ZPThemes.GetTheme();
+        if (theme) {
+            this.presentation = theme.CreateScoreboard ? theme.CreateScoreboard() : ZPCreateScoreboardHUD(theme.Palette, "classic");
+            this.presentation.Open(this.GetState(), this);
+        }
+    }
+
+    Refresh(): void {
+        if (this.opened)
+            this.presentation?.Update(this.GetState());
+    }
+
+    ViewProfile(id: number): void {
+        if (!this.opened)
+            return;
+        const ply = player.GetAll().find(entry => IsValid(entry) && entry.UserID() === id);
+        if (ply && !ply.IsBot())
+            ply.ShowProfile();
+    }
+
+    ToggleMute(id: number): void {
+        if (!this.opened)
+            return;
+        // UserID identifies the connection, including bots, without reusing entity slots.
+        const players = player.GetAll();
+        const ply = players.find(entry => IsValid(entry) && entry.UserID() === id);
+        if (!ply || ply === LocalPlayer())
+            return;
+        if (ply.IsBot())
+            this.botMuted[id] = !(this.botMuted[id] ?? false);
+        else
+            ply.SetMuted(!ply.IsMuted());
+        this.Refresh();
+    }
+}
+const controller = new ScoreboardController();
+_G.ZPScoreboard = controller;
+GM.ScoreboardShow = function (): void { controller.Show(); };
+GM.ScoreboardHide = function (): void { controller.Hide(); };

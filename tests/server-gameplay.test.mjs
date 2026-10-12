@@ -133,4 +133,12 @@ test("human conversion keeps saved weapons and never requests a menu for missing
     ply:MakeHuman()
     assert(given == 3 and ply:GetPrimaryWeaponGiven() and ply:GetSecondaryWeaponGiven() and ply:GetMeleeWeaponGiven())
     assert(#sent == 0)
+    -- Keep the fallback crowbar, but allow a first explicit melee choice now.
+    local fallback=WeaponManager:CreateNewWeapon()
+    fallback.WeaponID="weapon_crowbar"
+    fallback.GiveWeapon=function() given=given+1 end
+    WeaponManager:AddWeapon(fallback,WEAPON_MELEE)
+    ply.PrimaryWeapon,ply.SecondaryWeapon,ply.MeleeWeapon=nil,nil,nil
+    ply:MakeHuman()
+    assert(given==4 and not ply:GetMeleeWeaponGiven() and not ply.MeleeWeapon)
 `));

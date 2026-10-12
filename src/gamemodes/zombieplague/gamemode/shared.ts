@@ -36,3 +36,4 @@ include("sh_roundmanager.lua");
 include("sh_player.lua");
 include("sh_bank.lua");
 include("sh_playermanager.lua");
+include("sh_weapon_menu_protocol.lua");

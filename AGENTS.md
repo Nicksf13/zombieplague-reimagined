@@ -1,69 +1,76 @@
-# Instruções para agentes
+# Instructions for agents
 
-## Contexto e referências
+## Context and references
 
-- Este é um gamemode de Garry's Mod em migração gradual de GLua para TypeScriptToLua.
-- Responda ao usuário em português e explique mudanças de comportamento com clareza.
-- Consulte `docs/typescript-migration.md` para o fluxo de desenvolvimento e
-  `docs/project-diagnosis.md` para os achados e a sequência proposta de migração.
-- Preserve alterações existentes no workspace que não pertençam à tarefa atual.
+- This is a Garry's Mod gamemode undergoing a gradual migration from GLua to TypeScriptToLua.
+- Respond to the user in Portuguese and explain behavior changes clearly.
+- Consult `docs/typescript-migration.md` for the development workflow and
+  `docs/project-diagnosis.md` for findings and the proposed migration sequence.
+- Preserve existing workspace changes that are unrelated to the current task.
 
-## Arquivos curtos e contexto eficiente
+## Small files and efficient context
 
-- Escreva arquivos pequenos, coesos e com uma responsabilidade clara, para que
-  uma IA consiga entender e alterar um sistema lendo poucos arquivos e tokens.
-- Use cerca de 150–250 linhas como sinal para avaliar a divisão de um arquivo,
-  não como limite obrigatório. Separe responsabilidades, não blocos arbitrários.
-- Prefira nomes descritivos e contratos explícitos. Mantenha regras relacionadas
-  próximas; evite fragmentação que obrigue a abrir muitos arquivos para uma tarefa simples.
-- Agrupe fontes relacionados em pastas por domínio (`player/`, `events/`,
-  `rounds/`, `weapons/` etc.). Reserve a raiz do gamemode aos pontos de entrada.
-  Dentro de cada domínio, use `shared/`, `server/` e `client/` conforme o realm;
-  crie apenas pastas que tenham código. Registros de conteúdo são do servidor.
-  Mantenha os prefixos `sv_`, `cl_` e `sh_`, usados pela compilação por realm.
-- Extraia partes quando houver uma fronteira real: persistência, validação de
-  rede, regras de domínio, registro de conteúdo ou apresentação.
-- Não reestruture arquivos grandes sem relação com a tarefa apenas para reduzir
-  linhas. Não compacte código nem remova explicações úteis para economizar tokens.
-- Use `rg` para localizar símbolos e leia primeiro os trechos relevantes.
-  Evite despejar arquivos grandes, Lua gerado, lockfiles ou dependências no contexto.
-- Documente decisões e contratos; evite comentários que apenas repitam o código.
-- Prefira classes com campos tipados e `implements` para gerenciadores com estado.
-  Crie uma instância por realm no módulo responsável e publique-a em `_G` apenas
-  para manter a API pública existente. Métodos devem operar sobre `this`, sem
-  capturar a instância global. Callbacks sem `self` podem usar campos arrow.
-  Preserve as tabelas/metatables exigidas pelo GMod e os registros de dados;
-  utilitários sem estado não precisam virar classes.
+- Write small, cohesive files with a clear responsibility so that an AI can
+  understand and modify a system by reading few files and tokens.
+- Treat roughly 150-250 lines as a signal to consider splitting a file,
+  not as a mandatory limit. Separate responsibilities rather than arbitrary blocks.
+- Prefer descriptive names and explicit contracts. Keep related rules together;
+  avoid fragmentation that requires opening many files for a simple task.
+- Group related sources into domain folders (`player/`, `events/`, `rounds/`,
+  `weapons/`, etc.). Reserve the gamemode root for entry points.
+  Within each domain, use `shared/`, `server/`, and `client/` according to the realm;
+  create only folders that contain code. Content registrations belong on the server.
+  Keep the `sv_`, `cl_`, and `sh_` prefixes used by compilation for each realm.
+- Extract components when there is a real boundary: persistence, network validation,
+  domain rules, content registration, or presentation.
+- Do not restructure unrelated large files merely to reduce line counts.
+  Do not compress code or remove useful explanations to save tokens.
+- Use `rg` to locate symbols and read relevant sections first.
+  Avoid dumping large files, generated Lua, lockfiles, or dependencies into context.
+- Document decisions and contracts; avoid comments that merely repeat the code.
+- Prefer classes with typed fields and `implements` for stateful managers.
+  Create one instance per realm in the responsible module and expose it through `_G`
+  only to maintain the existing public API. Methods must operate on `this` without
+  capturing the global instance. Callbacks without `self` may use arrow fields.
+  Preserve tables/metatables required by GMod and data registrations;
+  stateless utilities do not need to become classes.
 
-## Migração e compatibilidade
+## Migration and compatibility
 
-- `migration.json` identifica os arquivos migrados. Para eles, edite o `.ts` em
-  `src/` e regenere o `.lua`; nunca corrija manualmente apenas a saída gerada.
-- `files` lista os caminhos Lua de runtime; `sourcePaths` mapeia esses caminhos
-  para fontes organizados em pastas. Ao mover TS, atualize esse mapeamento para
-  preservar os caminhos usados pelo GMod, loaders de registros e addons.
-- Edite normalmente o GLua ainda não migrado. Versione os fontes TS e o Lua gerado.
-- Separe correções de bugs da conversão, mantendo cada mudança identificável.
-- Preserve caminhos, ordem de `include`, `AddCSLuaFile`, globais públicas, hooks,
-  IDs e protocolos usados pelo legado e pelos addons. Ao dividir arquivos,
-  atualize seu carregamento e distribuição ao cliente no mesmo lote.
-- Não introduza imports de runtime sem resolver como o `require` emitido será
-  carregado no GMod. Imports exclusivos de tipos não têm esse efeito.
-- Respeite servidor, cliente e compartilhado. Não presuma que métodos com o mesmo
-  nome têm a mesma assinatura nos dois realms. Preserve `self`/`this` e `:`/`.`.
-- Mantenha tipos estritos. Evite `any` e casts que escondam contratos incompletos.
-  Trate ausências explicitamente e mantenha SteamID64 como string.
-- Tipagem não valida dados externos: valide mensagens de rede, arquivos e JSON
-  em runtime. Permissões e regras de gameplay devem ser verificadas no servidor.
-- Preserve assets e dados persistidos. O build não deve limpar `gamemodes/`.
+- `migration.json` identifies migrated files. For these files, edit the `.ts` in
+  `src/` and regenerate the `.lua`; never manually fix only the generated output.
+- `files` lists runtime Lua paths; `sourcePaths` maps those paths to sources
+  organized in folders. When moving TS files, update this mapping to preserve
+  paths used by GMod, registration loaders, and addons.
+- Edit GLua that has not yet been migrated normally. Commit TS sources and generated Lua.
+- Separate bug fixes from conversion work, keeping each change identifiable.
+- Preserve paths, `include` order, `AddCSLuaFile`, public globals, hooks, IDs,
+  and protocols used by legacy code and addons. When splitting files, update
+  their loading and distribution to clients in the same set of changes.
+- Every TypeScript file must resolve its imports, dependencies, and type declarations
+  without errors both in the editor and during type checking. Ensure each file belongs
+  to the appropriate TypeScript project, with the required dependencies, ambient types,
+  and TypeScriptToLua language extensions configured. A successful command-line build
+  alone is insufficient if opening the file still produces dependency or import errors.
+  Fix project configuration or declarations rather than suppressing diagnostics,
+  adding `any`, or introducing unnecessary runtime imports.
+- Do not introduce runtime imports without resolving how the emitted `require`
+  will be loaded in GMod. Type-only imports do not have this effect.
+- Respect server, client, and shared realms. Do not assume methods with the same
+  name have the same signature in both realms. Preserve `self`/`this` and `:`/`.`.
+- Keep types strict. Avoid `any` and casts that hide incomplete contracts.
+  Handle missing values explicitly and keep SteamID64 as a string.
+- Typing does not validate external data: validate network messages, files, and JSON
+  at runtime. Permissions and gameplay rules must be checked on the server.
+- Preserve assets and persisted data. The build must not clean `gamemodes/`.
 
-## Validação
+## Validation
 
-- Após alterar fontes migrados, execute `npm run build` e `npm test`.
-- No PowerShell sem Node no PATH, use `scripts/npm.ps1`; se a política bloquear
-  scripts, execute `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\npm.ps1 test`
-  (para compilar, substitua `test` por `run build`).
-- Para bugs de comportamento, adicione regressões relevantes quando viável.
-  Mudanças apenas de documentação dispensam testes de runtime.
-- Os testes locais simulam o GMod. Informe o que foi validado e o que ainda
-  depende do jogo; não declare uma partida validada sem executá-la no motor.
+- After changing migrated sources, run `npm run build` and `npm test`.
+- In PowerShell without Node on PATH, use `scripts/npm.ps1`; if script execution
+  policy blocks it, run `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\npm.ps1 test`
+  (to build, replace `test` with `run build`).
+- For behavior bugs, add relevant regression tests when feasible.
+  Documentation-only changes do not require runtime tests.
+- Local tests simulate GMod. Report what was validated and what still depends
+  on the game; do not claim a match was validated without running it in the engine.

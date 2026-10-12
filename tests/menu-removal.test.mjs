@@ -21,7 +21,9 @@ test("retired menu files are absent from the manifest and runtime", () => {
 
 test("client initialization and saved F4 bindings cannot install the old menu hooks", () => run(`
     GM = {}
-    KEY_NONE, KEY_F3, KEY_T = 0, 94, 30
+    KEY_NONE, KEY_F3, KEY_F4, KEY_T = 0, 94, 95, 30
+    local weaponMenuToggles=0
+    ZPMainMenu={Toggle=function() weaponMenuToggles=weaponMenuToggles+1 end}
     local loaded = {}
     local realInclude = include
     include = function(path)
@@ -37,7 +39,7 @@ test("client initialization and saved F4 bindings cannot install the old menu ho
     util.TableToJSON = function() return "{}" end
     concommand = {Add=function() end}
     net.SendToServer = function() end
-    input = {IsKeyDown=function() return true end}
+    input = {IsKeyDown=function(key) return key==KEY_F4 end}
     function LocalPlayer() return {IsTyping=function() return false end} end
     function CurTime() return 10 end
     include("cl_init.lua")
@@ -49,6 +51,7 @@ test("client initialization and saved F4 bindings cannot install the old menu ho
     assert(not KeyManager.EventGroups.ZombiePlagueMenu and not KeyManager.Keys.ZombiePlagueMenu)
     assert(not hooks.SetupMove and not hooks.HUDPaint)
     hooks.Think.KeyManagerHook()
+    assert(weaponMenuToggles==1 and KeyManager.Keys.ZombiePlagueActions.MainMenu==KEY_F4)
     assert(sent[1] ~= "RequestHumanMenu" and sent[1] ~= "RequestZombieMenu")
 `));
 

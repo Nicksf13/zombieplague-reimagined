@@ -22,13 +22,14 @@ include("cl_data.lua")
 `;
 
 test("key bindings merge valid saved values with defaults and preserve action self", () => run(setup + `
-    local saved={ZombiePlagueActions={NightVisionToggle=22,RequestAbility="invalid"},ZombiePlagueMenu={ZPMenu=-1},unknown={x=50}}
+    local saved={ZombiePlagueActions={NightVisionToggle=22,RequestAbility="invalid",WeaponMenu=96},ZombiePlagueMenu={ZPMenu=-1},unknown={x=50}}
     file.Read=function() return "saved" end
     util.JSONToTable=function() return saved end
     include("cl_keymanager.lua")
     assert(KeyManager.Keys.ZombiePlagueActions.NightVisionToggle==22)
     assert(KeyManager.Keys.ZombiePlagueActions.RequestAbility==KEY_T and not KeyManager.Keys.ZombiePlagueMenu)
     assert(not KeyManager.Keys.unknown)
+    assert(KeyManager.Keys.ZombiePlagueActions.MainMenu==96 and not KeyManager.Keys.ZombiePlagueActions.WeaponMenu)
     local calls=0
     KeyManager.EventGroups.ZombiePlagueActions.NightVisionToggle.Action=function(self) assert(self.Name=="KeyBindingNightVisionToggle"); calls=calls+1 end
     input.IsKeyDown=function(key) return key==22 end

@@ -125,7 +125,7 @@ PLAYER.MakeHuman = function(self)
         end
         if melee then
             self:GiveWeapon(melee)
-            self:SetMeleeWeaponGiven(true)
+            self:SetMeleeWeaponGiven(self.MeleeWeapon ~= nil)
         end
     else
         local weapon = SafeTableRandom(WeaponManager:GetWeaponsTableByWeaponType(WEAPON_PRIMARY))

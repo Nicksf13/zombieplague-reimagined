@@ -116,7 +116,8 @@ PLAYER.MakeHuman = function (this: ZPServerPlayer): void {
         }
         if (melee) {
             this.GiveWeapon(melee);
-            this.SetMeleeWeaponGiven(true);
+            // A fallback crowbar must not consume the player's first melee choice.
+            this.SetMeleeWeaponGiven(this.MeleeWeapon !== undefined);
         }
     }
     else {

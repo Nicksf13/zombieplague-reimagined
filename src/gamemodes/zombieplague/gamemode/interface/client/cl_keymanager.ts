@@ -50,7 +50,7 @@ export class KeyManager implements ZPKeyManager {
                 if (!saved || !group)
                     continue;
                 for (const [id] of pairs(events)) {
-                    const key = saved[id];
+                    const key = saved[id] ?? (id === "MainMenu" ? saved.WeaponMenu : undefined);
                     if (typeof key === "number" && key >= KEY_NONE && key === Math.floor(key))
                         group[id] = key;
                 }
@@ -83,4 +83,5 @@ hook.Add("Think", "KeyManagerHook", () => {
 const request = (name: string): ZPAction => () => { net.Start(name); net.SendToServer(); };
 keyManager.AddEvent("ZombiePlagueActions", "NightVisionToggle", "KeyBindingNightVisionToggle", request("RequestNightvision"), KEY_F3);
 keyManager.AddEvent("ZombiePlagueActions", "RequestAbility", "KeyBindingRequestAbility", request("RequestAbility"), KEY_T);
+keyManager.AddEvent("ZombiePlagueActions", "MainMenu", "MainMenuKeyBinding", () => ZPMainMenu.Toggle(), KEY_F4);
 keyManager.Load();

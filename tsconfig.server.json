@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": { "composite": true },
+  "include": ["src/**/*.ts", "types/**/*.d.ts"],
+  "exclude": ["src/**/cl_*.ts", "src/**/vgui/**", "types/client/**"]
+}

@@ -1,5 +1,3 @@
-type ZPHudComponentID = "Status" | "Timer";
-interface ZPHudConfig { Border: GLuaColor; Body: GLuaColor; Text: GLuaColor; Font: string; XPos: number; YPos: number; }
 interface ZPHudInfo {
     HudComponentID: string;
     TextFunction(this: ZPHudInfo, ply: ZPClientPlayer): string;
@@ -7,22 +5,12 @@ interface ZPHudInfo {
     ShouldRenderFunction(this: ZPHudInfo, ply: ZPClientPlayer): boolean;
 }
 interface ZPHudManager {
-    HUDConfig: Record<ZPHudComponentID, ZPHudConfig>;
-    SaveFileName: string;
     HudComponents: ZPHudInfo[];
     CreateHudInfo(this: ZPHudManager, id: string, text: (this: void, ply: ZPClientPlayer) => string,
         info: (this: void, ply: ZPClientPlayer) => string | number, show: (this: void, ply: ZPClientPlayer) => boolean): void;
-    CreateTextDisplayBox(this: ZPHudManager, text: {Text: string; TextFont: string; TextColor: GLuaColor; TextMargin?: number},
-        borderSize: number, radius: number, border: GLuaColor, body: GLuaColor, x: number, y: number): void;
     CreateBox(this: ZPHudManager, borderSize: number, radius: number, border: GLuaColor | undefined,
         body: GLuaColor, x: number, y: number, width: number, height: number): void;
     CalculateTextSize(this: ZPHudManager, text: string | number, font: string): LuaMultiReturn<[number, number]>;
-    CalculatePos(this: ZPHudManager, x: number, y: number, width: number, height: number, borderX?: number, borderY?: number): LuaMultiReturn<[number, number]>;
-    GetConfig<K extends keyof ZPHudConfig>(this: ZPHudManager, id: ZPHudComponentID, key: K): ZPHudConfig[K];
-    GetComponentConfig(this: ZPHudManager, id: ZPHudComponentID): ZPHudConfig;
-    LoadHudInformation(this: ZPHudManager): void;
-    Save(this: ZPHudManager): void;
-    CreateHudComponentInfo(this: ZPHudManager, x: number, y: number): ZPHudConfig;
 }
 interface ZPClientPlayer {
     Name(this: ZPClientPlayer): string;
@@ -40,13 +28,8 @@ interface GLuaDynamicLight {
     pos: GLuaClientVector; r: number; g: number; b: number;
     brightness: number; Decay: number; Size: number; DieTime: number;
 }
-interface ZPGlobals { HudManager: ZPHudManager; HUD_TOP: 1; HUD_CENTER: 2; HUD_BOTTOM: 3; HUD_LEFT: 4; HUD_RIGHT: 5; }
+interface ZPGlobals { HudManager: ZPHudManager; }
 declare const HudManager: ZPHudManager;
-declare const HUD_TOP: 1;
-declare const HUD_CENTER: 2;
-declare const HUD_BOTTOM: 3;
-declare const HUD_LEFT: 4;
-declare const HUD_RIGHT: 5;
 declare const OBS_MODE_ROAMING: number;
 declare const TEXT_ALIGN_LEFT: number;
 declare function DynamicLight(this: void, index: number): GLuaDynamicLight | undefined;

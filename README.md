@@ -77,13 +77,17 @@ You can also set a damage amplifier to a Zombie Plague class.<br>
 -----------------------Commands-----------------------<br> 
 Zombie Plague has some default commands and keys:<br> 
 Keys:<br> 
-showspare1 (F3) - Open Zombie Plague menu.<br> 
-showspare2 (F4) - Enable/disable nightvision.<br> 
+F3 - Enable/disable nightvision (default binding).<br>
+F4 - Open/close the themed main menu; choose Weapons to open the weapon selector.<br>
 Commands:<br>
-/zombies - Open Zombie Class menu.<br> 
-/humans - Open Human Class menu.<br> 
-/weapons - Open weapons menu.<br> 
-/menu - Open Zombie Plague menu.<br> 
+/weapons - Open the weapon selection HUD POC.<br>
+/bot [1-16] - Add idle test players (superadmin; multiplayer required).<br>
+Console: `zp_addbot` or `zp_addbot 3` (superadmin or server console).<br>
+Console: `zp_weapons`; shared menu/player HUD themes: `zp_theme classic`, `zp_theme hl2`, `zp_theme cs16`.<br>
+Themes include health, armor, status, timer, and primary/secondary ammo. Layout belongs to the theme.<br>
+Class, extra-item, map-vote and admin interfaces are pending the new HUD integration.<br>
+See the [weapon HUD POC guide and previews](docs/weapon-menu-poc.md).<br>
+See the [theme API and HUD previews](docs/themes.md).<br>
 /withdraw <amount> - Withdraw your ammo packs.<br> 
 /deposit <amount> - Deposit your ammo packs.<br> 
 /commands - List all commands.<br>

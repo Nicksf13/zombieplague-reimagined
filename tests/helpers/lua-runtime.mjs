@@ -63,12 +63,17 @@ hook = {Add=function(name,id,callback) hooks[name]=hooks[name] or {}; hooks[name
 timer = {Create=function(name, delay, repetitions, callback) timers[name]={delay,callback} end}
 weapons = {GetList=function() return {{ClassName="m9k_usp"}} end}
 `;
-export function run(script) {
+export function run(script, resultName) {
     const state = lauxlib.luaL_newstate();
     lualib.luaL_openlibs(state);
     try {
         const status = lauxlib.luaL_dostring(state, to_luastring(prelude + script));
         assert.equal(status, lua.LUA_OK, status === lua.LUA_OK ? undefined : to_jsstring(lua.lua_tostring(state, -1)));
+        if (resultName) {
+            lua.lua_getglobal(state, to_luastring(resultName));
+            assert.equal(lua.lua_type(state, -1), lua.LUA_TSTRING);
+            return to_jsstring(lua.lua_tostring(state, -1));
+        }
     } finally { lua.lua_close(state); }
 }
 

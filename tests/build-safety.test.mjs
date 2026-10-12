@@ -12,7 +12,7 @@ test("build rejects type errors, detects stale Lua and preserves unmigrated file
     await mkdir(buildRoot, { recursive: true });
     const fixture = await mkdtemp(path.join(buildRoot, "build-test-"));
     try {
-        for (const name of ["scripts", "src", "types", "tsconfig.json", "tsconfig.client.json", "migration.json"]) {
+        for (const name of ["scripts", "src", "types", "tsconfig.json", "tsconfig.base.json", "tsconfig.server.json", "tsconfig.client.json", "migration.json"]) {
             await cp(path.join(root, name), path.join(fixture, name), { recursive: true });
         }
         await symlink(path.join(root, "node_modules"), path.join(fixture, "node_modules"), "junction");

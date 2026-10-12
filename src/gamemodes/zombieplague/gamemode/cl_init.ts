@@ -6,8 +6,16 @@ include("cl_particlemanager.lua");
 include("cl_message.lua");
 include("cl_player.lua");
 include("cl_hud.lua");
+include("cl_theme_manager.lua");
+include("cl_weapon_menu.lua");
+include("cl_main_menu.lua");
+include("cl_main_menu_hud.lua");
+include("cl_theme_hud.lua");
+include("cl_weapon_menu_hud.lua");
+include("cl_player_hud.lua");
 include("cl_keymanager.lua");
 include("cl_scoreboard.lua");
+include("cl_scoreboard_hud.lua");
 GM.PlayerFootstep = function (this: ZPGameMode, ply): boolean { return !ply.GetFootstep(); };
 net.Receive("SendServerStatus", () => {
     const info = ZPClientData.Record(net.ReadTable());

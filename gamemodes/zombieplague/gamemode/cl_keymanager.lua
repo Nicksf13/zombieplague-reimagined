@@ -253,7 +253,17 @@ function KeyManager.prototype.Load(self)
                         break
                     end
                     for id in pairs(events) do
-                        local key = saved[id]
+                        local ____saved_id_2 = saved[id]
+                        if ____saved_id_2 == nil then
+                            local ____temp_1
+                            if id == "MainMenu" then
+                                ____temp_1 = saved.WeaponMenu
+                            else
+                                ____temp_1 = nil
+                            end
+                            ____saved_id_2 = ____temp_1
+                        end
+                        local key = ____saved_id_2
                         if type(key) == "number" and key >= KEY_NONE and key == math.floor(key) then
                             group[id] = key
                         end
@@ -287,9 +297,9 @@ hook.Add(
                     if not keyManager.PressingKeyList[key] then
                         keyManager.LastPress = CurTime() + 0.2
                         keyManager.PressingKeyList[key] = true
-                        local ____opt_1 = keyManager:GetEvent(id)
-                        if ____opt_1 ~= nil then
-                            ____opt_1:Action()
+                        local ____opt_3 = keyManager:GetEvent(id)
+                        if ____opt_3 ~= nil then
+                            ____opt_3:Action()
                         end
                     end
                 else
@@ -318,6 +328,13 @@ keyManager:AddEvent(
     "KeyBindingRequestAbility",
     request("RequestAbility"),
     KEY_T
+)
+keyManager:AddEvent(
+    "ZombiePlagueActions",
+    "MainMenu",
+    "MainMenuKeyBinding",
+    function() return ZPMainMenu:Toggle() end,
+    KEY_F4
 )
 keyManager:Load()
 return ____exports

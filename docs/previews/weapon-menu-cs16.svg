@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+<title>Zombie Plague: tema de HUD e menu</title>
+<rect width="1280" height="720" fill="#26343d"/>
+<rect x="24" y="632" width="132" height="64" rx="0" fill="rgb(62,70,56)" fill-opacity="0.9607843137254902"/>
+<text x="34" y="652" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(232,204,86)">Vida</text>
+<text x="34" y="682" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="24" fill="rgb(232,204,86)">100</text>
+<rect x="164" y="632" width="132" height="64" rx="0" fill="rgb(62,70,56)" fill-opacity="0.9607843137254902"/>
+<text x="174" y="652" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(232,204,86)">Colete</text>
+<text x="174" y="682" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="24" fill="rgb(232,204,86)">25</text>
+<rect x="304" y="632" width="132" height="64" rx="0" fill="rgb(62,70,56)" fill-opacity="0.9607843137254902"/>
+<text x="314" y="652" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(232,204,86)">Ammo Packs</text>
+<text x="314" y="682" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="24" fill="rgb(232,204,86)">160</text>
+<rect x="586" y="632" width="108" height="64" rx="0" fill="rgb(62,70,56)" fill-opacity="0.9607843137254902"/>
+<text x="596" y="652" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(232,204,86)">RODADA</text>
+<text x="596" y="682" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="24" fill="rgb(232,204,86)">02:05</text>
+<rect x="1050" y="632" width="206" height="64" rx="0" fill="rgb(62,70,56)" fill-opacity="0.9607843137254902"/>
+<text x="1060" y="652" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(232,204,86)">MUNIÇÃO PRIMÁRIA</text>
+<text x="1060" y="682" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="24" fill="rgb(232,204,86)">30 / 90</text>
+<rect x="1050" y="560" width="206" height="64" rx="0" fill="rgb(62,70,56)" fill-opacity="0.9607843137254902"/>
+<text x="1060" y="580" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(232,204,86)">MUNIÇÃO SECUNDÁRIA</text>
+<text x="1060" y="610" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="24" fill="rgb(232,204,86)">3</text>
+<rect x="24" y="544" width="121" height="19" rx="2" fill="rgb(62,70,56)" fill-opacity="0.9607843137254902"/>
+<text x="32" y="559" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(230,230,214)">Classe: Soldado</text>
+<rect x="24" y="564" width="184" height="19" rx="2" fill="rgb(62,70,56)" fill-opacity="0.9607843137254902"/>
+<text x="32" y="579" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(230,230,214)">Nível de oxigênio: 80%</text>
+<rect x="24" y="584" width="100" height="19" rx="2" fill="rgb(62,70,56)" fill-opacity="0.9607843137254902"/>
+<text x="32" y="599" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(230,230,214)">Bateria: 60%</text>
+<rect x="24" y="604" width="184" height="19" rx="2" fill="rgb(62,70,56)" fill-opacity="0.9607843137254902"/>
+<text x="32" y="619" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(230,230,214)">Poder da habilidade: 50%</text>
+<defs><clipPath id="clip1"><rect x="250" y="90" width="780" height="540"/></clipPath></defs><g clip-path="url(#clip1)">
+<rect x="250" y="90" width="780" height="540" rx="0" fill="rgb(62,70,56)" fill-opacity="0.9607843137254902"/>
+<rect x="250" y="90" width="780" height="28" rx="0" fill="rgb(83,94,73)" fill-opacity="1"/>
+<text x="274" y="128" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(232,204,86)">ZOMBIE PLAGUE</text>
+<text x="274" y="158" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="24" fill="rgb(230,230,214)">Escolha seu equipamento</text>
+<text x="274" y="185" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(181,190,165)">A escolha fica salva. A entrega segue as regras da sua vida atual.</text>
+<text x="274" y="615" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(181,190,165)">F4: menu principal | ESC: fechar | Mouse: escolher</text>
+<defs><clipPath id="clip2"><rect x="978" y="108" width="30" height="30"/></clipPath></defs><g clip-path="url(#clip2)">
+<rect x="978" y="108" width="30" height="30" rx="0" fill="rgb(83,94,73)" fill-opacity="1"/>
+<text x="990" y="131" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(230,230,214)">X</text>
+</g>
+<defs><clipPath id="clip3"><rect x="266" y="196" width="748" height="394"/></clipPath></defs><g clip-path="url(#clip3)">
+<defs><clipPath id="clip4"><rect x="266" y="196" width="180" height="30"/></clipPath></defs><g clip-path="url(#clip4)">
+<rect x="266" y="196" width="180" height="30" rx="0" fill="rgb(83,94,73)" fill-opacity="1"/>
+<text x="278" y="219" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(230,230,214)">Clássico</text>
+</g>
+<defs><clipPath id="clip5"><rect x="454" y="196" width="180" height="30"/></clipPath></defs><g clip-path="url(#clip5)">
+<rect x="454" y="196" width="180" height="30" rx="0" fill="rgb(83,94,73)" fill-opacity="1"/>
+<text x="466" y="219" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(230,230,214)">Half-Life 2</text>
+</g>
+<defs><clipPath id="clip6"><rect x="642" y="196" width="180" height="30"/></clipPath></defs><g clip-path="url(#clip6)">
+<rect x="642" y="196" width="180" height="30" rx="0" fill="rgb(232,204,86)" fill-opacity="1"/>
+<text x="654" y="219" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(12,18,22)">Counter-Strike 1.6</text>
+</g>
+<defs><clipPath id="clip7"><rect x="266" y="240" width="176" height="48"/></clipPath></defs><g clip-path="url(#clip7)">
+<rect x="266" y="240" width="176" height="48" rx="0" fill="rgb(232,204,86)" fill-opacity="1"/>
+<text x="278" y="272" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(12,18,22)">Primária</text>
+</g>
+<defs><clipPath id="clip8"><rect x="266" y="302" width="176" height="48"/></clipPath></defs><g clip-path="url(#clip8)">
+<rect x="266" y="302" width="176" height="48" rx="0" fill="rgb(83,94,73)" fill-opacity="1"/>
+<text x="278" y="334" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(230,230,214)">Secundária</text>
+</g>
+<defs><clipPath id="clip9"><rect x="266" y="364" width="176" height="48"/></clipPath></defs><g clip-path="url(#clip9)">
+<rect x="266" y="364" width="176" height="48" rx="0" fill="rgb(83,94,73)" fill-opacity="1"/>
+<text x="278" y="396" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(230,230,214)">Corpo a corpo</text>
+</g>
+<defs><clipPath id="clip10"><rect x="460" y="240" width="554" height="250"/></clipPath></defs><g clip-path="url(#clip10)">
+<defs><clipPath id="clip11"><rect x="460" y="240" width="534" height="54"/></clipPath></defs><g clip-path="url(#clip11)">
+<rect x="460" y="240" width="534" height="54" rx="0" fill="rgb(232,204,86)" fill-opacity="1"/>
+<text x="474" y="268" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(12,18,22)">AR2</text>
+<text x="474" y="285" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(12,18,22)">Seleção salva</text>
+</g>
+<defs><clipPath id="clip12"><rect x="460" y="304" width="534" height="54"/></clipPath></defs><g clip-path="url(#clip12)">
+<rect x="460" y="304" width="534" height="54" rx="0" fill="rgb(83,94,73)" fill-opacity="1"/>
+<text x="474" y="332" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(230,230,214)">SMG1</text>
+<text x="474" y="349" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(181,190,165)">Clique para selecionar</text>
+</g>
+<defs><clipPath id="clip13"><rect x="460" y="368" width="534" height="54"/></clipPath></defs><g clip-path="url(#clip13)">
+<rect x="460" y="368" width="534" height="54" rx="0" fill="rgb(83,94,73)" fill-opacity="1"/>
+<text x="474" y="396" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(230,230,214)">Shotgun</text>
+<text x="474" y="413" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(181,190,165)">Clique para selecionar</text>
+</g>
+<defs><clipPath id="clip14"><rect x="460" y="432" width="534" height="54"/></clipPath></defs><g clip-path="url(#clip14)">
+<rect x="460" y="432" width="534" height="54" rx="0" fill="rgb(83,94,73)" fill-opacity="1"/>
+<text x="474" y="460" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(230,230,214)">Crossbow</text>
+<text x="474" y="477" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(181,190,165)">Clique para selecionar</text>
+</g>
+</g>
+<defs><clipPath id="clip15"><rect x="460" y="500" width="554" height="90"/></clipPath></defs><g clip-path="url(#clip15)">
+<text x="460" y="517" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(232,204,86)">Escolha uma arma abaixo.</text>
+<text x="460" y="539" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(181,190,165)">Você pode salvar a escolha para o próximo spawn humano elegível.</text>
+<defs><clipPath id="clip16"><rect x="460" y="560" width="130" height="28"/></clipPath></defs><g clip-path="url(#clip16)">
+<rect x="460" y="560" width="130" height="28" rx="0" fill="rgb(83,94,73)" fill-opacity="1"/>
+<text x="472" y="582" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(230,230,214)">Atualizar</text>
+</g>
+</g>
+</g>
+</g>
+<text x="160" y="718" font-family="Segoe UI,sans-serif" font-size="11" fill="#a5b6bf">Prévia simulada do Lua compilado. Não é uma captura do Garry’s Mod.</text></svg>

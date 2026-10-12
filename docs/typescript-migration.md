@@ -1,7 +1,7 @@
 # Desenvolvimento em TypeScript
 
 A conversão dos fontes para TypeScript está concluída. Após a remoção do menu
-antigo, a adoção da localização nativa e os construtores de conteúdo, o projeto gera 254 arquivos Lua, incluindo
+antigo, a adoção da localização nativa, os construtores de conteúdo e os temas de HUD/menu/placar, o projeto gera 264 arquivos Lua, incluindo
 módulos extraídos para separar responsabilidades. A validação no Garry's Mod está pendente.
 
 Edite os `.ts` em `src/`. O GMod executa exclusivamente os `.lua` gerados em
@@ -40,6 +40,19 @@ Versione `src/`, `types/`, os scripts, configurações, testes, lockfile e Lua g
 `node_modules/`, `.tools/` e `.build/` ficam ignorados. Para instalar no GMod,
 distribua `gamemodes/` com os assets. O servidor não precisa de Node.js.
 
+### Conflito com a versão do Workshop
+
+Ao testar a versão local, desative o addon **Zombie Plague** do Workshop
+(`1115250691`) e reinicie completamente o Garry's Mod. Ele contém arquivos com
+os mesmos caminhos e pode misturar o código antigo com os registros TS atuais,
+mesmo quando a pasta local está atualizada.
+
+Os sintomas confirmados incluem `sv_message.lua:42` passando uma tabela para
+`net.WriteString` e `sv_extraitems.lua:16` carregando um item cujo construtor
+`ExtraItemDefinition` ainda não existe. Ambos os caminhos e números de linha
+correspondem à cópia antiga do Workshop. Confira qual versão está montada antes
+de alterar os fontes ou copiar arquivos isolados.
+
 ## Organização
 
 A raiz de `src/gamemodes/zombieplague/gamemode/` contém somente os pontos de
@@ -72,7 +85,8 @@ player/
 | `bank/` e `bank/server/storage/` | Banco e persistência de saldos |
 | `maps/server/` e `maps/server/configs/` | Manager e configurações dos mapas |
 | `languages/server/` | Distribuição dos catálogos nativos em `content/resource/localization/` |
-| `interface/client/` | HUD, teclado e scoreboard |
+| `interface/client/` | Dados do HUD, temas de HUD/menu, teclado e scoreboard |
+| `menus/` | Contratos, serviço de seleção de armas e apresentações substituíveis da POC |
 | `effects/` | Partículas de servidor e cliente |
 | `messaging/` | Mensagens de servidor e cliente |
 | `core/` | Utilitários, comandos, convars e validação de dados do cliente |
@@ -108,7 +122,9 @@ arquivos fora do manifesto.
 A tipagem usa `strict`, `noUncheckedIndexedAccess` e `exactOptionalPropertyTypes`.
 As declarações em `types/` cobrem as APIs utilizadas, não toda a API do GMod.
 
-`tsconfig.json` verifica servidor e os contratos de engine das entidades/SWEPs,
+`tsconfig.json` é o ponto de entrada do editor e referencia os dois projetos.
+`tsconfig.base.json` concentra as opções estritas e do TypeScriptToLua.
+`tsconfig.server.json` verifica servidor e os contratos de engine das entidades/SWEPs,
 incluindo o suporte de renderização em `weapons/client/construction/`.
 `tsconfig.client.json` verifica `cl_*`, VGUI e fontes compartilhados com contratos
 próprios de cliente. O build exige saída idêntica dos fontes compartilhados nos
@@ -122,6 +138,28 @@ arquivos (`cl_*`, `sh_*` e `vgui/`), não apenas o nome da pasta.
 Por exemplo, classes de Player são definições no servidor e nomes no cliente;
 `net.Receive` recebe o remetente apenas no servidor. Os testes de tipos impedem
 confundir essas assinaturas nos consumidores do gamemode.
+
+### Tipos no editor
+
+Abra a raiz do repositório no VS Code ou editor compatível. A configuração em
+`.vscode/settings.json` indica o TypeScript instalado em `node_modules`, na
+mesma versão usada pelo build. Se solicitado, selecione **Use Workspace Version**.
+Depois de atualizar as configurações, execute **TypeScript: Restart TS Server**
+na paleta de comandos (`Ctrl+Shift+P`). Se ainda não houver dependências,
+execute `npm ci` antes de abrir os fontes.
+
+O arquivo principal referencia explicitamente servidor e cliente para que o
+editor encontre `tsconfig.client.json`. Sem essa referência, arquivos `cl_*`
+excluídos do servidor caíam em um projeto inferido, sem os contratos do GMod.
+O teste de integração do editor abre fontes no `tsserver` e verifica o projeto
+selecionado e os diagnósticos, incluindo as extensões de linguagem do TSTL.
+
+As declarações de `types/` e `@typescript-to-lua/language-extensions` são globais
+em cada contexto. Elas não precisam de imports nos fontes; o carregamento real
+continua sendo feito por `include`/`AddCSLuaFile` do GMod. Não adicione imports de
+runtime apenas para resolver um erro de configuração do editor.
+Veja as referências oficiais de [projetos TypeScript](https://www.typescriptlang.org/docs/handbook/project-references)
+e [versão do TypeScript no VS Code](https://code.visualstudio.com/docs/typescript/typescript-transpiling#_using-the-workspace-version-of-typescript).
 
 Métodos declaram `this` para gerar `:`; funções globais usam `this: void` e
 bibliotecas usam `@noSelf` para gerar `.`. Callbacks e timers preservam seu contexto
@@ -246,7 +284,7 @@ callbacks associados à instância e persistência com falha e nova tentativa.
   `ZPEndRound` e removidos da fila uma única vez.
 - Banco de texto tolera saldo ausente/corrompido e grava texto; falhas de gravação
   mantêm o saldo na fila para nova tentativa.
-- Configurações de HUD/teclado inválidas usam defaults. Traduções seguem o idioma
+- Preferências de tema/teclado inválidas usam defaults. Traduções seguem o idioma
   nativo do cliente, sem preferência de idioma própria do gamemode.
 - Granadas e timers verificam entidades removidas; efeitos de gameplay executam
   somente no servidor. Modelos visuais são removidos ao remover o SWEP.
@@ -268,7 +306,8 @@ No Garry's Mod, conferir:
 
 1. Inicialização de servidor e cliente sem erros; entrada durante uma partida.
 2. Classes, habilidades, infecção/cura, mortes e saída do último humano/zumbi.
-3. Entrega de armas já selecionadas no próximo spawn humano; addons de armas.
+3. POC de armas via F4, troca de HUD, scroll, entrega e seleção para o próximo
+   spawn humano; addons de armas.
 4. Seis tipos de rodada, congelamento, timers, respawn, vitória e término da votação sem interface.
 5. Banco após reconexão/reinício; idiomas nativos distintos entre jogadores,
    troca de `gmod_language`, fallback inglês, HUD, teclas e scoreboard.
@@ -280,12 +319,13 @@ anteriores à conversão; seus números e problemas descrevem aquele ponto de pa
 ## Remoção do menu antigo
 
 O menu numérico e a janela de opções foram removidos, incluindo os painéis de
-customização do HUD e teclas. Não há substituto temporário. Foram retirados os
+customização antiga de posição do HUD e teclas. A seleção de armas usa agora a POC descrita abaixo.
+Foram retirados os
 hooks de desenho e leitura de teclas do menu, seus atalhos, comandos de abertura,
 mensagens de requisição/resposta e a abertura automática na conversão para humano.
 Os antigos overrides vazios de `ShowSpare1`/`ShowSpare2` também foram retirados.
 
-Escolher classes, armas, itens, idioma, rodada administrativa, entrar/sair de
+Escolher classes, itens, idioma, rodada administrativa, entrar/sair de
 espectador e votar em mapas pela interface fica indisponível até o novo menu.
 O ciclo de votação continua e termina pelo timer existente, sem receber votos
 pela interface antiga. Nenhum novo critério de desempate foi introduzido.
@@ -295,8 +335,20 @@ noturna permanecem. A entrega de armas já selecionadas e o comportamento de bot
 foram preservados; humanos sem seleção não recebem um substituto automático.
 Os canais `SendHumanClass`/`SendZombieClass` continuam sincronizando classes do
 servidor para o HUD, mas não aceitam mais escolhas enviadas pelo menu antigo.
-Arquivos persistidos de HUD e teclas não são apagados; atalhos antigos de menu
+Arquivos persistidos de HUD e teclas não são apagados; o HUD ignora as posições
+antigas e usa o layout do tema selecionado (ver [temas](themes.md)). Atalhos antigos de menu
 não são carregados pelo gerenciador de teclas.
+
+### POC do novo seletor de armas
+
+A seleção de armas voltou por uma base independente do visual. F4 abre o menu
+principal, com acesso à opção Armas; `zp_weapons` e `/weapons` abrem diretamente
+o seletor. Os temas clássico, HL2 e CS 1.6 usam a mesma API e rede.
+O evento `MainMenu` reaproveita a tecla salva de `WeaponMenu`, quando existente.
+No spawn humano normal, o servidor pede a primeira categoria ainda sem escolha;
+o cliente avança por primária, secundária e corpo a corpo após confirmação.
+Os setters existentes preservam salvamento em qualquer estado e entrega única
+por categoria durante uma vida humana. Veja [contrato, prévias e teste em jogo](weapon-menu-poc.md).
 
 ## Localização nativa
 

@@ -51,7 +51,7 @@ async function build() {
     await mkdir(buildRoot, { recursive: true });
     const staging = await mkdtemp(path.join(buildRoot, "lua-"));
     try {
-        for (const [realm, config] of [["server", "tsconfig.json"], ["client", "tsconfig.client.json"]]) {
+        for (const [realm, config] of [["server", "tsconfig.server.json"], ["client", "tsconfig.client.json"]]) {
             const result = spawnSync(process.execPath, [
                 path.join(root, "node_modules/typescript-to-lua/dist/tstl.js"),
                 "--project", path.join(root, config), "--outDir", path.join(staging, realm),
@@ -126,7 +126,7 @@ if (process.argv.slice(2).some(arg => !["--check", "--watch"].includes(arg)) || 
     for (const directory of ["src", "types"]) {
         watch(path.join(root, directory), { recursive: true }, schedule);
     }
-    for (const file of ["tsconfig.json", "tsconfig.client.json", "migration.json"]) {
+    for (const file of ["tsconfig.json", "tsconfig.base.json", "tsconfig.server.json", "tsconfig.client.json", "migration.json"]) {
         watch(path.join(root, file), schedule);
     }
     await rebuild();

@@ -5,10 +5,11 @@
   "description": "Zombie Plague for Garry's Mod — incremental TypeScript migration",
   "engines": { "node": ">=22" },
   "scripts": {
-    "typecheck": "tsc --noEmit && tsc --project tsconfig.client.json --noEmit && tsc --project tests/tsconfig.json --noEmit && tsc --project tests/client-types/tsconfig.json --noEmit",
+    "typecheck": "tsc --project tsconfig.server.json --noEmit && tsc --project tsconfig.client.json --noEmit && tsc --project tests/tsconfig.json --noEmit && tsc --project tests/client-types/tsconfig.json --noEmit",
     "build": "node scripts/build.mjs",
     "build:check": "node scripts/build.mjs --check",
     "dev": "node scripts/build.mjs --watch",
+    "preview:weapons": "node scripts/preview-weapon-menu.mjs",
     "test": "npm run typecheck && npm run build:check && node --test tests/*.test.mjs"
   },
   "devDependencies": {
