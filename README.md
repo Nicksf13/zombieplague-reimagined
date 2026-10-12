@@ -1,3 +1,17 @@
+## Desenvolvimento em TypeScript
+
+Todos os arquivos de código do gamemode têm fonte TypeScript e são compilados com TypeScriptToLua.
+Os fontes ficam em `src/`, e o GMod continua carregando os `.lua` em `gamemodes/`.
+Consulte o [guia de desenvolvimento e etapas da migração](docs/typescript-migration.md).
+O [diagnóstico inicial](docs/project-diagnosis.md) registra os achados anteriores à conversão.
+O build e os testes locais estão disponíveis; a validação da migração no Garry's Mod está pendente.
+
+```sh
+npm ci
+npm run build
+npm test
+```
+
 ## Addon description<br> 
 -----------------------Introduction-----------------------<br> 
 This is an old gamemode (AMX Modx) that I played a lot, so I decided to make a GMOD version.<br> 

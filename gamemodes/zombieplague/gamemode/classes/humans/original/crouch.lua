@@ -1,10 +1,22 @@
-ZPClass.Name = "HumanCrouchClassName"
-ZPClass.Description = "HumanCrouchClassDescription"
-ZPClass.MaxHealth = 50
-ZPClass.Armor = 0
-ZPClass.PModel = "models/player/swat.mdl"
-ZPClass.Speed = 220
-ZPClass.RunSpeed = 100
-ZPClass.CrouchSpeed = 1.4
-ZPClass.Gravity = 0.8
-ClassManager:AddZPClass("CrouchHuman", ZPClass, TEAM_HUMANS)
+-- Generated from src/gamemodes/zombieplague/gamemode/classes/server/humans/original/crouch.ts. DO NOT EDIT; run npm run build.
+-- Lua Library inline imports
+local function __TS__New(target, ...)
+    local instance = setmetatable({}, target.prototype)
+    instance:____constructor(...)
+    return instance
+end
+-- End of Lua Library inline imports
+local ____exports = {}
+____exports.default = __TS__New(HumanClassDefinition, {
+    ID = "CrouchHuman",
+    Name = "HumanCrouchClassName",
+    Description = "HumanCrouchClassDescription",
+    MaxHealth = 50,
+    Armor = 0,
+    PModel = "models/player/swat.mdl",
+    Speed = 220,
+    RunSpeed = 100,
+    CrouchSpeed = 1.4,
+    Gravity = 0.8
+})
+return ____exports

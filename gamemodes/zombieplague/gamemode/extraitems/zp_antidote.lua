@@ -1,10 +1,25 @@
-ExtraItem.ID = "ZPAntidote"
-ExtraItem.Name = "ExtraItemAntidoteName"
-ExtraItem.Price = 20
-ExtraItem.Type = ITEM_ZOMBIE
-function ExtraItem:OnBuy(ply)
-	InfectionManager:Cure(ply, ply)
+-- Generated from src/gamemodes/zombieplague/gamemode/extraitems/server/zp_antidote.ts. DO NOT EDIT; run npm run build.
+-- Lua Library inline imports
+local function __TS__New(target, ...)
+    local instance = setmetatable({}, target.prototype)
+    instance:____constructor(...)
+    return instance
 end
-function ExtraItem:CanBuy(ply)
-	return RoundManager:IsPlayingRound() && !RoundManager:IsSpecialRound() && !RoundManager:LastZombie() && ply:Alive()
-end
+-- End of Lua Library inline imports
+local ____exports = {}
+____exports.default = __TS__New(
+    ExtraItemDefinition,
+    {
+        ID = "ZPAntidote",
+        Name = "ExtraItemAntidoteName",
+        Price = 20,
+        Type = ITEM_ZOMBIE,
+        OnBuy = function(self, ply)
+            InfectionManager:Cure(ply, ply)
+        end,
+        CanBuy = function(self, ply)
+            return RoundManager:IsPlayingRound() and not RoundManager:IsSpecialRound() and not RoundManager:LastZombie() and ply:Alive()
+        end
+    }
+)
+return ____exports

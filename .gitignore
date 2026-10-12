@@ -1,0 +1,23 @@
+# Dependências instaladas e caches locais
+node_modules/
+.npm/
+.cache/
+
+# Saídas temporárias do build e ferramentas portáteis
+.build/
+.tools/
+*.tsbuildinfo
+
+# Relatórios e logs locais
+coverage/
+npm-debug.log*
+
+# Arquivos temporários do editor e do sistema operacional
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Manter package-lock.json e o Lua gerado em gamemodes/ versionados.

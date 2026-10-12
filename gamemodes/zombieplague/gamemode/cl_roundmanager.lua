@@ -1,16 +1,25 @@
-function RoundManager:SetTimer(Timer)
-	self.Timer = CurTime() + Timer
+-- Generated from src/gamemodes/zombieplague/gamemode/rounds/client/cl_roundmanager.ts. DO NOT EDIT; run npm run build.
+local ____exports = {}
+local manager = RoundManager
+manager.SetTimer = function(self, seconds)
+    self.Timer = CurTime() + seconds
 end
-function RoundManager:GetTimer()
-	local Time = (self.Timer or 0) - CurTime()
-	if Time < 0 then
-		Time = 0
-	end
-	return Time
+manager.GetTimer = function(self)
+    local remaining = (self.Timer or 0) - CurTime()
+    return remaining < 0 and 0 or remaining
 end
-net.Receive("SyncTimer", function()
-	RoundManager:SetTimer(net.ReadInt(16))
-end)
-net.Receive("SendRoundEnd", function()
-	hook.Call("ZombiePlagueEndRound", GAMEMODE, net.ReadInt(4))
-end)
+net.Receive(
+    "SyncTimer",
+    function() return manager:SetTimer(net.ReadInt(16)) end
+)
+net.Receive(
+    "SendRoundEnd",
+    function()
+        hook.Call(
+            "ZombiePlagueEndRound",
+            GAMEMODE,
+            net.ReadInt(4)
+        )
+    end
+)
+return ____exports

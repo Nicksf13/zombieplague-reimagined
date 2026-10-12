@@ -1,0 +1,21 @@
+{
+  "name": "zombieplague",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Zombie Plague for Garry's Mod — incremental TypeScript migration",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "typecheck": "tsc --noEmit && tsc --project tsconfig.client.json --noEmit && tsc --project tests/tsconfig.json --noEmit && tsc --project tests/client-types/tsconfig.json --noEmit",
+    "build": "node scripts/build.mjs",
+    "build:check": "node scripts/build.mjs --check",
+    "dev": "node scripts/build.mjs --watch",
+    "test": "npm run typecheck && npm run build:check && node --test tests/*.test.mjs"
+  },
+  "devDependencies": {
+    "@typescript-to-lua/language-extensions": "1.19.0",
+    "fengari": "0.1.5",
+    "luaparse": "0.3.1",
+    "typescript": "6.0.2",
+    "typescript-to-lua": "1.37.1"
+  }
+}

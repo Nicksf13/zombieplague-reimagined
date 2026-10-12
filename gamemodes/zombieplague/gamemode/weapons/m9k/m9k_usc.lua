@@ -1,4 +1,11 @@
-Weapon.PrettyName = "m9k_usc"
-Weapon.WeaponID = "m9k_usc"
-Weapon.DamageMultiplier = 1.4
-Weapon.WeaponType = WEAPON_PRIMARY
+-- Generated from src/gamemodes/zombieplague/gamemode/weapons/server/m9k/m9k_usc.ts. DO NOT EDIT; run npm run build.
+-- Lua Library inline imports
+local function __TS__New(target, ...)
+    local instance = setmetatable({}, target.prototype)
+    instance:____constructor(...)
+    return instance
+end
+-- End of Lua Library inline imports
+local ____exports = {}
+____exports.default = __TS__New(WeaponDefinition, {PrettyName = "m9k_usc", WeaponID = "m9k_usc", DamageMultiplier = 1.4, WeaponType = WEAPON_PRIMARY})
+return ____exports

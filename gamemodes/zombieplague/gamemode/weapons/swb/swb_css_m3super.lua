@@ -1,4 +1,11 @@
-Weapon.PrettyName = "Benelli M3 Super 90"
-Weapon.WeaponID = "swb_css_m3super"
-Weapon.DamageMultiplier = 1
-Weapon.WeaponType = WEAPON_PRIMARY
+-- Generated from src/gamemodes/zombieplague/gamemode/weapons/server/swb/swb_css_m3super.ts. DO NOT EDIT; run npm run build.
+-- Lua Library inline imports
+local function __TS__New(target, ...)
+    local instance = setmetatable({}, target.prototype)
+    instance:____constructor(...)
+    return instance
+end
+-- End of Lua Library inline imports
+local ____exports = {}
+____exports.default = __TS__New(WeaponDefinition, {PrettyName = "Benelli M3 Super 90", WeaponID = "swb_css_m3super", DamageMultiplier = 1, WeaponType = WEAPON_PRIMARY})
+return ____exports

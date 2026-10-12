@@ -1,12 +1,13 @@
-BOT_MODE = true
-
+-- Generated from src/gamemodes/zombieplague/gamemode/init.ts. DO NOT EDIT; run npm run build.
+local ____exports = {}
+_G.BOT_MODE = true
 include("shared.lua")
 include("sv_utils.lua")
 include("sv_commands.lua")
 include("sv_convar.lua")
 include("sv_config.lua")
 include("sv_player.lua")
-include("sv_language.lua")
+include("sv_localization.lua")
 include("sv_message.lua")
 include("sv_classmanager.lua")
 include("sv_roundmanager.lua")
@@ -18,51 +19,51 @@ include("sv_particlemanager.lua")
 include("sv_votemap.lua")
 include("sv_mapmanager.lua")
 include("sv_bank.lua")
-
 AddCSLuaFile("shared.lua")
 AddCSLuaFile("sh_bank.lua")
 AddCSLuaFile("sh_roundmanager.lua")
 AddCSLuaFile("sh_player.lua")
 AddCSLuaFile("sh_playermanager.lua")
 AddCSLuaFile("cl_hud.lua")
-AddCSLuaFile("cl_language.lua")
+AddCSLuaFile("cl_data.lua")
 AddCSLuaFile("cl_message.lua")
 AddCSLuaFile("cl_player.lua")
 AddCSLuaFile("cl_roundmanager.lua")
-AddCSLuaFile("cl_menu.lua")
 AddCSLuaFile("cl_particlemanager.lua")
 AddCSLuaFile("cl_keymanager.lua")
-AddCSLuaFile("cl_derma.lua")
 AddCSLuaFile("cl_scoreboard.lua")
-AddCSLuaFile("zombieplague/gamemode/vgui/vgui_keybinding.lua")
-AddCSLuaFile("zombieplague/gamemode/vgui/vgui_hudcustomizer.lua")
-
-function SafeTableRandom(Table)
-	local Result = table.Random(Table)
-	return Result
+_G.SafeTableRandom = function(values)
+    local value = table.Random(values)
+    return value
 end
-hook.Add("PlayerDisconnected", "ZombiePlagueDisconnect", function(ply)
-	RoundManager:RemovePlayerToPlay(ply)
-end)
-hook.Add("Initialize", "ServerReady", function()
-	Dictionary:Init()
-	ClassManager:SearchClasses()
-	RoundManager:SearchRounds()
-	WeaponManager:SearchWeapons()
-	ExtraItemsManager:Search()
-	MapManager:SearchConfigs()
-end)
-net.Receive("RequestServerStatus", function(len, ply)
-	ply:SetLanguage(net.ReadString(), false)
-	RoundManager:AddPlayerToPlay(ply)
-	
-	local Status = RoundManager:GetServerStatus(ply)
-	net.Start("SendServerStatus")
-		net.WriteTable(Status)
-	net.Send(ply)
-end)
-
-util.AddNetworkString("OpenZPMenu")
+hook.Add(
+    "PlayerDisconnected",
+    "ZombiePlagueDisconnect",
+    function(ply)
+        RoundManager:RemovePlayerToPlay(ply)
+    end
+)
+hook.Add(
+    "Initialize",
+    "ServerReady",
+    function()
+        ClassManager:SearchClasses()
+        RoundManager:SearchRounds()
+        WeaponManager:SearchWeapons()
+        ExtraItemsManager:Search()
+        MapManager:SearchConfigs()
+    end
+)
+net.Receive(
+    "RequestServerStatus",
+    function(_length, ply)
+        RoundManager:AddPlayerToPlay(ply)
+        local status = RoundManager:GetServerStatus(ply)
+        net.Start("SendServerStatus")
+        net.WriteTable(status)
+        net.Send(ply)
+    end
+)
 util.AddNetworkString("RequestServerStatus")
 util.AddNetworkString("SendServerStatus")
-util.AddNetworkString("OpenBackMenu")
+return ____exports

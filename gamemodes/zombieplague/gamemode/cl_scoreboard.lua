@@ -1,274 +1,305 @@
-local ScrWidth = 600
-local ScrHeight = 600
-local ScoreBoardManager = {CompPosX = 20, CompPosY = 20, UpdateComponents = {}}
-
-function ScoreBoardManager:CreateScoreboard()
-    self.CompPosX = 20
-    self.CompPosY = 20
-    
-    local BorderColor = Color(0, 0, 0, 0)
-    local BackGroundColor = Color(0, 0, 0, 250)
-    local ScoreBoard = vgui.Create("DFrame")
-    ScoreBoard:SetDraggable(false)
-    ScoreBoard:ShowCloseButton(false)
-    ScoreBoard:SetDeleteOnClose(true)
-    ScoreBoard:SetTitle("")
-    ScoreBoard:SetSize(ScrWidth, ScrHeight)
-    ScoreBoard:Center()
-
-    function ScoreBoard:Paint(Width, Height)
-        HudManager:CreateBox(0, 2, BorderColor, BackGroundColor, 0, 0, Width, Height)
+-- Generated from src/gamemodes/zombieplague/gamemode/interface/client/cl_scoreboard.ts. DO NOT EDIT; run npm run build.
+-- Lua Library inline imports
+local function __TS__ArrayForEach(self, callbackFn, thisArg)
+    for i = 1, #self do
+        callbackFn(thisArg, self[i], i - 1, self)
     end
+end
 
-    local Scroll = vgui.Create("DScrollPanel", ScoreBoard)
-    Scroll:SetPos(0, self.CompPosY)
-    Scroll:SetSize(ScrWidth, ScrHeight - (self.CompPosY * 2))
-    function Scroll:Paint()end
+local function __TS__ArrayMap(self, callbackfn, thisArg)
+    local result = {}
+    for i = 1, #self do
+        result[i] = callbackfn(thisArg, self[i], i - 1, self)
+    end
+    return result
+end
 
-    self.Scroll = Scroll
-    self.ScoreBoard = ScoreBoard
+local function __TS__ArraySort(self, compareFn)
+    if compareFn ~= nil then
+        table.sort(
+            self,
+            function(a, b) return compareFn(nil, a, b) < 0 end
+        )
+    else
+        table.sort(self)
+    end
+    return self
+end
 
-    ScoreBoardManager:FillScroll(Scroll)
-
-    ScoreBoardManager:AddComponentToListening(Scroll, function()
-            return Scroll.TotalHumans != table.Count(team.GetPlayers(TEAM_HUMANS)) ||
-            Scroll.TotalZombies != table.Count(team.GetPlayers(TEAM_ZOMBIES)) ||
-            Scroll.TotalSpectators != table.Count(team.GetPlayers(TEAM_SPECTATOR))
-        end, 
-        function()
-            ScoreBoardManager:FillScroll(Scroll)
+local function __TS__ArrayFilter(self, callbackfn, thisArg)
+    local result = {}
+    local len = 0
+    for i = 1, #self do
+        if callbackfn(thisArg, self[i], i - 1, self) then
+            len = len + 1
+            result[len] = self[i]
         end
-    )
+    end
+    return result
+end
 
-    ScoreBoard:MakePopup(true)
-
-    timer.Create("ScoreBoardUpdater", 1, 0, function()
-        for k, ComponentUpdate in pairs(ScoreBoardManager.UpdateComponents) do
-            if !IsValid(ComponentUpdate.Component) then
-                ScoreBoardManager.UpdateComponents[k] = nil
-            elseif ComponentUpdate:ShouldUpdateFunction() then
-                ComponentUpdate:UpdateFunction()
-            end
+local function __TS__ArraySome(self, callbackfn, thisArg)
+    for i = 1, #self do
+        if callbackfn(thisArg, self[i], i - 1, self) then
+            return true
         end
-    end)
+    end
+    return false
 end
-
-function ScoreBoardManager:FillScroll(Scroll)
-    self.CompPosY = 0
-    Scroll:Clear()
-    
-    Scroll.TotalHumans = table.Count(team.GetPlayers(TEAM_HUMANS))
-    Scroll.TotalZombies = table.Count(team.GetPlayers(TEAM_ZOMBIES))
-    Scroll.TotalSpectators = table.Count(team.GetPlayers(TEAM_SPECTATOR))
-
-    if Scroll.TotalHumans > 0 then
-        ScoreBoardManager:AddComponent(ScoreBoardManager:CreateTeamPlayerTable(TEAM_HUMANS), 10)
-    end
-    if Scroll.TotalZombies > 0 then
-        ScoreBoardManager:AddComponent(ScoreBoardManager:CreateTeamPlayerTable(TEAM_ZOMBIES), 10)
-    end
-    if Scroll.TotalSpectators > 0 then
-        ScoreBoardManager:AddComponent(ScoreBoardManager:CreateTeamPlayerTable(TEAM_SPECTATOR), 0)
-    end
-end
-
-function ScoreBoardManager:CreateTeamPlayerTable(Team)
-    local TitleText = ScoreBoardManager:GetTeamName(Team)
-    local TitleFont = "DermaLarge"
-
-    local DTeamPanel = vgui.Create("DPanel")
-    DTeamPanel.Paint = function()end
-    DTeamPanel.TotalComponentHeight = 0
-    function DTeamPanel:AddComponent(Component, PaddingBottom)
-        Component:SetPos(0, self.TotalComponentHeight)
-        local W, H = Component:GetSize()
-
-        self:Add(Component)
-        self.TotalComponentHeight = self.TotalComponentHeight + H + (PaddingBottom or 0)
-    end
-
-    ScoreBoardManager:FillTable(DTeamPanel, TitleText, TitleFont, Team)
-
-    return DTeamPanel
-end
-
-function ScoreBoardManager:GetTeamName(Team)
-    if Team == TEAM_HUMANS then
-        return Dictionary:GetPhrase("ScoreBoardTitleHumans")
-    end
-
-    if Team == TEAM_ZOMBIES then
-        return Dictionary:GetPhrase("ScoreBoardTitleZombies")
-    end
-
-    return Dictionary:GetPhrase("ScoreBoardTitleSpectators")
-end
-
-function ScoreBoardManager:FillTable(Table, TitleText, TitleFont, Team)
-    Table.TotalPlayers = table.Count(team.GetPlayers(Team))
-    Table.TotalComponentHeight = 0
-    Table:Clear()
-
-    local TeamColor = team.GetColor(Team)
-
-    local DTitle = vgui.Create("DLabel")
-    DTitle:SetText(TitleText)
-    DTitle:SetFont(TitleFont)
-    DTitle:SetSize(HudManager:CalculateTextSize(TitleText, TitleFont))
-
-    Table:AddComponent(DTitle)
-
-    local Header = ScoreBoardManager:CreatePlayerLine(
-        Dictionary:GetPhrase("ScoreBoardHeaderName"),
-        Dictionary:GetPhrase("ScoreBoardHeaderPoints"),
-        Dictionary:GetPhrase("ScoreBoardHeaderDeaths"),
-        Dictionary:GetPhrase("ScoreBoardHeaderStatus"),
-        Dictionary:GetPhrase("ScoreBoardHeaderPing"),
-        "",
-        "DermaDefault",
-        TeamColor
+-- End of Lua Library inline imports
+local ____exports = {}
+local frame
+local updates = {}
+local function centerLabel(label, text, font, x, maxWidth)
+    local measured = HudManager:CalculateTextSize(
+        tostring(text),
+        font
     )
-    Table:AddComponent(Header, 0)
-    Table:AddComponent(ScoreBoardManager:CreateLine(4, ScrWidth - (self.CompPosX * 2), 2, TeamColor), 0)
-
-    local PlayersSorted = team.GetPlayers(Team)
-
-    table.sort(PlayersSorted, function(PlyA, PlyB) return PlyA:GetPoints() > PlyB:GetPoints() end)
-
-    for i, ply in ipairs(PlayersSorted) do
-        if ply && IsValid(ply) then
-            local NewPlayerLine = ScoreBoardManager:CreatePlayerLine(
-                function() return (ply && IsValid(ply)) and ply:Name() or "" end,
-                function() return (ply && IsValid(ply)) and ply:GetPoints() or "" end,
-                function() return (ply && IsValid(ply)) and ply:Deaths() or "" end,
-                function()
-                    if !ply || !IsValid(ply) then
-                        return ""
-                    end
-                    if ply:Team() == TEAM_SPECTATOR then
-                        return Dictionary:GetPhrase("ScoreBoardStatusSpectating")
-                    end
-                    if ply:Alive() then
-                        return Dictionary:GetPhrase("ScoreBoardStatusAlive")
-                    end
-                    return Dictionary:GetPhrase("ScoreBoardStatusDead")
-                end,
-                function() return (ply && IsValid(ply)) and ply:Ping() or "" end,
-                ply,
+    local width = math.min(measured, maxWidth)
+    label:SetSize(width, 25)
+    label:SetPos(x + (maxWidth - width) / 2, 0)
+    label:SetText(tostring(text))
+end
+local function label(source, font, color, x, maxWidth)
+    local panel = vgui.Create("DLabel")
+    if type(source) == "function" then
+        updates[#updates + 1] = {
+            Component = panel,
+            ShouldUpdateFunction = function() return true end,
+            UpdateFunction = function() return centerLabel(
+                panel,
+                source(),
+                font,
+                x,
+                maxWidth
+            ) end
+        }
+    end
+    centerLabel(
+        panel,
+        type(source) == "function" and source() or source,
+        font,
+        x,
+        maxWidth
+    )
+    panel:SetFont(font)
+    panel:SetColor(color)
+    return panel
+end
+local function playerLine(values, muted, color)
+    local panel = vgui.Create("DPanel")
+    panel:SetSize(600, 20)
+    panel.Paint = function(self)
+    end
+    local positions = {
+        {0, 190},
+        {200, 80},
+        {290, 80},
+        {380, 70},
+        {460, 80}
+    }
+    __TS__ArrayForEach(
+        positions,
+        function(____, ____bindingPattern0, index)
+            local width
+            local x
+            x = ____bindingPattern0[1]
+            width = ____bindingPattern0[2]
+            return panel:Add(label(
+                values[index + 1] or "",
                 "DermaDefault",
-                TeamColor
-            )
-            Table:AddComponent(NewPlayerLine, 0)
+                color,
+                x,
+                width
+            ))
         end
-    end
-
-    Table:SetSize(ScrWidth, Table.TotalComponentHeight)
-end
-
-function ScoreBoardManager:CreatePlayerLine(Name, Points, Deaths, Status, Ping, PlyMuted, TextFont, TeamColor)
-    local PlayerLine = vgui.Create("DPanel")
-    PlayerLine:SetSize(ScrWidth, 20)
-    PlayerLine.Paint = function()end
-
-    PlayerLine:Add(ScoreBoardManager:CreateCenteredLabel(Name, TextFont, TeamColor, 0, 190))
-    PlayerLine:Add(ScoreBoardManager:CreateCenteredLabel(Points, TextFont, TeamColor, 200, 80))
-    PlayerLine:Add(ScoreBoardManager:CreateCenteredLabel(Deaths, TextFont, TeamColor, 290, 80))
-    PlayerLine:Add(ScoreBoardManager:CreateCenteredLabel(Status, TextFont, TeamColor, 380, 70))
-    PlayerLine:Add(ScoreBoardManager:CreateCenteredLabel(Ping, TextFont, TeamColor, 460, 80))
-    
-    if type(PlyMuted) != "string" && IsValid(PlyMuted) && PlyMuted != LocalPlayer() then
-        local Mute = vgui.Create("DButton")
-        Mute:SetSize(20, 20)
-        Mute:SetImage(!PlyMuted:IsMuted() and "icon16/sound.png" or "icon16/sound_mute.png")
-        Mute:SetPos(530, 0)
-        Mute:SetText("")
-        function Mute:DoClick()
-            PlyMuted:SetMuted(!PlyMuted:IsMuted())
-            Mute:SetImage(!PlyMuted:IsMuted() and "icon16/sound.png" or "icon16/sound_mute.png")
+    )
+    if muted and IsValid(muted) and muted ~= LocalPlayer() then
+        local button = vgui.Create("DButton")
+        button:SetSize(20, 20)
+        button:SetPos(530, 0)
+        button:SetText("")
+        local function refresh()
+            return button:SetImage(muted:IsMuted() and "icon16/sound_mute.png" or "icon16/sound.png")
         end
-        function Mute:Paint(Width, Heigth)end
-        PlayerLine:Add(Mute)
-    end
-
-    return PlayerLine
-end
-
-function ScoreBoardManager:CreateLine(CornerRadius, LineWidth, LineHeight, LineColor)
-    local SimpleLine = vgui.Create("DPanel")
-    SimpleLine:SetSize(LineWidth, LineHeight)
-    function SimpleLine:Paint(Width, Heigth)
-        HudManager:CreateBox(0, 2, nil, LineColor, 0, 0, Width, Heigth)
-    end
-
-    return SimpleLine
-end
-
-function ScoreBoardManager:CreateCenteredLabel(Text, TextFont, TeamColor, InitialPosX, MaxTextSize)
-    local Label = vgui.Create("DLabel")
-    local NewText = Text
-    if type(Text) == "function" then
-        NewText = Text()
-
-        ScoreBoardManager:AddComponentToListening(Label, function()
-                return true
-            end, 
-            function()
-                ScoreBoardManager:CenterLabel(Label, Text(), TextFont, InitialPosX, MaxTextSize)
+        refresh()
+        button.DoClick = function(self)
+            if not IsValid(muted) then
+                return
             end
+            muted:SetMuted(not muted:IsMuted())
+            refresh()
+        end
+        button.Paint = function(self)
+        end
+        panel:Add(button)
+    end
+    return panel
+end
+local function createTeam(teamID)
+    local panel = vgui.Create("DPanel")
+    panel.Paint = function(self)
+    end
+    local height = 0
+    local function add(child)
+        child:SetPos(0, height)
+        local ____, h = child:GetSize()
+        panel:Add(child)
+        height = height + h
+    end
+    local phrase = teamID == TEAM_HUMANS and "ScoreBoardTitleHumans" or (teamID == TEAM_ZOMBIES and "ScoreBoardTitleZombies" or "ScoreBoardTitleSpectators")
+    local title = vgui.Create("DLabel")
+    local text = language.GetPhrase("zombieplague." .. string.lower(phrase))
+    title:SetText(text)
+    title:SetFont("DermaLarge")
+    local titleWidth, titleHeight = HudManager:CalculateTextSize(text, "DermaLarge")
+    title:SetSize(titleWidth, titleHeight)
+    add(title)
+    local color = team.GetColor(teamID)
+    add(playerLine(
+        __TS__ArrayMap(
+            {
+                "ScoreBoardHeaderName",
+                "ScoreBoardHeaderPoints",
+                "ScoreBoardHeaderDeaths",
+                "ScoreBoardHeaderStatus",
+                "ScoreBoardHeaderPing"
+            },
+            function(____, id) return language.GetPhrase("zombieplague." .. string.lower(id)) end
+        ),
+        nil,
+        color
+    ))
+    local line = vgui.Create("DPanel")
+    line:SetSize(560, 2)
+    line.Paint = function(self, width, h)
+        HudManager:CreateBox(
+            0,
+            2,
+            nil,
+            color,
+            0,
+            0,
+            width,
+            h
         )
     end
-
-    ScoreBoardManager:CenterLabel(Label, NewText, TextFont, InitialPosX, MaxTextSize)
-
-    Label:SetFont(TextFont)
-    Label:SetColor(TeamColor)
-
-    return Label
-end
-
-function ScoreBoardManager:CenterLabel(Label, Text, TextFont, InitialPosX, MaxTextSize)
-    local Width = HudManager:CalculateTextSize(Text, TextFont)
-    if Width > MaxTextSize then
-        Width = MaxTextSize
+    add(line)
+    local players = team.GetPlayers(teamID)
+    __TS__ArraySort(
+        players,
+        function(____, a, b) return b:GetPoints() - a:GetPoints() end
+    )
+    for ____, ply in ipairs(players) do
+        if IsValid(ply) then
+            add(playerLine(
+                {
+                    function() return IsValid(ply) and ply:Name() or "" end,
+                    function() return IsValid(ply) and ply:GetPoints() or "" end,
+                    function() return IsValid(ply) and ply:Deaths() or "" end,
+                    function() return not IsValid(ply) and "" or language.GetPhrase("zombieplague." .. string.lower(ply:Team() == TEAM_SPECTATOR and "ScoreBoardStatusSpectating" or (ply:Alive() and "ScoreBoardStatusAlive" or "ScoreBoardStatusDead"))) end,
+                    function() return IsValid(ply) and ply:Ping() or "" end
+                },
+                ply,
+                color
+            ))
+        end
     end
-
-    local PosX = InitialPosX + ((MaxTextSize - Width) / 2)
-
-    Label:SetSize(Width, 25)
-    Label:SetPos(PosX, 0)
-    Label:SetText(Text)
+    panel:SetSize(600, height)
+    return panel
 end
-
-function ScoreBoardManager:AddSpace(SpaceSize)
-    self.CompPosY = self.CompPosY + SpaceSize
+GM.ScoreboardShow = function(self)
+    if frame and IsValid(frame) then
+        frame:Close()
+    end
+    updates = {}
+    frame = vgui.Create("DFrame")
+    frame:SetDraggable(false)
+    frame:ShowCloseButton(false)
+    frame:SetDeleteOnClose(true)
+    frame:SetTitle("")
+    frame:SetSize(600, 600)
+    frame:Center()
+    frame.Paint = function(self, width, height)
+        HudManager:CreateBox(
+            0,
+            2,
+            Color(0, 0, 0, 0),
+            Color(0, 0, 0, 250),
+            0,
+            0,
+            width,
+            height
+        )
+    end
+    local scroll = vgui.Create("DScrollPanel", frame)
+    scroll:SetPos(0, 20)
+    scroll:SetSize(600, 560)
+    scroll.Paint = function(self)
+    end
+    local counts = {}
+    local function fill()
+        updates = __TS__ArrayFilter(
+            updates,
+            function(____, update) return update.Component == scroll end
+        )
+        scroll:Clear()
+        local y = 0
+        for ____, teamID in ipairs({TEAM_HUMANS, TEAM_ZOMBIES, TEAM_SPECTATOR}) do
+            do
+                local __continue35
+                repeat
+                    counts[teamID] = #team.GetPlayers(teamID)
+                    if counts[teamID] == 0 then
+                        __continue35 = true
+                        break
+                    end
+                    local panel = createTeam(teamID)
+                    panel:SetPos(20, y)
+                    scroll:Add(panel)
+                    local ____, h = panel:GetSize()
+                    y = y + (h + (teamID == TEAM_SPECTATOR and 0 or 10))
+                    __continue35 = true
+                until true
+                if not __continue35 then
+                    break
+                end
+            end
+        end
+    end
+    fill()
+    updates[#updates + 1] = {
+        Component = scroll,
+        ShouldUpdateFunction = function() return __TS__ArraySome(
+            {TEAM_HUMANS, TEAM_ZOMBIES, TEAM_SPECTATOR},
+            function(____, id) return counts[id] ~= #team.GetPlayers(id) end
+        ) end,
+        UpdateFunction = fill
+    }
+    frame:MakePopup()
+    timer.Create(
+        "ScoreBoardUpdater",
+        1,
+        0,
+        function()
+            updates = __TS__ArrayFilter(
+                updates,
+                function(____, update) return IsValid(update.Component) end
+            )
+            for ____, update in ipairs({unpack(updates)}) do
+                if IsValid(update.Component) and update.ShouldUpdateFunction() then
+                    update.UpdateFunction()
+                end
+            end
+        end
+    )
 end
-
-function ScoreBoardManager:AddComponent(Component, Padding)
-    Component:SetPos(self.CompPosX, self.CompPosY)
-
-    self.Scroll:Add(Component)
-
-    local W, H = Component:GetSize()
-
-    ScoreBoardManager:AddSpace(H + Padding)
-end
-
-function ScoreBoardManager:AddComponentToListening(Component, ShouldUpdateFunction, UpdateFunction)
-    table.insert(ScoreBoardManager.UpdateComponents, {
-        Component = Component,
-        ShouldUpdateFunction = ShouldUpdateFunction,
-        UpdateFunction = UpdateFunction
-    })
-end
-
-function GM:ScoreboardShow()
-	ScoreBoardManager:CreateScoreboard()
-end
-
-function GM:ScoreboardHide()
-    ScoreBoardManager.UpdateComponents = {}
+GM.ScoreboardHide = function(self)
+    updates = {}
     timer.Destroy("ScoreBoardUpdater")
-
-    ScoreBoardManager.ScoreBoard:Close()
-	ScoreBoardManager.ScoreBoard = nil
+    if frame and IsValid(frame) then
+        frame:Close()
+    end
+    frame = nil
 end
+return ____exports

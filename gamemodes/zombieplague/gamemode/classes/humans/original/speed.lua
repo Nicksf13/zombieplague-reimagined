@@ -1,13 +1,25 @@
-ZPClass.Name = "HumanSpeedClassName"
-ZPClass.Description = "HumanSpeedClassDescription"
-ZPClass.MaxHealth = 50
-ZPClass.Armor = 0
-ZPClass.PModel = "models/player/riot.mdl"
-ZPClass.Speed = 270
-ZPClass.RunSpeed = 100
-ZPClass.CrouchSpeed = 0.4
-ZPClass.Gravity = 1
-ZPClass.JumpPower = 170
-ZPClass.Battery = 50
-ZPClass.Breath = 150
-ClassManager:AddZPClass("SpeedHuman", ZPClass, TEAM_HUMANS)
+-- Generated from src/gamemodes/zombieplague/gamemode/classes/server/humans/original/speed.ts. DO NOT EDIT; run npm run build.
+-- Lua Library inline imports
+local function __TS__New(target, ...)
+    local instance = setmetatable({}, target.prototype)
+    instance:____constructor(...)
+    return instance
+end
+-- End of Lua Library inline imports
+local ____exports = {}
+____exports.default = __TS__New(HumanClassDefinition, {
+    ID = "SpeedHuman",
+    Name = "HumanSpeedClassName",
+    Description = "HumanSpeedClassDescription",
+    MaxHealth = 50,
+    Armor = 0,
+    PModel = "models/player/riot.mdl",
+    Speed = 270,
+    RunSpeed = 100,
+    CrouchSpeed = 0.4,
+    Gravity = 1,
+    JumpPower = 170,
+    Battery = 50,
+    Breath = 150
+})
+return ____exports

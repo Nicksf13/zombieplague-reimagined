@@ -1,117 +1,137 @@
-RoundManager = {}
+-- Generated from src/gamemodes/zombieplague/gamemode/rounds/shared/sh_roundmanager.ts. DO NOT EDIT; run npm run build.
+-- Lua Library inline imports
+local function __TS__Class(self)
+    local c = {prototype = {}}
+    c.prototype.__index = c.prototype
+    c.prototype.constructor = c
+    return c
+end
 
-function RoundManager:SetSpecialRound(SpecialRound)
-	SetGlobalBool("SpecialRound", SpecialRound)
+local function __TS__New(target, ...)
+    local instance = setmetatable({}, target.prototype)
+    instance:____constructor(...)
+    return instance
 end
-function RoundManager:SetRespawn(Respawn)
-	SetGlobalBool("Respawn", Respawn)
+-- End of Lua Library inline imports
+local ____exports = {}
+____exports.RoundManager = __TS__Class()
+local RoundManager = ____exports.RoundManager
+RoundManager.name = "RoundManager"
+function RoundManager.prototype.____constructor(self)
 end
-function RoundManager:SetRound(Round)
-	SetGlobalInt("Round", Round)
+function RoundManager.prototype.SetSpecialRound(self, specialRound)
+    SetGlobalBool("SpecialRound", specialRound)
 end
-function RoundManager:SetRoundState(RoundState)
-	SetGlobalInt("RoundState", RoundState)
+function RoundManager.prototype.SetRespawn(self, respawn)
+    SetGlobalBool("Respawn", respawn)
 end
-function RoundManager:IsSpecialRound()
-	return GetGlobalInt("SpecialRound", false)
+function RoundManager.prototype.SetRound(self, round)
+    SetGlobalInt("Round", round)
 end
-function RoundManager:IsRespawn()
-	return GetGlobalInt("Respawn", false)
+function RoundManager.prototype.SetRoundState(self, state)
+    SetGlobalInt("RoundState", state)
 end
-function RoundManager:GetRound()
-	return GetGlobalInt("Round", 0)
+function RoundManager.prototype.IsSpecialRound(self)
+    return GetGlobalBool("SpecialRound", false)
 end
-function RoundManager:GetRoundState()
-	return GetGlobalInt("RoundState", ROUND_WAITING_PLAYERS)
+function RoundManager.prototype.IsRespawn(self)
+    return GetGlobalBool("Respawn", false)
 end
-function RoundManager:IsPlayingRound()
-	return self:GetRoundState() == ROUND_PLAYING
+function RoundManager.prototype.GetRound(self)
+    return GetGlobalInt("Round", 0)
 end
-function RoundManager:IsRealisticMod()
-	return cvars.Bool("zp_realistic_mode", false)
+function RoundManager.prototype.GetRoundState(self)
+    return GetGlobalInt("RoundState", ROUND_WAITING_PLAYERS)
 end
-function RoundManager:LastHuman()
-	local i = 0
-	for _, ply in ipairs(team.GetPlayers(TEAM_HUMANS)) do
-		if ply:Alive() then
-			i = i + 1
-			if i > 1 then
-				return false
-			end
-		end
-	end
-	return i == 1
+function RoundManager.prototype.IsPlayingRound(self)
+    return self:GetRoundState() == ROUND_PLAYING
 end
-function RoundManager:LastZombie()
-	local i = 0
-	for _, ply in ipairs(team.GetPlayers(TEAM_ZOMBIES)) do
-		if ply:Alive() then
-			i = i + 1
-			if i > 1 then
-				return false
-			end
-		end
-	end
-	return i == 1
+function RoundManager.prototype.IsRealisticMod(self)
+    return cvars.Bool("zp_realistic_mode", false)
 end
-function RoundManager:NoHumans()
-	for i, ply in ipairs(team.GetPlayers(TEAM_HUMANS)) do
-		if ply:Alive() then
-			return false
-		end
-	end
-	return true
+function RoundManager.prototype.LastHuman(self)
+    local count = 0
+    for ____, ply in ipairs(team.GetPlayers(TEAM_HUMANS)) do
+        if ply:Alive() then
+            count = count + 1
+            if count > 1 then
+                return false
+            end
+        end
+    end
+    return count == 1
 end
-function RoundManager:NoZombies()
-	for i, ply in pairs(team.GetPlayers(TEAM_ZOMBIES)) do
-		if ply:Alive() then
-			return false
-		end
-	end
-	return true
+function RoundManager.prototype.LastZombie(self)
+    local count = 0
+    for ____, ply in ipairs(team.GetPlayers(TEAM_ZOMBIES)) do
+        if ply:Alive() then
+            count = count + 1
+            if count > 1 then
+                return false
+            end
+        end
+    end
+    return count == 1
 end
-function RoundManager:CountHumansAlive()
-	local i = 0
-	for _, ply in ipairs(team.GetPlayers(TEAM_HUMANS)) do
-		if ply:Alive() then
-			i = i + 1
-		end
-	end
-	return i
+function RoundManager.prototype.NoHumans(self)
+    for ____, ply in ipairs(team.GetPlayers(TEAM_HUMANS)) do
+        if ply:Alive() then
+            return false
+        end
+    end
+    return true
 end
-function RoundManager:CountZombiesAlive()
-	local i = 0
-	for _, ply in ipairs(team.GetPlayers(TEAM_ZOMBIES)) do
-		if ply:Alive() then
-			i = i + 1
-		end
-	end
-	return i
+function RoundManager.prototype.NoZombies(self)
+    for ____, ply in ipairs(team.GetPlayers(TEAM_ZOMBIES)) do
+        if ply:Alive() then
+            return false
+        end
+    end
+    return true
 end
-function RoundManager:GetAliveHumans()
-	local AliveHumans = {}
-	for i, ply in ipairs(team.GetPlayers(TEAM_HUMANS)) do
-		if ply:Alive() then
-			table.insert(AliveHumans, ply)
-		end
-	end
-	return AliveHumans
+function RoundManager.prototype.CountHumansAlive(self)
+    local count = 0
+    for ____, ply in ipairs(team.GetPlayers(TEAM_HUMANS)) do
+        if ply:Alive() then
+            count = count + 1
+        end
+    end
+    return count
 end
-function RoundManager:GetAliveZombies()
-	local AliveZombies = {}
-	for i, ply in ipairs(team.GetPlayers(TEAM_ZOMBIES)) do
-		if ply:Alive() then
-			table.insert(AliveZombies, ply)
-		end
-	end
-	return AliveZombies
+function RoundManager.prototype.CountZombiesAlive(self)
+    local count = 0
+    for ____, ply in ipairs(team.GetPlayers(TEAM_ZOMBIES)) do
+        if ply:Alive() then
+            count = count + 1
+        end
+    end
+    return count
 end
-function RoundManager:GetAlivePlayers()
-	local AlivePlayers = RoundManager:GetAliveHumans()
-
-	for K, Ply in pairs(RoundManager:GetAliveZombies()) do
-		table.insert(AlivePlayers, Ply)
-	end
-
-	return AlivePlayers
+function RoundManager.prototype.GetAliveHumans(self)
+    local aliveHumans = {}
+    for ____, ply in ipairs(team.GetPlayers(TEAM_HUMANS)) do
+        if ply:Alive() then
+            aliveHumans[#aliveHumans + 1] = ply
+        end
+    end
+    return aliveHumans
 end
+function RoundManager.prototype.GetAliveZombies(self)
+    local aliveZombies = {}
+    for ____, ply in ipairs(team.GetPlayers(TEAM_ZOMBIES)) do
+        if ply:Alive() then
+            aliveZombies[#aliveZombies + 1] = ply
+        end
+    end
+    return aliveZombies
+end
+function RoundManager.prototype.GetAlivePlayers(self)
+    local alivePlayers = self:GetAliveHumans()
+    for ____, ply in ipairs(self:GetAliveZombies()) do
+        alivePlayers[#alivePlayers + 1] = ply
+    end
+    return alivePlayers
+end
+local roundManager = __TS__New(____exports.RoundManager)
+_G.RoundManager = roundManager
+return ____exports

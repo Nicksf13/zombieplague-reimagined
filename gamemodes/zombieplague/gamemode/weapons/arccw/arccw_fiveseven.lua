@@ -1,4 +1,11 @@
-Weapon.PrettyName = "NXS"
-Weapon.WeaponID = "arccw_fiveseven"
-Weapon.DamageMultiplier = 1
-Weapon.WeaponType = WEAPON_SECONDARY
+-- Generated from src/gamemodes/zombieplague/gamemode/weapons/server/arccw/arccw_fiveseven.ts. DO NOT EDIT; run npm run build.
+-- Lua Library inline imports
+local function __TS__New(target, ...)
+    local instance = setmetatable({}, target.prototype)
+    instance:____constructor(...)
+    return instance
+end
+-- End of Lua Library inline imports
+local ____exports = {}
+____exports.default = __TS__New(WeaponDefinition, {PrettyName = "NXS", WeaponID = "arccw_fiveseven", DamageMultiplier = 1, WeaponType = WEAPON_SECONDARY})
+return ____exports

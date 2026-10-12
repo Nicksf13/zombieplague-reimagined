@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/**/shared.ts", "src/**/sh_*.ts", "src/**/cl_*.ts", "src/**/vgui/**/*.ts",
+    "types/glua.d.ts", "types/zombieplague.d.ts", "types/client/**/*.d.ts"
+  ],
+  "exclude": []
+}
