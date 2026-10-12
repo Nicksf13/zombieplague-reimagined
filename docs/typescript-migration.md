@@ -1,7 +1,7 @@
 # Desenvolvimento em TypeScript
 
 A conversão dos fontes para TypeScript está concluída. Após a remoção do menu
-antigo, a adoção da localização nativa, os construtores de conteúdo e os temas de HUD/menu/placar, o projeto gera 264 arquivos Lua, incluindo
+antigo, a adoção da localização nativa, os construtores de conteúdo e os temas de HUD/menu/placar, o projeto gera 266 arquivos Lua, incluindo
 módulos extraídos para separar responsabilidades. A validação no Garry's Mod está pendente.
 
 Edite os `.ts` em `src/`. O GMod executa exclusivamente os `.lua` gerados em

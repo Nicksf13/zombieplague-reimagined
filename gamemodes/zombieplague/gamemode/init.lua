@@ -42,6 +42,8 @@ AddCSLuaFile("cl_weapon_menu.lua")
 AddCSLuaFile("cl_weapon_menu_hud.lua")
 AddCSLuaFile("cl_main_menu.lua")
 AddCSLuaFile("cl_main_menu_hud.lua")
+AddCSLuaFile("cl_settings.lua")
+AddCSLuaFile("cl_settings_hud.lua")
 hook.Add(
     "PlayerDisconnected",
     "ZombiePlagueDisconnect",

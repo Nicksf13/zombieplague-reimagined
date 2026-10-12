@@ -26,6 +26,11 @@ ZPWeaponMenu.GetState().Category = "melee";
 ZPWeaponMenu.Select({ WeaponID: "weapon_ar2" });
 
 ZPScoreboard.ToggleMute(12);
+ZPSettings.SetAlwaysRun(true);
+// @ts-expect-error Settings preferences are boolean values, not console strings.
+ZPSettings.SetAlwaysRun("1");
+// @ts-expect-error Presentation snapshots must not modify the local preference.
+ZPSettings.GetState().AlwaysRun = true;
 // @ts-expect-error Scoreboard snapshots cannot change player points.
 ZPScoreboard.GetState().Teams[0]!.Players[0]!.Points = 999;
 // @ts-expect-error Presentations act on connection IDs, not engine Player objects.

@@ -1,12 +1,17 @@
 # Temas de menu e HUD
 
-Uma escolha controla o menu principal, o menu de armas, o HUD do jogador e o scoreboard. Os temas iniciais são
+Uma escolha controla o menu principal, as configurações, o menu de armas, o HUD do jogador e o scoreboard. Os temas iniciais são
 `classic` (amarelo), `hl2` (âmbar, inspirado no Half-Life 2) e `cs16` (menu verde
 e HUD amarelo sobre painéis verde escuros, inspirado no Counter-Strike 1.6). São interpretações visuais,
 sem dependência de fontes, texturas ou addons desses jogos.
 
+Os títulos das opções usam `ZPMenuOptionTitle`, criada uma vez com `additive: false`.
+A `Trebuchet24` nativa tem [renderização aditiva](https://github.com/Facepunch/garrysmod/blob/master/garrysmod/resource/ClientScheme.res),
+que impede o texto escuro de contrastar com o fundo claro do hover. A fonte própria
+mantém o tamanho e o estilo, com texto escuro legível ao destacar uma opção.
+
 No console, use `zp_theme classic`, `zp_theme hl2` ou `zp_theme cs16`.
-Sem argumento, `zp_theme` lista os temas registrados. Os botões nos menus
+Sem argumento, `zp_theme` lista os temas registrados. Os botões em **F4 > Configurações > Aparência**
 fazem a mesma troca. A preferência fica em `data/zombieplague/theme.json`.
 Trocar o tema mantém categoria, catálogo, seleção confirmada e pedido pendente;
 não abre o menu nem envia um pedido ao servidor.
@@ -20,6 +25,38 @@ antiga de posição, cores e fontes do HUD foi removida: `HUDConfig`, `GetConfig
 Arquivos antigos já salvos são ignorados, sem apagar dados do jogador.
 
 ## Dados e desenho
+
+### Configurações do usuário
+
+**F4 > Configurações** separa **Aparência** (tema) de **Jogabilidade** (Sempre correr).
+A seleção de tema fica nessa tela; os menus principal e de armas não exibem mais
+os seletores de tema. O comando `zp_theme` continua disponível.
+
+“Sempre correr” começa desligado e usa a ConVar cliente `zp_always_run`, arquivada
+pelo GMod e sem `userinfo`. Ativá-la adiciona `IN_SPEED` ao comando de movimento
+em `CreateMove`, como segurar Shift, somente para o jogador local vivo fora do
+time de espectadores. Desativá-la preserva o Shift manual. Ataque, salto e
+agachamento continuam disponíveis; velocidades e restrições vêm do servidor.
+Em particular, `zp_zombie_should_run 0` continua impedindo a corrida dos zumbis.
+
+As classes nativas foram corrigidas: `Speed` representa caminhada e `RunSpeed`
+representa corrida. Os valores anteriores foram trocados nas definições,
+incluindo os defaults e as classes especiais (o Nemesis tinha valores iguais).
+Exemplos: humano padrão caminha a 100 e corre a 230; zumbi padrão caminha a 100
+e corre a 290. Addons devem seguir esse contrato ao definir novas classes.
+
+`menus/client/cl_settings.ts` controla navegação e preferência; `cl_settings_hud.ts`
+desenha a apresentação. `types/client/settings.d.ts` define os contratos.
+O tema pode fornecer `CreateSettingsMenu`, opcional, com `Open(state, actions)`,
+`Update(state)` e `Destroy()`. Sem essa factory, a tela padrão usa a paleta do tema.
+O estado contém `Open`, `Theme`, `Themes` (`ID`, `Name`) e `AlwaysRun`; as ações são
+`UseTheme(id)`, `SetAlwaysRun(boolean)`, `Close()` e `Back()`. Não há novo protocolo
+de rede para configurar a preferência.
+
+Prévias simuladas: [Clássico](previews/settings-classic.svg),
+[HL2](previews/settings-hl2.svg) e [CS 1.6](previews/settings-cs16.svg).
+
+### HUD e placar
 
 | Fonte em `interface/client/` | Responsabilidade |
 | --- | --- |

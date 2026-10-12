@@ -188,34 +188,13 @@ function WeaponMenuHUD.prototype.Update(self, state)
     local w = width - 32
     local h = height - contentY - 40
     local footerHeight = compact and 76 or 90
-    local themes = ZPThemes:GetThemes()
-    local themeWidth = math.min(
-        180,
-        (w - 16) / math.max(1, #themes)
-    )
-    __TS__ArrayForEach(
-        themes,
-        function(____, theme, index) return self:Button(
-            content,
-            theme.Name,
-            index * (themeWidth + 8),
-            0,
-            themeWidth,
-            30,
-            function()
-                local ____opt_2 = self.actions
-                return ____opt_2 and ____opt_2:UsePresentation(theme.ID)
-            end,
-            theme.ID == state.Presentation
-        ) end
-    )
     local horizontal = self.style == "hl2" and height >= 450
     local categoryWidth = horizontal and math.floor((w - 24) / 3) or math.min(176, w * 0.3)
     __TS__ArrayForEach(
         categories,
         function(____, kind, index)
             local x = horizontal and index * (categoryWidth + 12) or 0
-            local y = horizontal and 44 or 44 + index * 62
+            local y = horizontal and 0 or index * 62
             self:Button(
                 content,
                 phrase(kind),
@@ -224,29 +203,29 @@ function WeaponMenuHUD.prototype.Update(self, state)
                 categoryWidth,
                 48,
                 function()
-                    local ____opt_4 = self.actions
-                    return ____opt_4 and ____opt_4:SetCategory(kind)
+                    local ____opt_2 = self.actions
+                    return ____opt_2 and ____opt_2:SetCategory(kind)
                 end,
                 kind == state.Category
             )
         end
     )
     local listX = horizontal and 0 or categoryWidth + 18
-    local listY = horizontal and 104 or 44
+    local listY = horizontal and 60 or 0
     local listWidth = w - listX
     local listHeight = math.max(40, h - listY - footerHeight - 10)
     local scroll = vgui.Create("DScrollPanel", content)
     scroll:SetPos(listX, listY)
     scroll:SetSize(listWidth, listHeight)
-    local ____opt_6 = state.Snapshot
-    if ____opt_6 ~= nil then
-        local ____opt_7 = state.Snapshot
-        ____opt_6 = __TS__ArrayFilter(
-            ____opt_7 and ____opt_7.Entries,
+    local ____opt_4 = state.Snapshot
+    if ____opt_4 ~= nil then
+        local ____opt_5 = state.Snapshot
+        ____opt_4 = __TS__ArrayFilter(
+            ____opt_5 and ____opt_5.Entries,
             function(____, entry) return entry.Kind == state.Category end
         )
     end
-    local entries = ____opt_6 or ({})
+    local entries = ____opt_4 or ({})
     local columns = horizontal and listWidth >= 560 and 2 or 1
     local cardWidth = math.floor((listWidth - 20 - (columns - 1) * 10) / columns)
     __TS__ArrayForEach(
@@ -291,8 +270,8 @@ function WeaponMenuHUD.prototype.Update(self, state)
                 self.palette.Muted
             )
         end
-        local ____opt_10 = current.Snapshot
-        if ____opt_10 and ____opt_10.Truncated then
+        local ____opt_8 = current.Snapshot
+        if ____opt_8 and ____opt_8.Truncated then
             self:Text(
                 phrase("truncated"),
                 "DermaDefault",
@@ -310,8 +289,8 @@ function WeaponMenuHUD.prototype.Update(self, state)
         130,
         compact and 24 or 28,
         function()
-            local ____opt_12 = self.actions
-            return ____opt_12 and ____opt_12:Refresh()
+            local ____opt_10 = self.actions
+            return ____opt_10 and ____opt_10:Refresh()
         end
     )
     frame:SetKeyboardInputEnabled(false)
@@ -327,8 +306,8 @@ function WeaponMenuHUD.prototype.WeaponCard(self, parent, entry, index, columns,
     button:SetSize(width, height)
     button.Paint = function(____, w, h)
         local state = self.state
-        local ____opt_14 = state and state.Snapshot
-        local selected = (____opt_14 and ____opt_14.Selected[entry.Kind]) == entry.ID
+        local ____opt_12 = state and state.Snapshot
+        local selected = (____opt_12 and ____opt_12.Selected[entry.Kind]) == entry.ID
         local color = selected and self.palette.Accent or self.palette.Panel
         draw.RoundedBox(
             self.style == "cs16" and 0 or 4,
@@ -365,8 +344,8 @@ function WeaponMenuHUD.prototype.WeaponCard(self, parent, entry, index, columns,
         )
     end
     button.DoClick = function()
-        local ____opt_20 = self.actions
-        return ____opt_20 and ____opt_20:Select(entry.ID)
+        local ____opt_18 = self.actions
+        return ____opt_18 and ____opt_18:Select(entry.ID)
     end
 end
 function WeaponMenuHUD.prototype.Destroy(self)

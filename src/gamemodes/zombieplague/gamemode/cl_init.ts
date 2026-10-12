@@ -10,6 +10,8 @@ include("cl_theme_manager.lua");
 include("cl_weapon_menu.lua");
 include("cl_main_menu.lua");
 include("cl_main_menu_hud.lua");
+include("cl_settings.lua");
+include("cl_settings_hud.lua");
 include("cl_theme_hud.lua");
 include("cl_weapon_menu_hud.lua");
 include("cl_player_hud.lua");

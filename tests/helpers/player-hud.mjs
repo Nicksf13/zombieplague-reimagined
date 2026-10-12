@@ -41,7 +41,8 @@ string.FormattedTime=function(seconds,format)
     assert(format=="%02i:%02i")
     return string.format("%02d:%02d",math.floor(seconds/60),seconds%60)
 end
-surface={SetFont=function() end,GetTextSize=function(text) return #tostring(text)*7,16 end}
+surface.SetFont=function() end
+surface.GetTextSize=function(text) return #tostring(text)*7,16 end
 include("cl_hud.lua")
 include("cl_theme_hud.lua")
 include("cl_weapon_menu_hud.lua")

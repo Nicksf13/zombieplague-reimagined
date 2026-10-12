@@ -27,6 +27,21 @@ test("class registry preserves defaults and method callbacks", () => run(`
     ability:UseAction(ply); assert(ply.active); ply.reset(); assert(not ply.active)
 `));
 
+test("human and zombie classes use the former normal speed for sprinting and the former sprint speed for walking", () => run(`
+    include("sv_utils.lua"); include("sv_classmanager.lua"); ClassManager:SearchClasses()
+    assert(ClassManager:NewHumanClass().Speed==100 and ClassManager:NewHumanClass().RunSpeed==230)
+    assert(ClassManager:NewZombieClass().Speed==100 and ClassManager:NewZombieClass().RunSpeed==290)
+    for _,classes in ipairs({ClassManager:GetHumanClasses(),ClassManager:GetZombieClasses()}) do
+        for _,definition in pairs(classes) do
+            assert(definition.Speed<=definition.RunSpeed, definition.Name)
+        end
+    end
+    assert(ClassManager:GetHumanClass("DefaultHuman").Speed==100)
+    assert(ClassManager:GetHumanClass("DefaultHuman").RunSpeed==230)
+    assert(ClassManager:GetZombieClass("DefaultZombie").Speed==100)
+    assert(ClassManager:GetZombieClass("DefaultZombie").RunSpeed==290)
+`));
+
 test("text backend handles missing and corrupt balances and writes exact SteamID64 paths", () => run(`
     Bank={}
     local contents,stored

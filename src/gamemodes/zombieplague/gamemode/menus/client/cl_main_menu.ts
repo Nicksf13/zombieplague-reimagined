@@ -17,6 +17,7 @@ export class MainMenuController implements ZPMainMenuController {
     }
 
     Open(): void {
+        _G.ZPSettings?.Close();
         ZPWeaponMenu.Close();
         this.opened = true;
         this.Rebuild();

@@ -12,7 +12,7 @@ Depois de compilar e instalar o gamemode atualizado no servidor/cliente:
    e `/weapons` no chat abrem diretamente o seletor; `zp_menu` abre o principal.
 2. Escolha primária, secundária ou corpo a corpo e clique em uma arma.
 3. A seleção destacada muda somente depois da confirmação do servidor.
-4. Use **Clássico / Half-Life 2 / Counter-Strike 1.6** para trocar o tema do menu e do HUD durante a escolha.
+4. Abra **F4 > Configurações > Aparência** para trocar o tema do menu, HUD e placar.
 5. Feche com ESC ou X; F4 volta ao menu principal. O botão Atualizar consulta novamente o servidor.
 
 Os comandos `zp_weapon_hud_classic`, `zp_weapon_hud_hl2` e `zp_weapon_hud_cs16` também selecionam
@@ -41,7 +41,7 @@ nem consumir o direito à primeira escolha corpo a corpo naquela vida.
 
 ### Opções do menu principal
 
-O principal lista opções registradas e disponíveis; inicialmente há **Armas**.
+O principal lista opções registradas e disponíveis; inicialmente há **Armas** e **Configurações**.
 Um addon cliente pode registrar outra opção após a inicialização do gamemode:
 
 ```lua

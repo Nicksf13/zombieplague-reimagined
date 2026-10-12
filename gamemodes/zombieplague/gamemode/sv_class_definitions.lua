@@ -51,8 +51,8 @@ PlayerClassDefinition.name = "PlayerClassDefinition"
 function PlayerClassDefinition.prototype.____constructor(self, id)
     self.MaxHealth = 100
     self.PModel = "models/player/gasmask.mdl"
-    self.Speed = 230
-    self.RunSpeed = 100
+    self.RunSpeed = 230
+    self.Speed = 100
     self.CrouchSpeed = 0.4
     self.Gravity = 1
     self.Breath = 100
@@ -92,7 +92,7 @@ function ZombieClassDefinition.prototype.____constructor(self, options)
     self.Description = "ZombieDefaultClassDescription"
     self.MaxHealth = 2000
     self.PModel = "models/player/zombie_classic.mdl"
-    self.Speed = 290
+    self.RunSpeed = 290
     self.Gravity = 0.8
     self.Footstep = false
     self.WeaponGive = function(self, ply)
