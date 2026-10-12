@@ -25,10 +25,6 @@ export class MainMenuHUD implements ZPMainMenuPresentation {
         };
         const [width] = frame.GetSize();
         this.Button(frame, "X", width - 52, 18, 30, () => actions.Close());
-        const themes = ZPThemes.GetThemes();
-        const themeWidth = (width - 48 - Math.max(0, themes.length - 1) * 8) / Math.max(1, themes.length);
-        themes.forEach((theme, index) => this.Button(frame, theme.Name, 24 + index * (themeWidth + 8), 100, themeWidth,
-            () => ZPThemes.UseTheme(theme.ID)));
         frame.MakePopup();
         this.Update(state);
     }
@@ -45,15 +41,16 @@ export class MainMenuHUD implements ZPMainMenuPresentation {
         const [width, height] = frame.GetSize();
         const list = vgui.Create("DScrollPanel", frame);
         this.list = list;
-        list.SetPos(24, 148);
-        list.SetSize(width - 48, height - 196);
+        list.SetPos(24, 100);
+        list.SetSize(width - 48, height - 148);
         state.Entries.forEach((entry, index) => {
             const button = this.Button(list, language.GetPhrase(entry.Label), 0, index * 84, width - 70,
                 () => this.actions?.Activate(entry.ID), 72);
             button.Paint = (w, h) => {
-                draw.RoundedBox(this.square ? 0 : 4, 0, 0, w, h, button.IsHovered() ? this.palette.Accent : this.palette.Panel);
-                const color = button.IsHovered() ? Color(12, 18, 22) : this.palette.Text;
-                draw.DrawText(language.GetPhrase(entry.Label), "Trebuchet24", 16, 10, color, TEXT_ALIGN_LEFT);
+                const hovered = button.IsHovered();
+                draw.RoundedBox(this.square ? 0 : 4, 0, 0, w, h, hovered ? this.palette.Accent : this.palette.Panel);
+                const color = hovered ? Color(12, 18, 22) : this.palette.Text;
+                draw.DrawText(language.GetPhrase(entry.Label), "ZPMenuOptionTitle", 16, 10, color, TEXT_ALIGN_LEFT);
                 draw.DrawText(language.GetPhrase(entry.Description), "DermaDefault", 16, 44, color, TEXT_ALIGN_LEFT);
             };
         });

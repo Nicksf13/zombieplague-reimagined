@@ -48,6 +48,16 @@ KEY_ESCAPE=70
 input={IsKeyDown=function() return false end}
 local consoleCommands={}
 concommand={Add=function(name,callback) consoleCommands[name]=callback end}
+local clientPreferences={}
+function CreateClientConVar(name,default,archive,userinfo,help)
+    if clientPreferences[name] then return clientPreferences[name] end
+    local preference={value=default=="1",archive=archive,userinfo=userinfo}
+    function preference:GetBool() return self.value end
+    function preference:SetBool(value) self.value=value end
+    clientPreferences[name]=preference
+    return preference
+end
+IN_SPEED=131072
 local requests=0
 net.SendToServer=function() requests=requests+1 end
 net.WriteUInt=function(value) sent[#sent+1]=value end
@@ -59,13 +69,18 @@ util.JSONToTable=function() return nil end
 util.TableToJSON=function() return "{}" end
 include("cl_data.lua")
 include("sh_weapon_menu_protocol.lua")
+local createdFonts={}
+surface={CreateFont=function(name,data) createdFonts[name]=data end}
 include("cl_theme_manager.lua")
 include("cl_weapon_menu.lua")
 include("cl_main_menu.lua")
 include("cl_main_menu_hud.lua")
+include("cl_settings.lua")
+include("cl_settings_hud.lua")
 local viewer={alive=true,human=true}
 function viewer:Alive() return self.alive end
 function viewer:IsHuman() return self.human end
+function viewer:Team() return self.team or TEAM_HUMANS end
 function LocalPlayer() return viewer end
 local snapshot={Entries={{ID="weapon_ar2",Name="AR2",Kind="primary",Order=100},
     {ID="weapon_pistol",Name="Pistol",Kind="secondary",Order=100}},

@@ -11,6 +11,7 @@ interface ZPClassDefinition {
     MaxHealth: number;
     Armor?: number;
     PModel: string;
+    /** Walking speed. Sprinting uses RunSpeed. */
     Speed: number;
     RunSpeed: number;
     CrouchSpeed: number;

@@ -6,8 +6,8 @@ abstract class PlayerClassDefinition implements ZPRegisteredPlayerClass {
     MaxHealth: number = 100;
     Armor?: number;
     PModel: string = "models/player/gasmask.mdl";
-    Speed: number = 230;
-    RunSpeed: number = 100;
+    RunSpeed: number = 230;
+    Speed: number = 100;
     CrouchSpeed: number = 0.4;
     Gravity: number = 1;
     Battery?: number;
@@ -46,7 +46,7 @@ export class ZombieClassDefinition extends PlayerClassDefinition {
     Description: string = "ZombieDefaultClassDescription";
     MaxHealth: number = 2000;
     PModel: string = "models/player/zombie_classic.mdl";
-    Speed: number = 290;
+    RunSpeed: number = 290;
     Gravity: number = 0.8;
     Footstep: boolean = false;
 

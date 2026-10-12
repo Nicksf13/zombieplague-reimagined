@@ -95,6 +95,10 @@ function MainMenuController.prototype.GetState(self)
     }
 end
 function MainMenuController.prototype.Open(self)
+    local ____opt_6 = _G.ZPSettings
+    if ____opt_6 ~= nil then
+        ____opt_6:Close()
+    end
     ZPWeaponMenu:Close()
     self.opened = true
     self:Rebuild()
@@ -103,9 +107,9 @@ function MainMenuController.prototype.Rebuild(self)
     if not self.opened then
         return
     end
-    local ____opt_6 = self.presentation
-    if ____opt_6 ~= nil then
-        ____opt_6:Destroy()
+    local ____opt_8 = self.presentation
+    if ____opt_8 ~= nil then
+        ____opt_8:Destroy()
     end
     self.presentation = nil
     local theme = ZPThemes:GetTheme()
@@ -119,9 +123,9 @@ function MainMenuController.prototype.Rebuild(self)
 end
 function MainMenuController.prototype.Close(self)
     self.opened = false
-    local ____opt_8 = self.presentation
-    if ____opt_8 ~= nil then
-        ____opt_8:Destroy()
+    local ____opt_10 = self.presentation
+    if ____opt_10 ~= nil then
+        ____opt_10:Destroy()
     end
     self.presentation = nil
 end
@@ -140,16 +144,16 @@ function MainMenuController.prototype.Activate(self, id)
         self.options,
         function(____, entry) return entry.ID == id end
     )
-    local ____temp_13 = not option
-    if not ____temp_13 then
-        local ____opt_10 = option.IsVisible
-        local ____temp_12 = ____opt_10 and ____opt_10()
-        if ____temp_12 == nil then
-            ____temp_12 = true
+    local ____temp_15 = not option
+    if not ____temp_15 then
+        local ____opt_12 = option.IsVisible
+        local ____temp_14 = ____opt_12 and ____opt_12()
+        if ____temp_14 == nil then
+            ____temp_14 = true
         end
-        ____temp_13 = not ____temp_12
+        ____temp_15 = not ____temp_14
     end
-    if ____temp_13 then
+    if ____temp_15 then
         return
     end
     self:Close()
@@ -160,9 +164,9 @@ function MainMenuController.prototype.Tick(self)
         if input.IsKeyDown(KEY_ESCAPE) then
             self:Close()
         else
-            local ____opt_14 = self.presentation
-            if ____opt_14 ~= nil then
-                ____opt_14:Update(self:GetState())
+            local ____opt_16 = self.presentation
+            if ____opt_16 ~= nil then
+                ____opt_16:Update(self:GetState())
             end
         end
     end

@@ -12,7 +12,7 @@ test("F4 opens the themed main menu and its weapons option opens the existing se
     local first=panels[1]
     assert(first.popup and first.keyboard==false)
     local list=first.children[#first.children]
-    assert(list.kind=="DScrollPanel" and #list.children==1)
+    assert(list.kind=="DScrollPanel" and #list.children==2)
     list.children[1]:DoClick()
     assert(first.removed and not ZPMainMenu:GetState().Open and ZPWeaponMenu:GetState().Open and requests==1)
     -- F4 from a submenu returns to the main menu without making a new request.
@@ -32,6 +32,43 @@ test("F4 opens the themed main menu and its weapons option opens the existing se
     for _,panel in ipairs(panels) do assert(panel.removed) end
 `));
 
+test("option titles keep non-additive text and contrasting colors on hover in every theme", () => run(clientSetup + panelsSetup + `
+    include("cl_theme_hud.lua"); include("cl_weapon_menu_hud.lua")
+    local font=createdFonts.ZPMenuOptionTitle
+    assert(font and font.font=="Trebuchet MS" and font.size==24 and font.additive==false)
+    local function luminance(color)
+        local function channel(value)
+            value=value/255
+            return value<=0.04045 and value/12.92 or ((value+0.055)/1.055)^2.4
+        end
+        return 0.2126*channel(color.r)+0.7152*channel(color.g)+0.0722*channel(color.b)
+    end
+    for _,id in ipairs({"classic","hl2","cs16"}) do
+        ZPThemes:UseTheme(id); ZPMainMenu:Open()
+        local frame
+        for _,panel in ipairs(panels) do
+            if panel.kind=="DFrame" and not panel.removed then frame=panel end
+        end
+        for _,button in ipairs(frame.children[2].children) do
+            for _,hovered in ipairs({false,true}) do
+                button.IsHovered=function() return hovered end
+                local background,texts
+                texts={}
+                draw.RoundedBox=function(_,_,_,_,_,color) background=color end
+                draw.DrawText=function(text,font,_,_,color) texts[#texts+1]={font=font,color=color} end
+                button:Paint(button.w,button.h)
+                assert(#texts==2 and texts[1].font=="ZPMenuOptionTitle")
+                for _,text in ipairs(texts) do
+                    local fg,bg=luminance(text.color),luminance(background)
+                    local contrast=(math.max(fg,bg)+0.05)/(math.min(fg,bg)+0.05)
+                    assert(contrast>=4.5, "Unreadable option in "..id)
+                end
+            end
+        end
+        ZPMainMenu:Close()
+    end
+`));
+
 test("main menu options expose detached data and recheck availability when clicked", () => run(clientSetup + panelsSetup + `
     include("cl_theme_hud.lua"); include("cl_weapon_menu_hud.lua")
     local visible,calls=true,0
@@ -39,12 +76,12 @@ test("main menu options expose detached data and recheck availability when click
         Action=function() calls=calls+1 end,IsVisible=function() return visible end})
     ZPMainMenu:Open()
     local state=ZPMainMenu:GetState()
-    assert(#state.Entries==2 and not state.Entries[2].Action)
-    state.Entries[2].Label="tampered"
-    assert(ZPMainMenu:GetState().Entries[2].Label=="Addon")
+    assert(#state.Entries==3 and not state.Entries[3].Action)
+    state.Entries[3].Label="tampered"
+    assert(ZPMainMenu:GetState().Entries[3].Label=="Addon")
     visible=false
     ZPMainMenu:Activate("addon"); assert(calls==0 and ZPMainMenu:GetState().Open)
-    hooks.Think.ZPMainMenuController(); assert(#ZPMainMenu:GetState().Entries==1)
+    hooks.Think.ZPMainMenuController(); assert(#ZPMainMenu:GetState().Entries==2)
     visible=true
     ZPMainMenu:Activate("addon"); assert(calls==1 and not ZPMainMenu:GetState().Open)
     ZPMainMenu:Activate("addon"); assert(calls==1)

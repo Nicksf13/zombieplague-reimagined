@@ -71,19 +71,15 @@ class WeaponMenuHUD implements ZPWeaponMenuPresentation {
         content.SetSize(width - 32, height - contentY - 40);
         content.Paint = () => {};
         const w = width - 32, h = height - contentY - 40, footerHeight = compact ? 76 : 90;
-        // Header controls belong to content, so each update removes the previous controls.
-        const themes = ZPThemes.GetThemes(), themeWidth = Math.min(180, (w - 16) / Math.max(1, themes.length));
-        themes.forEach((theme, index) => this.Button(content, theme.Name, index * (themeWidth + 8), 0, themeWidth, 30,
-            () => this.actions?.UsePresentation(theme.ID), theme.ID === state.Presentation));
         const horizontal = this.style === "hl2" && height >= 450;
         const categoryWidth = horizontal ? Math.floor((w - 24) / 3) : Math.min(176, w * 0.3);
         categories.forEach((kind, index) => {
             const x = horizontal ? index * (categoryWidth + 12) : 0;
-            const y = horizontal ? 44 : 44 + index * 62;
+            const y = horizontal ? 0 : index * 62;
             this.Button(content, phrase(kind), x, y, categoryWidth, 48,
                 () => this.actions?.SetCategory(kind), kind === state.Category);
         });
-        const listX = horizontal ? 0 : categoryWidth + 18, listY = horizontal ? 104 : 44;
+        const listX = horizontal ? 0 : categoryWidth + 18, listY = horizontal ? 60 : 0;
         const listWidth = w - listX, listHeight = Math.max(40, h - listY - footerHeight - 10);
         const scroll = vgui.Create("DScrollPanel", content);
         scroll.SetPos(listX, listY);

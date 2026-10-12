@@ -7,18 +7,18 @@ local function __TS__Class(self)
     return c
 end
 
-local function __TS__ArrayForEach(self, callbackFn, thisArg)
-    for i = 1, #self do
-        callbackFn(thisArg, self[i], i - 1, self)
-    end
-end
-
 local function __TS__ArrayMap(self, callbackfn, thisArg)
     local result = {}
     for i = 1, #self do
         result[i] = callbackfn(thisArg, self[i], i - 1, self)
     end
     return result
+end
+
+local function __TS__ArrayForEach(self, callbackFn, thisArg)
+    for i = 1, #self do
+        callbackFn(thisArg, self[i], i - 1, self)
+    end
 end
 
 local function __TS__New(target, ...)
@@ -106,19 +106,6 @@ function MainMenuHUD.prototype.Open(self, state, actions)
         30,
         function() return actions:Close() end
     )
-    local themes = ZPThemes:GetThemes()
-    local themeWidth = (width - 48 - math.max(0, #themes - 1) * 8) / math.max(1, #themes)
-    __TS__ArrayForEach(
-        themes,
-        function(____, theme, index) return self:Button(
-            frame,
-            theme.Name,
-            24 + index * (themeWidth + 8),
-            100,
-            themeWidth,
-            function() return ZPThemes:UseTheme(theme.ID) end
-        ) end
-    )
     frame:MakePopup()
     self:Update(state)
 end
@@ -145,8 +132,8 @@ function MainMenuHUD.prototype.Update(self, state)
     local width, height = frame:GetSize()
     local list = vgui.Create("DScrollPanel", frame)
     self.list = list
-    list:SetPos(24, 148)
-    list:SetSize(width - 48, height - 196)
+    list:SetPos(24, 100)
+    list:SetSize(width - 48, height - 148)
     __TS__ArrayForEach(
         state.Entries,
         function(____, entry, index)
@@ -163,18 +150,19 @@ function MainMenuHUD.prototype.Update(self, state)
                 72
             )
             button.Paint = function(____, w, h)
+                local hovered = button:IsHovered()
                 draw.RoundedBox(
                     self.square and 0 or 4,
                     0,
                     0,
                     w,
                     h,
-                    button:IsHovered() and self.palette.Accent or self.palette.Panel
+                    hovered and self.palette.Accent or self.palette.Panel
                 )
-                local color = button:IsHovered() and Color(12, 18, 22) or self.palette.Text
+                local color = hovered and Color(12, 18, 22) or self.palette.Text
                 draw.DrawText(
                     language.GetPhrase(entry.Label),
-                    "Trebuchet24",
+                    "ZPMenuOptionTitle",
                     16,
                     10,
                     color,

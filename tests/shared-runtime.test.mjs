@@ -361,6 +361,7 @@ test("server init preserves include order, client downloads and network registra
         "cl_data.lua", "cl_message.lua", "cl_player.lua", "cl_roundmanager.lua",
         "cl_particlemanager.lua", "cl_keymanager.lua", "cl_scoreboard.lua", "cl_scoreboard_hud.lua",
         "sh_weapon_menu_protocol.lua", "cl_weapon_menu.lua", "cl_weapon_menu_hud.lua", "cl_main_menu.lua", "cl_main_menu_hud.lua",
+        "cl_settings.lua", "cl_settings_hud.lua",
     }
     assert(table.concat(clientFiles, ",") == table.concat(expectedClientFiles, ","))
     assert(table.concat(networkStrings, ",") == "RequestServerStatus,SendServerStatus")

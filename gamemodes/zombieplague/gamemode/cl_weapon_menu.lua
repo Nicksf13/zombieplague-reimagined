@@ -125,6 +125,10 @@ function WeaponMenuController.prototype.UsePresentation(self, id)
     end
 end
 function WeaponMenuController.prototype.Open(self)
+    local ____opt_4 = _G.ZPSettings
+    if ____opt_4 ~= nil then
+        ____opt_4:Close()
+    end
     ZPMainMenu:Close()
     if self.opened then
         return
@@ -146,9 +150,9 @@ end
 function WeaponMenuController.prototype.Close(self)
     self.opened = false
     self.automatic = false
-    local ____opt_4 = self.presentation
-    if ____opt_4 ~= nil then
-        ____opt_4:Destroy()
+    local ____opt_6 = self.presentation
+    if ____opt_6 ~= nil then
+        ____opt_6:Destroy()
     end
     self.presentation = nil
 end
@@ -205,9 +209,9 @@ function WeaponMenuController.prototype.Select(self, id)
     net.SendToServer()
 end
 function WeaponMenuController.prototype.Receive(self, reply)
-    local ____reply_RequestID_8 = reply.RequestID
-    local ____opt_6 = self.pending
-    if ____reply_RequestID_8 ~= (____opt_6 and ____opt_6.ID) then
+    local ____reply_RequestID_10 = reply.RequestID
+    local ____opt_8 = self.pending
+    if ____reply_RequestID_10 ~= (____opt_8 and ____opt_8.ID) then
         return
     end
     self.pending = nil
@@ -220,8 +224,8 @@ function WeaponMenuController.prototype.Receive(self, reply)
         local missing = __TS__ArrayFind(
             {"primary", "secondary", "melee"},
             function(____, kind)
-                local ____opt_9 = reply.Snapshot
-                return (____opt_9 and ____opt_9.Selected[kind]) == "" and __TS__ArraySome(
+                local ____opt_11 = reply.Snapshot
+                return (____opt_11 and ____opt_11.Selected[kind]) == "" and __TS__ArraySome(
                     reply.Snapshot.Entries,
                     function(____, entry) return entry.Kind == kind end
                 )

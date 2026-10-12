@@ -14,6 +14,13 @@ local function __TS__New(target, ...)
 end
 -- End of Lua Library inline imports
 local ____exports = {}
+surface.CreateFont("ZPMenuOptionTitle", {
+    font = "Trebuchet MS",
+    size = 24,
+    weight = 900,
+    antialias = true,
+    additive = false
+})
 ____exports.ThemeManager = __TS__Class()
 local ThemeManager = ____exports.ThemeManager
 ThemeManager.name = "ThemeManager"
@@ -61,6 +68,10 @@ function ThemeManager.prototype.UseTheme(self, id)
         local ____opt_2 = _G.ZPScoreboard
         if ____opt_2 ~= nil then
             ____opt_2:Rebuild()
+        end
+        local ____opt_4 = _G.ZPSettings
+        if ____opt_4 ~= nil then
+            ____opt_4:Rebuild()
         end
     end
     if self.preferredID ~= id then

@@ -108,7 +108,7 @@ test("actual Player weapon setters save in any state and deliver once to a livin
     ply:SetPrimaryWeaponGiven(false); ply:SetPrimaryWeapon(weapon); assert(count==2)
 `));
 
-test("human conversion keeps saved weapons and never requests a menu for missing selections", () => run(setup + `
+test("human conversion preserves saved weapons and class movement respects the zombie sprint rule", () => run(setup + `
     include("sv_classmanager.lua")
     include("sv_weaponmanager.lua")
     include("sv_player_weapons.lua")
@@ -124,7 +124,10 @@ test("human conversion keeps saved weapons and never requests a menu for missing
         meta[name] = function() end
     end
     local ply = addPlayer("p", TEAM_ZOMBIES, true)
+    meta.SetWalkSpeed=function(self,speed) self.walkSpeed=speed end
+    meta.SetRunSpeed=function(self,speed) self.runSpeed=speed end
     ply:MakeHuman()
+    assert(ply.walkSpeed==100 and ply.runSpeed==230)
     assert(ply:IsHuman() and not ply:GetPrimaryWeaponGiven() and not ply:GetSecondaryWeaponGiven())
     assert(not ply:GetMeleeWeaponGiven() and #sent == 0)
     local given = 0
@@ -141,4 +144,17 @@ test("human conversion keeps saved weapons and never requests a menu for missing
     ply.PrimaryWeapon,ply.SecondaryWeapon,ply.MeleeWeapon=nil,nil,nil
     ply:MakeHuman()
     assert(given==4 and not ply:GetMeleeWeaponGiven() and not ply.MeleeWeapon)
+    local zombie=ClassManager:NewZombieClass()
+    zombie.WeaponGive=nil
+    meta.GetNextZombieClass=function() return nil end
+    meta.GetZombieClass=function() return zombie end
+    meta.GetActiveWeapon=function() return nil end
+    meta.FlashlightIsOn=function() return false end
+    meta.ScreenFade=function() end
+    SCREENFADE={IN=1}
+    ply:Infect(true)
+    assert(ply.walkSpeed==100 and ply.runSpeed==290)
+    cvars.Bool=function(name,default) if name=="zp_zombie_should_run" then return false end return default end
+    ply:Infect(true)
+    assert(ply.walkSpeed==100 and ply.runSpeed==100)
 `));

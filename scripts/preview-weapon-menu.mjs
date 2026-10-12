@@ -25,6 +25,7 @@ snapshot.CanReceive.primary=false
 ZPWeaponMenu:Open(); reply(1)
 ZPWeaponMenu:UsePresentation(PREVIEW_STYLE)
 if PREVIEW_MENU=="main-menu" then ZPMainMenu:Open() end
+if PREVIEW_MENU=="settings" then ZPSettings:Open() end
 if PREVIEW_MENU=="scoreboard" then
     ZPWeaponMenu:Close()
     for key,value in pairs(viewer) do if me[key]==nil then me[key]=value end end
@@ -45,7 +46,7 @@ draw.RoundedBox=function(radius,px,py,w,h,tint)
         x+px,y+py,w,h,radius,color(tint),tint.a/255)
 end
 draw.DrawText=function(text,font,px,py,tint)
-    local size=(font=="DermaLarge" or font=="Trebuchet24") and 24 or font=="Trebuchet18" and 18 or 13
+    local size=(font=="DermaLarge" or font=="Trebuchet24" or font=="ZPMenuOptionTitle") and 24 or font=="Trebuchet18" and 18 or 13
     parts[#parts+1]=string.format('<text x="%g" y="%g" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="%d" fill="%s">%s</text>',
         x+px,y+py+size,size,color(tint),escape(text))
 end
@@ -77,7 +78,7 @@ previewSVG=table.concat(parts,string.char(10))
 const directory = new URL("../docs/previews/", import.meta.url);
 await mkdir(directory, { recursive: true });
 for (const style of ["classic", "hl2", "cs16"]) {
-    for (const menu of [false, "weapon-menu", "main-menu", "scoreboard"]) {
+    for (const menu of [false, "weapon-menu", "main-menu", "settings", "scoreboard"]) {
         const svg = run(clientSetup + panelsSetup + nativeLanguage + playerHUDSetup + (menu === "scoreboard" ? scoreboardSetup : "") +
             `PREVIEW_STYLE="${style}"\nPREVIEW_MENU=${menu ? JSON.stringify(menu) : "false"}\n` + render, "previewSVG");
         const name = `${menu || "hud"}-${style}.svg`;

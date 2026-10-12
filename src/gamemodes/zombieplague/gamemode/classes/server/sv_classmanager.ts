@@ -53,13 +53,13 @@ export class ClassManager implements ZPServerClassManager {
     }
     NewHumanClass(): ZPClassDefinition {
         return { Name: "HumanDefaultClassName", Description: "HumanDefaultClassDescription", MaxHealth: 100,
-            Armor: 25, PModel: "models/player/gasmask.mdl", Speed: 230, RunSpeed: 100, CrouchSpeed: 0.4,
+            Armor: 25, PModel: "models/player/gasmask.mdl", RunSpeed: 230, Speed: 100, CrouchSpeed: 0.4,
             Gravity: 1, Battery: 100, Breath: 100, JumpPower: 200, Footstep: true, DamageAmplifier: 1, Order: 100,
             FallFunction(this: ZPClassDefinition) { return true; }, ShouldBeEnabled(this: ZPClassDefinition) { return true; } };
     }
     NewZombieClass(): ZPClassDefinition {
         return { Name: "ZombieDefaultClassName", Description: "ZombieDefaultClassDescription", MaxHealth: 2000,
-            PModel: "models/player/zombie_classic.mdl", Speed: 290, RunSpeed: 100, CrouchSpeed: 0.4,
+            PModel: "models/player/zombie_classic.mdl", RunSpeed: 290, Speed: 100, CrouchSpeed: 0.4,
             Gravity: 0.8, Breath: 100, JumpPower: 200, Footstep: false, DamageAmplifier: 1, Order: 100,
             FallFunction(this: ZPClassDefinition) { return false; }, ShouldBeEnabled(this: ZPClassDefinition) { return true; },
             WeaponGive(this: ZPClassDefinition, ply) { ply.Give(ZOMBIE_KNIFE); } };

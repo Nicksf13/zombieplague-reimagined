@@ -45,56 +45,44 @@
 <text x="1000" y="131" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(238,242,245)">X</text>
 </g>
 <defs><clipPath id="clip3"><rect x="256" y="196" width="768" height="394"/></clipPath></defs><g clip-path="url(#clip3)">
-<defs><clipPath id="clip4"><rect x="256" y="196" width="180" height="30"/></clipPath></defs><g clip-path="url(#clip4)">
-<rect x="256" y="196" width="180" height="30" rx="4" fill="rgb(239,190,76)" fill-opacity="1"/>
-<text x="268" y="219" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(12,18,22)">Clássico</text>
+<defs><clipPath id="clip4"><rect x="256" y="196" width="176" height="48"/></clipPath></defs><g clip-path="url(#clip4)">
+<rect x="256" y="196" width="176" height="48" rx="4" fill="rgb(239,190,76)" fill-opacity="1"/>
+<text x="268" y="228" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(12,18,22)">Primária</text>
 </g>
-<defs><clipPath id="clip5"><rect x="444" y="196" width="180" height="30"/></clipPath></defs><g clip-path="url(#clip5)">
-<rect x="444" y="196" width="180" height="30" rx="4" fill="rgb(24,33,42)" fill-opacity="0.9607843137254902"/>
-<text x="456" y="219" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(238,242,245)">Half-Life 2</text>
+<defs><clipPath id="clip5"><rect x="256" y="258" width="176" height="48"/></clipPath></defs><g clip-path="url(#clip5)">
+<rect x="256" y="258" width="176" height="48" rx="4" fill="rgb(24,33,42)" fill-opacity="0.9607843137254902"/>
+<text x="268" y="290" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(238,242,245)">Secundária</text>
 </g>
-<defs><clipPath id="clip6"><rect x="632" y="196" width="180" height="30"/></clipPath></defs><g clip-path="url(#clip6)">
-<rect x="632" y="196" width="180" height="30" rx="4" fill="rgb(24,33,42)" fill-opacity="0.9607843137254902"/>
-<text x="644" y="219" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(238,242,245)">Counter-Strike 1.6</text>
+<defs><clipPath id="clip6"><rect x="256" y="320" width="176" height="48"/></clipPath></defs><g clip-path="url(#clip6)">
+<rect x="256" y="320" width="176" height="48" rx="4" fill="rgb(24,33,42)" fill-opacity="0.9607843137254902"/>
+<text x="268" y="352" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(238,242,245)">Corpo a corpo</text>
 </g>
-<defs><clipPath id="clip7"><rect x="256" y="240" width="176" height="48"/></clipPath></defs><g clip-path="url(#clip7)">
-<rect x="256" y="240" width="176" height="48" rx="4" fill="rgb(239,190,76)" fill-opacity="1"/>
-<text x="268" y="272" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(12,18,22)">Primária</text>
+<defs><clipPath id="clip7"><rect x="450" y="196" width="574" height="294"/></clipPath></defs><g clip-path="url(#clip7)">
+<defs><clipPath id="clip8"><rect x="450" y="196" width="554" height="66"/></clipPath></defs><g clip-path="url(#clip8)">
+<rect x="450" y="196" width="554" height="66" rx="4" fill="rgb(239,190,76)" fill-opacity="1"/>
+<text x="464" y="224" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(12,18,22)">AR2</text>
+<text x="464" y="253" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(12,18,22)">Seleção salva</text>
 </g>
-<defs><clipPath id="clip8"><rect x="256" y="302" width="176" height="48"/></clipPath></defs><g clip-path="url(#clip8)">
-<rect x="256" y="302" width="176" height="48" rx="4" fill="rgb(24,33,42)" fill-opacity="0.9607843137254902"/>
-<text x="268" y="334" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(238,242,245)">Secundária</text>
+<defs><clipPath id="clip9"><rect x="450" y="272" width="554" height="66"/></clipPath></defs><g clip-path="url(#clip9)">
+<rect x="450" y="272" width="554" height="66" rx="4" fill="rgb(24,33,42)" fill-opacity="0.9607843137254902"/>
+<text x="464" y="300" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(238,242,245)">SMG1</text>
+<text x="464" y="329" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(156,174,187)">Clique para selecionar</text>
 </g>
-<defs><clipPath id="clip9"><rect x="256" y="364" width="176" height="48"/></clipPath></defs><g clip-path="url(#clip9)">
-<rect x="256" y="364" width="176" height="48" rx="4" fill="rgb(24,33,42)" fill-opacity="0.9607843137254902"/>
-<text x="268" y="396" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(238,242,245)">Corpo a corpo</text>
+<defs><clipPath id="clip10"><rect x="450" y="348" width="554" height="66"/></clipPath></defs><g clip-path="url(#clip10)">
+<rect x="450" y="348" width="554" height="66" rx="4" fill="rgb(24,33,42)" fill-opacity="0.9607843137254902"/>
+<text x="464" y="376" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(238,242,245)">Shotgun</text>
+<text x="464" y="405" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(156,174,187)">Clique para selecionar</text>
 </g>
-<defs><clipPath id="clip10"><rect x="450" y="240" width="574" height="250"/></clipPath></defs><g clip-path="url(#clip10)">
-<defs><clipPath id="clip11"><rect x="450" y="240" width="554" height="66"/></clipPath></defs><g clip-path="url(#clip11)">
-<rect x="450" y="240" width="554" height="66" rx="4" fill="rgb(239,190,76)" fill-opacity="1"/>
-<text x="464" y="268" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(12,18,22)">AR2</text>
-<text x="464" y="297" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(12,18,22)">Seleção salva</text>
-</g>
-<defs><clipPath id="clip12"><rect x="450" y="316" width="554" height="66"/></clipPath></defs><g clip-path="url(#clip12)">
-<rect x="450" y="316" width="554" height="66" rx="4" fill="rgb(24,33,42)" fill-opacity="0.9607843137254902"/>
-<text x="464" y="344" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(238,242,245)">SMG1</text>
-<text x="464" y="373" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(156,174,187)">Clique para selecionar</text>
-</g>
-<defs><clipPath id="clip13"><rect x="450" y="392" width="554" height="66"/></clipPath></defs><g clip-path="url(#clip13)">
-<rect x="450" y="392" width="554" height="66" rx="4" fill="rgb(24,33,42)" fill-opacity="0.9607843137254902"/>
-<text x="464" y="420" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(238,242,245)">Shotgun</text>
-<text x="464" y="449" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(156,174,187)">Clique para selecionar</text>
-</g>
-<defs><clipPath id="clip14"><rect x="450" y="468" width="554" height="66"/></clipPath></defs><g clip-path="url(#clip14)">
-<rect x="450" y="468" width="554" height="66" rx="4" fill="rgb(24,33,42)" fill-opacity="0.9607843137254902"/>
-<text x="464" y="496" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(238,242,245)">Crossbow</text>
-<text x="464" y="525" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(156,174,187)">Clique para selecionar</text>
+<defs><clipPath id="clip11"><rect x="450" y="424" width="554" height="66"/></clipPath></defs><g clip-path="url(#clip11)">
+<rect x="450" y="424" width="554" height="66" rx="4" fill="rgb(24,33,42)" fill-opacity="0.9607843137254902"/>
+<text x="464" y="452" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(238,242,245)">Crossbow</text>
+<text x="464" y="481" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(156,174,187)">Clique para selecionar</text>
 </g>
 </g>
-<defs><clipPath id="clip15"><rect x="450" y="500" width="574" height="90"/></clipPath></defs><g clip-path="url(#clip15)">
+<defs><clipPath id="clip12"><rect x="450" y="500" width="574" height="90"/></clipPath></defs><g clip-path="url(#clip12)">
 <text x="450" y="517" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(239,190,76)">Escolha uma arma abaixo.</text>
 <text x="450" y="539" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(156,174,187)">Você pode salvar a escolha para o próximo spawn humano elegível.</text>
-<defs><clipPath id="clip16"><rect x="450" y="560" width="130" height="28"/></clipPath></defs><g clip-path="url(#clip16)">
+<defs><clipPath id="clip13"><rect x="450" y="560" width="130" height="28"/></clipPath></defs><g clip-path="url(#clip13)">
 <rect x="450" y="560" width="130" height="28" rx="4" fill="rgb(24,33,42)" fill-opacity="0.9607843137254902"/>
 <text x="462" y="582" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(238,242,245)">Atualizar</text>
 </g>

@@ -1,3 +1,7 @@
+// GMod's built-in Trebuchet24 is additive: dark hover text disappears on bright buttons.
+surface.CreateFont("ZPMenuOptionTitle", { font: "Trebuchet MS", size: 24, weight: 900,
+    antialias: true, additive: false });
+
 export class ThemeManager implements ZPThemeManager {
     private themes: Record<string, ZPThemeDefinition | undefined> = {};
     private order: string[] = [];
@@ -33,6 +37,7 @@ export class ThemeManager implements ZPThemeManager {
         if (changed) {
             ZPMainMenu.Rebuild();
             _G.ZPScoreboard?.Rebuild();
+            _G.ZPSettings?.Rebuild();
         }
         if (this.preferredID !== id) {
             this.preferredID = id;
