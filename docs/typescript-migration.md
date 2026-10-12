@@ -352,8 +352,9 @@ por categoria durante uma vida humana. Veja [contrato, prévias e teste em jogo]
 
 ## Localização nativa
 
-As 1.083 frases existentes nos oito idiomas, incluindo registros dos itens extras,
-foram transferidas sem alterar seus textos para
+As 1.083 frases originais de oito idiomas foram preservadas na migração. Os
+catálogos agora cobrem os 32 idiomas suportados pelo GMod, com todas as 205 chaves
+do inglês em cada idioma, incluindo menus, cvars, HUD, classes e itens extras, em
 `gamemodes/zombieplague/content/resource/localization/<idioma>/zombieplague.properties`.
 Esses arquivos são a fonte das traduções e devem ser editados diretamente; não
 são Lua gerado. O build os preserva. Cada arquivo começa com uma linha vazia e
@@ -374,8 +375,27 @@ O conteúdo espanhol existente é mantido sob `es-ES`, o código suportado pelo 
 O GMod carrega os catálogos conforme `gmod_language`, com inglês preenchendo frases
 ausentes. HUD, scoreboard, classes e granadas consultam `language.GetPhrase` no
 cliente. Não há parser de `.properties`, registro de idiomas ou dicionário em Lua.
-O módulo `sv_localization.lua` registra os oito arquivos com `resource.AddFile`;
+O módulo `sv_localization.lua` registra os 32 arquivos com `resource.AddFile`;
 inclua `content/resource/localization/` na distribuição local, Workshop ou FastDL.
+
+Os códigos cobertos são `bg`, `cs`, `da`, `de`, `el`, `en`, `en-PT`, `es-ES`,
+`et`, `fi`, `fr`, `he`, `hr`, `hu`, `it`, `ja`, `ko`, `lt`, `nl`, `no`, `pl`,
+`pt-BR`, `pt-PT`, `ru`, `sk`, `sv-SE`, `th`, `tr`, `uk`, `vi`, `zh-CN` e `zh-TW`.
+`en-PT` é inglês pirata; português europeu usa `pt-PT`.
+
+Os 24 catálogos novos começam com o comentário em inglês
+`This translation was auto-generated and is pending confirmation.` Os sete
+catálogos não ingleses anteriores preservam seus textos e marcam as frases
+acrescentadas com `The following translations were auto-generated and are pending confirmation.`
+Esses avisos são comentários para tradutores, não mensagens exibidas durante a
+partida. A revisão por falantes de cada idioma continua pendente; a presença de
+um catálogo anterior não indica que ele já foi revisado.
+
+Os testes conferem a cobertura dos 32 idiomas, a igualdade de chaves com inglês,
+valores preenchidos, parâmetros de formatação, avisos de revisão e distribuição
+dos arquivos. Ao adicionar uma frase, atualize todos os catálogos e preserve a
+ordem e os tipos de `%s`, `%d` e outros parâmetros. Valide no GMod fontes,
+quebras de linha e a apresentação de idiomas da direita para a esquerda.
 
 Mensagens localizadas usam o mesmo conjunto de funções `Send*Message` e
 `Broadcast*Message`, passando um descritor em vez de texto já traduzido:

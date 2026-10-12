@@ -12,7 +12,7 @@
 	    1
 		{
 			"name"		"zp_zombie_footstep"
-			"text"		"#zp_zombie_footstep_cvar"
+			"text"		"#zombieplague.cvarzombiefootstep"
 			"type"		"CheckBox"
 			"default"	"1"
 		}
@@ -20,7 +20,7 @@
 		2
 		{
 			"name"		"zp_realistic_mode"
-			"text"		"#zp_realistic_mode_cvar"
+			"text"		"#zombieplague.cvarrealisticmode"
 			"type"		"CheckBox"
 			"default"	"0"
 		}
@@ -28,7 +28,7 @@
 		3
 		{
 			"name"		"zp_can_hear_death"
-			"text"		"#zp_can_hear_death_cvar"
+			"text"		"#zombieplague.cvarcanheardeath"
 			"type"		"CheckBox"
 			"default"	"1"
 		}
@@ -36,7 +36,7 @@
 		4
 		{
 			"name"		"zp_chat_all"
-			"text"		"#zp_chat_all_cvar"
+			"text"		"#zombieplague.cvarchatall"
 			"type"		"CheckBox"
 			"default"	"1"
 		}
@@ -44,7 +44,7 @@
 		5
 		{
 			"name"		"zp_voice_all"
-			"text"		"#zp_voice_all_cvar"
+			"text"		"#zombieplague.cvarvoiceall"
 			"type"		"CheckBox"
 			"default"	"1"
 		}
@@ -52,7 +52,7 @@
 		6
 		{
 			"name"		"zp_min_players"
-			"text"		"#zp_min_players_cvar"
+			"text"		"#zombieplague.cvarminplayers"
 			"type"		"Numeric"
 			"default"	"2"
 		}
@@ -60,7 +60,7 @@
 		7
 		{
 			"name"		"zp_newround_delay"
-			"text"		"#zp_newround_delay_cvar"
+			"text"		"#zombieplague.cvarnewrounddelay"
 			"type"		"Numeric"
 			"default"	"10"
 		}
@@ -68,7 +68,7 @@
 		8
 		{
 			"name"		"zp_infection_delay"
-			"text"		"#zp_infection_delay_cvar"
+			"text"		"#zombieplague.cvarinfectiondelay"
 			"type"		"Numeric"
 			"default"	"10"
 		}
@@ -76,7 +76,7 @@
 		9
 		{
 			"name"		"zp_max_rounds"
-			"text"		"#zp_max_rounds_cvar"
+			"text"		"#zombieplague.cvarmaxrounds"
 			"type"		"Numeric"
 			"default"	"10"
 		}
@@ -84,7 +84,7 @@
 		10
 		{
 			"name"		"zp_round_time"
-			"text"		"#zp_round_time_cvar"
+			"text"		"#zombieplague.cvarroundtime"
 			"type"		"Numeric"
 			"default"	"300"
 		}
@@ -92,7 +92,7 @@
 		11
 		{
 			"name"		"zp_spectate_team_only"
-			"text"		"#zp_spectate_team_only_cvar"
+			"text"		"#zombieplague.cvarspectateteamonly"
 			"type"		"CheckBox"
 			"default"	"1"
 		}
