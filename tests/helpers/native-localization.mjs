@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 
-export const locales = ["en", "pt-BR", "es-ES", "ru", "uk", "zh-TW", "ja", "ko"];
+const catalogs = new URL("../../gamemodes/zombieplague/content/resource/localization/", import.meta.url);
+export const locales = readdirSync(catalogs, { withFileTypes: true })
+    .filter(entry => entry.isDirectory()).map(entry => entry.name).sort();
 export const books = Object.fromEntries(locales.map(locale => {
     const url = new URL(`../../gamemodes/zombieplague/content/resource/localization/${locale}/zombieplague.properties`, import.meta.url);
     const source = readFileSync(url, "utf8");

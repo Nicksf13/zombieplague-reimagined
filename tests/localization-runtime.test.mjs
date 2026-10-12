@@ -4,15 +4,32 @@ import test from "node:test";
 import { run } from "./helpers/lua-runtime.mjs";
 import { books, locales, nativeLanguage } from "./helpers/native-localization.mjs";
 
-test("all eight native catalogs preserve translations, extra-item phrases and format parameters", () => {
+test("main menu convar labels resolve in every native catalog", () => {
+    const settings = readFileSync(new URL("../gamemodes/zombieplague/zombieplague.txt", import.meta.url), "utf8");
+    const keys = [...settings.matchAll(/"text"\s+"#([^"]+)"/g)].map(match => match[1]);
+    assert.equal(keys.length, 11);
     for (const locale of locales) {
-        assert(Object.keys(books[locale]).length >= 135, locale);
-        for (const key of Object.keys(books[locale])) assert(key in books.en, key);
+        for (const key of keys) assert(books[locale][key]?.trim(), `${locale}: missing menu label ${key}`);
+    }
+    assert.equal(books["pt-BR"]["zombieplague.cvarminplayers"], "Mínimo de jogadores");
+});
+
+test("all 32 GMod languages have complete native catalogs and valid format parameters", () => {
+    assert.deepEqual(locales, [
+        "bg", "cs", "da", "de", "el", "en", "en-PT", "es-ES", "et", "fi", "fr", "he",
+        "hr", "hu", "it", "ja", "ko", "lt", "nl", "no", "pl", "pt-BR", "pt-PT", "ru",
+        "sk", "sv-SE", "th", "tr", "uk", "vi", "zh-CN", "zh-TW",
+    ]);
+    const keys = Object.keys(books.en).sort();
+    for (const locale of locales) {
+        assert.deepEqual(Object.keys(books[locale]).sort(), keys, `${locale}: incomplete catalog`);
         for (const name of ["extraitemex41name", "extraitemmilkormk1name", "extraitemnervegasname",
             "extraitemorbitalstrikename", "extraitemrpg7name"]) {
             assert.equal(typeof books[locale][`zombieplague.${name}`], "string", `${locale}/${name}`);
         }
         for (const [key, value] of Object.entries(books[locale])) {
+            assert(value.trim(), `${locale}/${key}: empty translation`);
+            assert(!value.includes("\uFFFD"), `${locale}/${key}: broken Unicode`);
             assert.deepEqual(value.match(/%[sdif]/g) ?? [], books.en[key].match(/%[sdif]/g) ?? [], `${locale}/${key}`);
         }
     }
@@ -21,6 +38,19 @@ test("all eight native catalogs preserve translations, extra-item phrases and fo
     assert.match(books["zh-TW"]["zombieplague.humandefaultclassname"], /[\u3400-\u9fff]/);
     const manifest = JSON.parse(readFileSync(new URL("../migration.json", import.meta.url), "utf8"));
     assert(!manifest.files.some(path => /\/(?:sv_language|cl_language)$|\/languages\//.test(path)));
+});
+
+test("new catalogs and added translations carry an English review notice", () => {
+    const originalLocales = ["en", "pt-BR", "es-ES", "ru", "uk", "zh-TW", "ja", "ko"];
+    for (const locale of locales) {
+        if (locale === "en") continue;
+        const source = readFileSync(new URL(
+            `../gamemodes/zombieplague/content/resource/localization/${locale}/zombieplague.properties`, import.meta.url), "utf8");
+        const notice = originalLocales.includes(locale)
+            ? "# The following translations were auto-generated and are pending confirmation."
+            : "# This translation was auto-generated and is pending confirmation.";
+        assert(source.includes(notice), `${locale}: missing review notice`);
+    }
 });
 
 test("native catalogs are registered as gamemode content without sending language tables", () => run(`
@@ -32,7 +62,10 @@ test("native catalogs are registered as gamemode content without sending languag
         assert(path:match("^resource/localization/[^/]+/zombieplague.properties$"))
         count = count + 1
     end
-    assert(count == 8 and resources["resource/localization/pt-BR/zombieplague.properties"])
+    assert(count == ${locales.length})
+    for _, locale in ipairs({${locales.map(locale => JSON.stringify(locale)).join(",")}}) do
+        assert(resources["resource/localization/" .. locale .. "/zombieplague.properties"], locale)
+    end
     GM = {}
     function FindMetaTable() return {} end
     include("sv_player.lua")
