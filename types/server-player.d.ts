@@ -88,7 +88,7 @@ interface ZPServerPlayer {
     GetBreath(this: ZPServerPlayer): number;
     SetMaxBreath(this: ZPServerPlayer, MaxBreath: number): void;
     GetMaxBreath(this: ZPServerPlayer): number;
-    SetNightvision(this: ZPServerPlayer, Nightvision: boolean): void;
+    SetNightvision(this: ZPServerPlayer, Nightvision: boolean, silent?: boolean): void;
     NightvisionIsOn(this: ZPServerPlayer): boolean | undefined;
     GiveWeapon(this: ZPServerPlayer, Weap: ZPRegisteredWeapon): void;
     SetPrimaryWeapon(this: ZPServerPlayer, PrimaryWeapon: ZPRegisteredWeapon | undefined): void;
