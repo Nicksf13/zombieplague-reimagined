@@ -132,6 +132,19 @@ function runLua(scenario, server = true, { entry = "shared.lua", setup = "" } = 
 }
 
 for (const server of [true, false]) {
+    test(`SafeTableRandom is available to shared weapons in the ${server ? "server" : "client"} realm`, () => runLua(`
+        function table.Random(values)
+            for key, value in pairs(values) do return value, key end
+            return nil, nil
+        end
+        assert(type(SafeTableRandom) == "function")
+        local sound = SafeTableRandom(ZombieKnifeSound)
+        assert(sound == ZombieKnifeSound[1] or sound == ZombieKnifeSound[2])
+        assert(SafeTableRandom({enabled = false}) == false)
+        assert(SafeTableRandom({count = 0}) == 0)
+        assert(select("#", SafeTableRandom({key = "value"})) == 1)
+        assert(select("#", SafeTableRandom({})) == 1)
+    `, server));
     test(`shared entry point loads in the ${server ? "server" : "client"} realm`, () => runLua(`
         assert(GM.Name == "Zombie Plague (For GMOD)")
         assert(TEAM_HUMANS == 3 and TEAM_ZOMBIES == 2)

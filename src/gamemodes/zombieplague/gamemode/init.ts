@@ -41,11 +41,6 @@ AddCSLuaFile("cl_weapon_menu.lua");
 AddCSLuaFile("cl_weapon_menu_hud.lua");
 AddCSLuaFile("cl_main_menu.lua");
 AddCSLuaFile("cl_main_menu_hud.lua");
-_G.SafeTableRandom = function <T>(this: void, values: ZPLuaTable<T>): T | undefined {
-    // Assign only the first return: callers must not receive table.Random's key.
-    const [value] = table.Random(values);
-    return value;
-};
 hook.Add("PlayerDisconnected", "ZombiePlagueDisconnect", (ply) => {
     (RoundManager as ZPServerRoundManager).RemovePlayerToPlay(ply);
 });

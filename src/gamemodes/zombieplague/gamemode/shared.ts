@@ -1,5 +1,11 @@
 // Isolate file-local TypeScript names; GMod ignores the empty module return.
 export {};
+// Shared weapons call this on both the server and the predicting client.
+_G.SafeTableRandom = function <T>(this: void, values: ZPLuaTable<T>): T | undefined {
+    // Assign only the first return: callers must not receive table.Random's key.
+    const [value] = table.Random(values);
+    return value;
+};
 GM.Name = "Zombie Plague (For GMOD)";
 GM.Author = "The Fire Fuchs (Original Author: MeRcyLeZZ)";
 GM.Email = "";

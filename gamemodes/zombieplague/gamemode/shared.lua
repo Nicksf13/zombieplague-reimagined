@@ -1,5 +1,9 @@
 -- Generated from src/gamemodes/zombieplague/gamemode/shared.ts. DO NOT EDIT; run npm run build.
 local ____exports = {}
+_G.SafeTableRandom = function(values)
+    local value = table.Random(values)
+    return value
+end
 GM.Name = "Zombie Plague (For GMOD)"
 GM.Author = "The Fire Fuchs (Original Author: MeRcyLeZZ)"
 GM.Email = ""

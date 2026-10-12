@@ -42,10 +42,6 @@ AddCSLuaFile("cl_weapon_menu.lua")
 AddCSLuaFile("cl_weapon_menu_hud.lua")
 AddCSLuaFile("cl_main_menu.lua")
 AddCSLuaFile("cl_main_menu_hud.lua")
-_G.SafeTableRandom = function(values)
-    local value = table.Random(values)
-    return value
-end
 hook.Add(
     "PlayerDisconnected",
     "ZombiePlagueDisconnect",
