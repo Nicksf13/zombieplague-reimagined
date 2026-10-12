@@ -68,6 +68,17 @@
   at runtime. Permissions and gameplay rules must be checked on the server.
 - Preserve assets and persisted data. The build must not clean `gamemodes/`.
 
+## Localization
+
+- Always translate new or changed player-facing text into every supported language
+  in `gamemodes/zombieplague/content/resource/localization/` (currently 32 catalogs).
+  This includes warnings, notifications, menu labels, and help text. Update all
+  catalogs in the same change; do not leave English placeholders in other languages.
+- Use native localization keys instead of hardcoded player-facing text. Preserve
+  UTF-8 encoding and keep format parameters consistent across all translations.
+- Validate catalog completeness and format parameters with
+  `tests/localization-runtime.test.mjs` when changing localized text.
+
 ## Validation
 
 - After changing migrated sources, run `npm run build` and `npm test`.

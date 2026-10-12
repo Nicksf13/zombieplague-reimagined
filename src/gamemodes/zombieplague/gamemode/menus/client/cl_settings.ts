@@ -2,8 +2,20 @@ export class SettingsController implements ZPSettingsController {
     private opened: boolean = false;
     private presentation: ZPSettingsPresentation | undefined;
     private alwaysRun = CreateClientConVar("zp_always_run", "0", true, false, "Always hold the sprint input while alive.");
+    private staminaMode: boolean | undefined;
+
+    private SyncStaminaMode(): boolean {
+        const staminaMode = cvars.Bool("zp_realistic_mode", false) || cvars.Bool("zp_run_should_drain", false);
+        // A saved preference must not opt the player into stamina costs on another server
+        // or when the server enables them. Explicit activation lasts until the mode changes.
+        if (staminaMode && this.staminaMode !== true)
+            this.alwaysRun.SetBool(false);
+        this.staminaMode = staminaMode;
+        return staminaMode;
+    }
 
     GetState(): ZPSettingsState {
+        this.SyncStaminaMode();
         return { Open: this.opened, Theme: ZPThemes.GetActiveID(), Themes: ZPThemes.GetThemes(),
             AlwaysRun: this.alwaysRun.GetBool() };
     }
@@ -30,6 +42,9 @@ export class SettingsController implements ZPSettingsController {
 
     UseTheme(id: string): void { if (this.opened) ZPThemes.UseTheme(id); }
     SetAlwaysRun(enabled: boolean): void {
+        const staminaMode = this.SyncStaminaMode();
+        if (enabled && !this.alwaysRun.GetBool() && staminaMode)
+            notification.AddLegacy(language.GetPhrase("zombieplague.settingsalwaysrunstaminawarning"), NOTIFY_GENERIC, 8);
         this.alwaysRun.SetBool(enabled);
         this.presentation?.Update(this.GetState());
     }
@@ -41,6 +56,7 @@ export class SettingsController implements ZPSettingsController {
     Back(): void { this.Close(); ZPMainMenu.Open(); }
 
     Tick(): void {
+        this.SyncStaminaMode();
         if (!this.opened)
             return;
         if (input.IsKeyDown(KEY_ESCAPE))
@@ -50,6 +66,7 @@ export class SettingsController implements ZPSettingsController {
     }
 
     ApplyMovement(command: ZPClientUserCommand): void {
+        this.SyncStaminaMode();
         const ply = LocalPlayer();
         if (this.alwaysRun.GetBool() && IsValid(ply) && ply.Alive() && ply.Team() !== TEAM_SPECTATOR)
             // Adds only sprint: attacking, jumping, crouching and manual input remain intact.
