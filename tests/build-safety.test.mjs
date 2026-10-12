@@ -22,6 +22,9 @@ test("build rejects type errors, detects stale Lua and preserves unmigrated file
             await mkdir(path.dirname(output), { recursive: true });
             await cp(path.join(root, `${name}.lua`), output);
         }
+        const ignorePath = path.join(fixture, "gamemodes/.gitignore");
+        const originalIgnore = await readFile(path.join(root, "gamemodes/.gitignore"), "utf8");
+        await writeFile(ignorePath, originalIgnore);
         const sentinel = path.join(fixture, "gamemodes/zombieplague/gamemode/__unmigrated_fixture.lua");
         await writeFile(sentinel, "-- Unmigrated GLua must survive the build.\n");
         const source = path.join(fixture, "src/gamemodes/zombieplague/gamemode/shared.ts");
@@ -53,14 +56,21 @@ test("build rejects type errors, detects stale Lua and preserves unmigrated file
         await writeFile(clientSource, originalClient);
         const stale = "-- Manual edit that build:check must report.\n";
         await writeFile(output, stale);
+        await writeFile(ignorePath, "# Stale generated ignore list\n");
         const checked = run("--check");
         assert.equal(checked.status, 1);
         assert.match(checked.stderr, /Generated Lua is outdated/);
         assert.equal(await readFile(output, "utf8"), stale, "Check mode must not write runtime files");
+        assert.equal(await readFile(ignorePath, "utf8"), "# Stale generated ignore list\n");
 
+        const missingOutput = path.join(fixture, `${manifest.files.at(-1)}.lua`);
+        await rm(missingOutput);
         const built = run();
         assert.equal(built.status, 0, built.stdout + built.stderr);
         assert.equal(await readFile(output, "utf8"), originalOutputs[0]);
+        assert.equal(await readFile(missingOutput, "utf8"), originalOutputs.at(-1));
+        assert.equal(await readFile(ignorePath, "utf8"), originalIgnore);
+        assert(!originalIgnore.includes("__unmigrated_fixture.lua"));
         assert.equal(await readFile(sentinel, "utf8"), "-- Unmigrated GLua must survive the build.\n");
 
         // Grouped TS sources must still emit only to their original GMod paths.

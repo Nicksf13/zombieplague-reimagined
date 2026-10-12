@@ -2,6 +2,9 @@
 
 Todos os arquivos de código do gamemode têm fonte TypeScript e são compilados com TypeScriptToLua.
 Os fontes ficam em `src/`, e o GMod continua carregando os `.lua` em `gamemodes/`.
+O Lua gerado não é versionado. **Compile antes de instalar o gamemode no Garry's Mod.**
+O build mantém as cópias locais e atualiza `gamemodes/.gitignore` conforme `migration.json`,
+sem ignorar traduções, assets ou Lua escrito manualmente.
 Consulte o [guia de desenvolvimento e etapas da migração](docs/typescript-migration.md).
 O [diagnóstico inicial](docs/project-diagnosis.md) registra os achados anteriores à conversão.
 O build e os testes locais estão disponíveis; a validação da migração no Garry's Mod está pendente.

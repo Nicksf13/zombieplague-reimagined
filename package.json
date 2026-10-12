@@ -10,7 +10,7 @@
     "build:check": "node scripts/build.mjs --check",
     "dev": "node scripts/build.mjs --watch",
     "preview:weapons": "node scripts/preview-weapon-menu.mjs",
-    "test": "npm run typecheck && npm run build:check && node --test tests/*.test.mjs"
+    "test": "npm run typecheck && npm run build && node --test tests/*.test.mjs"
   },
   "devDependencies": {
     "@typescript-to-lua/language-extensions": "1.19.0",

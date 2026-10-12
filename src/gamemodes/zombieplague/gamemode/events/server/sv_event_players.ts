@@ -23,6 +23,8 @@ GM.PlayerCanSeePlayersChat = function (_text, teamTalk, listener, talker): boole
     return cvars.Bool("zp_can_see_death", true) || listener.Alive() === talker.Alive();
 };
 GM.PlayerSpawn = function (ply): void {
+    // Always synchronize off, even if the server already considers it off, without toggle audio.
+    ply.SetNightvision(false, true);
     if (ply.FirstSpawn) {
         if (ply.Team() !== TEAM_SPECTATOR) {
             ply.UnSpectate();

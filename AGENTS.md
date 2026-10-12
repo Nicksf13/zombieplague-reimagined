@@ -42,7 +42,11 @@
 - `files` lists runtime Lua paths; `sourcePaths` maps those paths to sources
   organized in folders. When moving TS files, update this mapping to preserve
   paths used by GMod, registration loaders, and addons.
-- Edit GLua that has not yet been migrated normally. Commit TS sources and generated Lua.
+- Edit GLua that has not yet been migrated normally. Commit TS sources and handwritten
+  Lua, but do not commit generated Lua. The build synchronizes `gamemodes/.gitignore`
+  with the exact outputs in `migration.json`; keep that ignore file versioned.
+  Build before installing or distributing the gamemode, since a fresh checkout
+  does not contain the generated runtime Lua.
 - Separate bug fixes from conversion work, keeping each change identifiable.
 - Preserve paths, `include` order, `AddCSLuaFile`, public globals, hooks, IDs,
   and protocols used by legacy code and addons. When splitting files, update

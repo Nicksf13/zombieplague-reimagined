@@ -23,9 +23,9 @@ npm run dev
 
 - `build`: compila em uma pasta temporária e valida toda a sintaxe Lua 5.1 antes
   de atualizar os arquivos do gamemode.
-- `build:check`: confere se o Lua versionado corresponde aos fontes, sem gravar.
+- `build:check`: confere se o Lua local e a lista de ignores correspondem aos fontes, sem gravar.
 - `typecheck`: verifica servidor, cliente e exemplos de contratos inválidos.
-- `test`: verifica tipos, atualização do Lua e regressões de runtime simuladas.
+- `test`: verifica tipos, gera o Lua local e executa regressões de runtime simuladas.
 - `dev`: recompila ao salvar; erros de compilação preservam a saída anterior.
 
 No PowerShell deste workspace, o wrapper usa o Node instalado ou a distribuição
@@ -36,8 +36,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\npm.ps1 run build
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\npm.ps1 test
 ```
 
-Versione `src/`, `types/`, os scripts, configurações, testes, lockfile e Lua gerado.
-`node_modules/`, `.tools/` e `.build/` ficam ignorados. Para instalar no GMod,
+Versione `src/`, `types/`, os scripts, configurações, testes, lockfile e `gamemodes/.gitignore`. O Lua gerado não é versionado.
+`node_modules/`, `.tools/` e `.build/` ficam ignorados. O build sincroniza `gamemodes/.gitignore` com os caminhos exatos de `migration.json`, sem ignorar assets, traduções ou Lua manual. Um checkout novo precisa de compilação. Para instalar no GMod, execute `npm ci` e `npm run build`, depois
 distribua `gamemodes/` com os assets. O servidor não precisa de Node.js.
 
 ### Conflito com a versão do Workshop

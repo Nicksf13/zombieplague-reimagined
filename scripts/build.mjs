@@ -74,9 +74,16 @@ async function build() {
             const header = `-- Generated from src/${source}.ts. DO NOT EDIT; run npm run build.\n`;
             outputs.push({ target: path.join(root, `${name}.lua`), content: header + generated });
         }
+        // Ignore only manifest outputs; handwritten Lua and game content remain trackable.
+        const ignoredLua = {
+            target: path.join(root, "gamemodes/.gitignore"),
+            content: "# Generated from migration.json by npm run build. Commit this file, not the generated Lua.\n" +
+                files.map(name => `/${name.slice("gamemodes/".length)}.lua`).sort().join("\n") + "\n",
+        };
+        const artifacts = [...outputs, ignoredLua];
         if (check) {
             const outdated = [];
-            for (const output of outputs) {
+            for (const output of artifacts) {
                 let current;
                 try { current = await readFile(output.target, "utf8"); }
                 catch (error) { if (error.code !== "ENOENT") throw error; }
@@ -86,7 +93,7 @@ async function build() {
             }
             if (outdated.length) throw new Error(`Generated Lua is outdated. Run npm run build:\n${outdated.join("\n")}`);
         } else {
-            for (const output of outputs) {
+            for (const output of artifacts) {
                 await mkdir(path.dirname(output.target), { recursive: true });
                 await writeFile(output.target, output.content);
             }

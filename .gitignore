@@ -20,4 +20,5 @@ npm-debug.log*
 Thumbs.db
 Desktop.ini
 
-# Manter package-lock.json e o Lua gerado em gamemodes/ versionados.
+# Manter package-lock.json versionado.
+# gamemodes/.gitignore lista apenas os Lua gerados, conforme migration.json.

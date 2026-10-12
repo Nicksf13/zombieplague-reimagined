@@ -95,9 +95,9 @@ PLAYER.SetMaxBreath = function (this: ZPServerPlayer, MaxBreath: number): void {
 PLAYER.GetMaxBreath = function (this: ZPServerPlayer): number {
     return (this.MaxBreath ?? 100);
 };
-PLAYER.SetNightvision = function (this: ZPServerPlayer, Nightvision: boolean): void {
+PLAYER.SetNightvision = function (this: ZPServerPlayer, Nightvision: boolean, silent: boolean = false): void {
     this.Nightvision = Nightvision;
-    if ((this.Alive() && this.IsHuman())) {
+    if (!silent && this.Alive() && this.IsHuman()) {
         if ((RoundManager as ZPServerRoundManager).IsRealisticMod()) {
             if (Nightvision) {
                 this.EmitSound(NIGHTVISION_ON_SOUND, 75, 100, 0.25);
