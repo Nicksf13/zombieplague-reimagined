@@ -1,25 +1,34 @@
-ExtraItem.ID = "ZPM202"
-ExtraItem.Name = "ExtraItemM202Name"
-ExtraItem.Price = 40
-function ExtraItem:OnBuy(ply)
-	local Weap = ply:GetWeapon("m9k_m202")
-	if IsValid(Weap) then
-		ply:GiveAmmo(4, Weap:GetPrimaryAmmoType(), true) 
-	else
-		ply:Give("m9k_m202")
-	end
+-- Generated from src/gamemodes/zombieplague/gamemode/extraitems/server/zp_m9k_m202.ts. DO NOT EDIT; run npm run build.
+-- Lua Library inline imports
+local function __TS__New(target, ...)
+    local instance = setmetatable({}, target.prototype)
+    instance:____constructor(...)
+    return instance
 end
-function ExtraItem:ShouldBeEnabled()
-	return WeaponManager:ServerHasWeapon("m9k_m202")
-end
-
+-- End of Lua Library inline imports
+local ____exports = {}
 WeaponManager:AddWeaponMultiplier("m9k_m202_rocket", 2)
-
-Dictionary:RegisterPhrase("en-us", "ExtraItemM202Name", "M202", false)
-Dictionary:RegisterPhrase("pt-br", "ExtraItemM202Name", "M202", false)
-Dictionary:RegisterPhrase("es-ar", "ExtraItemM202Name", "M202", false)
-Dictionary:RegisterPhrase("ru", "ExtraItemM202Name", "M202", false)
-Dictionary:RegisterPhrase("uk", "ExtraItemM202Name", "M202", false)
-Dictionary:RegisterPhrase("tchinese", "ExtraItemM202Name", "M202", false)
-Dictionary:RegisterPhrase("ja", "ExtraItemM202Name", "M202", false)
-Dictionary:RegisterPhrase("ko", "ExtraItemM202Name", "M202", false)
+____exports.default = __TS__New(
+    ExtraItemDefinition,
+    {
+        ID = "ZPM202",
+        Name = "ExtraItemM202Name",
+        Price = 40,
+        OnBuy = function(self, ply)
+            local Weap = ply:GetWeapon("m9k_m202")
+            if IsValid(Weap) then
+                ply:GiveAmmo(
+                    4,
+                    Weap:GetPrimaryAmmoType(),
+                    true
+                )
+            else
+                ply:Give("m9k_m202")
+            end
+        end,
+        ShouldBeEnabled = function(self)
+            return WeaponManager:ServerHasWeapon("m9k_m202")
+        end
+    }
+)
+return ____exports

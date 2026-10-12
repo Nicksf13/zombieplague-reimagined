@@ -1,25 +1,34 @@
-ExtraItem.ID = "ZPIED"
-ExtraItem.Name = "ExtraItemIEDName"
-ExtraItem.Price = 20
-function ExtraItem:OnBuy(ply)
-	local Weap = ply:GetWeapon("m9k_ied_detonator")
-	if IsValid(Weap) then
-		ply:GiveAmmo(3, Weap:GetPrimaryAmmoType(), true) 
-	else
-		ply:Give("m9k_ied_detonator")
-	end
+-- Generated from src/gamemodes/zombieplague/gamemode/extraitems/server/zp_m9k_ied.ts. DO NOT EDIT; run npm run build.
+-- Lua Library inline imports
+local function __TS__New(target, ...)
+    local instance = setmetatable({}, target.prototype)
+    instance:____constructor(...)
+    return instance
 end
-function ExtraItem:ShouldBeEnabled()
-	return WeaponManager:ServerHasWeapon("m9k_ied_detonator")
-end
-
+-- End of Lua Library inline imports
+local ____exports = {}
 WeaponManager:AddWeaponMultiplier("m9k_improvised_explosive", 8)
-
-Dictionary:RegisterPhrase("en-us", "ExtraItemIEDName", "IED", false)
-Dictionary:RegisterPhrase("pt-br", "ExtraItemIEDName", "IED", false)
-Dictionary:RegisterPhrase("es-ar", "ExtraItemIEDName", "IED", false)
-Dictionary:RegisterPhrase("ru", "ExtraItemIEDName", "IED", false)
-Dictionary:RegisterPhrase("uk", "ExtraItemIEDName", "IED", false)
-Dictionary:RegisterPhrase("tchinese", "ExtraItemIEDName", "IED", false)
-Dictionary:RegisterPhrase("ja", "ExtraItemIEDName", "IED", false)
-Dictionary:RegisterPhrase("ko", "ExtraItemIEDName", "IED", false)
+____exports.default = __TS__New(
+    ExtraItemDefinition,
+    {
+        ID = "ZPIED",
+        Name = "ExtraItemIEDName",
+        Price = 20,
+        OnBuy = function(self, ply)
+            local Weap = ply:GetWeapon("m9k_ied_detonator")
+            if IsValid(Weap) then
+                ply:GiveAmmo(
+                    3,
+                    Weap:GetPrimaryAmmoType(),
+                    true
+                )
+            else
+                ply:Give("m9k_ied_detonator")
+            end
+        end,
+        ShouldBeEnabled = function(self)
+            return WeaponManager:ServerHasWeapon("m9k_ied_detonator")
+        end
+    }
+)
+return ____exports

@@ -1,25 +1,34 @@
-ExtraItem.ID = "ZPM134"
-ExtraItem.Name = "ExtraItemM134Name"
-ExtraItem.Price = 100
-function ExtraItem:OnBuy(ply)
-	local Weap = ply:GetWeapon("m9k_minigun")
-	if IsValid(Weap) then
-		ply:GiveAmmo(300, Weap:GetPrimaryAmmoType(), true) 
-	else
-		ply:Give("m9k_minigun")
-	end
+-- Generated from src/gamemodes/zombieplague/gamemode/extraitems/server/zp_m9k_m134.ts. DO NOT EDIT; run npm run build.
+-- Lua Library inline imports
+local function __TS__New(target, ...)
+    local instance = setmetatable({}, target.prototype)
+    instance:____constructor(...)
+    return instance
 end
-function ExtraItem:ShouldBeEnabled()
-	return WeaponManager:ServerHasWeapon("m9k_minigun")
-end
-
+-- End of Lua Library inline imports
+local ____exports = {}
 WeaponManager:AddWeaponMultiplier("m9k_minigun", 0.5)
-
-Dictionary:RegisterPhrase("en-us", "ExtraItemM134Name", "M134 Minigun", false)
-Dictionary:RegisterPhrase("pt-br", "ExtraItemM134Name", "M134 Minigun", false)
-Dictionary:RegisterPhrase("es-ar", "ExtraItemM134Name", "M134 Minigun", false)
-Dictionary:RegisterPhrase("ru", "ExtraItemM134Name", "M134 Minigun", false)
-Dictionary:RegisterPhrase("uk", "ExtraItemM134Name", "M134 Minigun", false)
-Dictionary:RegisterPhrase("tchinese", "ExtraItemM134Name", "M134 Minigun", false)
-Dictionary:RegisterPhrase("ja", "ExtraItemM134Name", "M134 Minigun", false)
-Dictionary:RegisterPhrase("ko", "ExtraItemM134Name", "M134 Minigun", false)
+____exports.default = __TS__New(
+    ExtraItemDefinition,
+    {
+        ID = "ZPM134",
+        Name = "ExtraItemM134Name",
+        Price = 100,
+        OnBuy = function(self, ply)
+            local Weap = ply:GetWeapon("m9k_minigun")
+            if IsValid(Weap) then
+                ply:GiveAmmo(
+                    300,
+                    Weap:GetPrimaryAmmoType(),
+                    true
+                )
+            else
+                ply:Give("m9k_minigun")
+            end
+        end,
+        ShouldBeEnabled = function(self)
+            return WeaponManager:ServerHasWeapon("m9k_minigun")
+        end
+    }
+)
+return ____exports

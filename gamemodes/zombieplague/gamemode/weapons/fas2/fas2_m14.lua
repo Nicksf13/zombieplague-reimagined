@@ -1,4 +1,11 @@
-Weapon.PrettyName = "M14"
-Weapon.WeaponID = "fas2_m14"
-Weapon.DamageMultiplier = 0.7
-Weapon.WeaponType = WEAPON_PRIMARY
+-- Generated from src/gamemodes/zombieplague/gamemode/weapons/server/fas2/fas2_m14.ts. DO NOT EDIT; run npm run build.
+-- Lua Library inline imports
+local function __TS__New(target, ...)
+    local instance = setmetatable({}, target.prototype)
+    instance:____constructor(...)
+    return instance
+end
+-- End of Lua Library inline imports
+local ____exports = {}
+____exports.default = __TS__New(WeaponDefinition, {PrettyName = "M14", WeaponID = "fas2_m14", DamageMultiplier = 0.7, WeaponType = WEAPON_PRIMARY})
+return ____exports

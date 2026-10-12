@@ -1,0 +1,241 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+<title>Zombie Plague: tema de HUD e menu</title>
+<rect width="1280" height="720" fill="#26343d"/>
+<rect x="24" y="632" width="132" height="64" rx="8" fill="rgb(20,20,20)" fill-opacity="0.7843137254901961"/>
+<text x="34" y="652" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,160,0)">Vida</text>
+<text x="34" y="682" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="24" fill="rgb(255,160,0)">100</text>
+<rect x="164" y="632" width="132" height="64" rx="8" fill="rgb(20,20,20)" fill-opacity="0.7843137254901961"/>
+<text x="174" y="652" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,160,0)">Colete</text>
+<text x="174" y="682" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="24" fill="rgb(255,160,0)">25</text>
+<rect x="304" y="632" width="132" height="64" rx="8" fill="rgb(20,20,20)" fill-opacity="0.7843137254901961"/>
+<text x="314" y="652" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,160,0)">Ammo Packs</text>
+<text x="314" y="682" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="24" fill="rgb(255,160,0)">160</text>
+<rect x="586" y="632" width="108" height="64" rx="8" fill="rgb(20,20,20)" fill-opacity="0.7843137254901961"/>
+<text x="596" y="652" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,160,0)">RODADA</text>
+<text x="596" y="682" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="24" fill="rgb(255,160,0)">02:05</text>
+<rect x="1050" y="632" width="206" height="64" rx="8" fill="rgb(20,20,20)" fill-opacity="0.7843137254901961"/>
+<text x="1060" y="652" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,160,0)">MUNIÇÃO PRIMÁRIA</text>
+<text x="1060" y="682" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="24" fill="rgb(255,160,0)">30 / 90</text>
+<rect x="1050" y="560" width="206" height="64" rx="8" fill="rgb(20,20,20)" fill-opacity="0.7843137254901961"/>
+<text x="1060" y="580" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,160,0)">MUNIÇÃO SECUNDÁRIA</text>
+<text x="1060" y="610" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="24" fill="rgb(255,160,0)">3</text>
+<rect x="24" y="544" width="121" height="19" rx="2" fill="rgb(20,20,20)" fill-opacity="0.7843137254901961"/>
+<text x="32" y="559" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">Classe: Soldado</text>
+<rect x="24" y="564" width="184" height="19" rx="2" fill="rgb(20,20,20)" fill-opacity="0.7843137254901961"/>
+<text x="32" y="579" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">Nível de oxigênio: 80%</text>
+<rect x="24" y="584" width="100" height="19" rx="2" fill="rgb(20,20,20)" fill-opacity="0.7843137254901961"/>
+<text x="32" y="599" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">Bateria: 60%</text>
+<rect x="24" y="604" width="184" height="19" rx="2" fill="rgb(20,20,20)" fill-opacity="0.7843137254901961"/>
+<text x="32" y="619" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">Poder da habilidade: 50%</text>
+<defs><clipPath id="clip1"><rect x="180" y="90" width="920" height="540"/></clipPath></defs><g clip-path="url(#clip1)">
+<rect x="180" y="90" width="920" height="540" rx="8" fill="rgb(20,20,20)" fill-opacity="0.7843137254901961"/>
+<rect x="180" y="90" width="920" height="3" rx="0" fill="rgb(255,160,0)" fill-opacity="1"/>
+<text x="204" y="128" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="18" fill="rgb(255,160,0)">ZOMBIE PLAGUE</text>
+<text x="204" y="160" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="24" fill="rgb(255,218,154)">Placar da partida</text>
+<text x="978" y="157" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(195,174,140)">Jogadores: 6</text>
+<text x="204" y="617" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(195,174,140)">Solte TAB para fechar | ON / OFF: áudio do jogador</text>
+<defs><clipPath id="clip2"><rect x="204" y="186" width="872" height="404"/></clipPath></defs><g clip-path="url(#clip2)">
+<defs><clipPath id="clip3"><rect x="204" y="186" width="852" height="28"/></clipPath></defs><g clip-path="url(#clip3)">
+<text x="208" y="212" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="24" fill="rgb(255,160,0)">Humanos  (3)</text>
+</g>
+<defs><clipPath id="clip4"><rect x="204" y="216" width="852" height="24"/></clipPath></defs><g clip-path="url(#clip4)">
+<rect x="204" y="216" width="852" height="24" rx="0" fill="rgb(45,43,36)" fill-opacity="0.9215686274509803"/>
+<defs><clipPath id="clip5"><rect x="216" y="216" width="472" height="24"/></clipPath></defs><g clip-path="url(#clip5)">
+<text x="216" y="233" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(195,174,140)">Nome</text>
+</g>
+<defs><clipPath id="clip6"><rect x="696" y="216" width="64" height="24"/></clipPath></defs><g clip-path="url(#clip6)">
+<text x="707" y="233" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(195,174,140)">Pontos</text>
+</g>
+<defs><clipPath id="clip7"><rect x="768" y="216" width="64" height="24"/></clipPath></defs><g clip-path="url(#clip7)">
+<text x="779" y="233" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(195,174,140)">Mortes</text>
+</g>
+<defs><clipPath id="clip8"><rect x="840" y="216" width="100" height="24"/></clipPath></defs><g clip-path="url(#clip8)">
+<text x="869" y="233" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(195,174,140)">Estado</text>
+</g>
+<defs><clipPath id="clip9"><rect x="948" y="216" width="52" height="24"/></clipPath></defs><g clip-path="url(#clip9)">
+<text x="948" y="233" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(195,174,140)">Latência</text>
+</g>
+<defs><clipPath id="clip10"><rect x="1008" y="216" width="36" height="24"/></clipPath></defs><g clip-path="url(#clip10)">
+<text x="1015.5" y="233" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(195,174,140)">Som</text>
+</g>
+</g>
+<defs><clipPath id="clip11"><rect x="204" y="242" width="852" height="34"/></clipPath></defs><g clip-path="url(#clip11)">
+<rect x="204" y="242" width="852" height="34" rx="8" fill="rgb(45,43,36)" fill-opacity="0.9215686274509803"/>
+<defs><clipPath id="clip12"><rect x="216" y="242" width="472" height="34"/></clipPath></defs><g clip-path="url(#clip12)">
+<text x="216" y="264" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">Hunter</text>
+</g>
+<defs><clipPath id="clip13"><rect x="696" y="242" width="64" height="34"/></clipPath></defs><g clip-path="url(#clip13)">
+<text x="721" y="264" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">80</text>
+</g>
+<defs><clipPath id="clip14"><rect x="768" y="242" width="64" height="34"/></clipPath></defs><g clip-path="url(#clip14)">
+<text x="796.5" y="264" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">2</text>
+</g>
+<defs><clipPath id="clip15"><rect x="840" y="242" width="100" height="34"/></clipPath></defs><g clip-path="url(#clip15)">
+<text x="876" y="264" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">Vivo</text>
+</g>
+<defs><clipPath id="clip16"><rect x="948" y="242" width="52" height="34"/></clipPath></defs><g clip-path="url(#clip16)">
+<text x="967" y="264" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">42</text>
+</g>
+<defs><clipPath id="clip17"><rect x="1008" y="246" width="36" height="26"/></clipPath></defs><g clip-path="url(#clip17)">
+<rect x="1008" y="246" width="36" height="26" rx="8" fill="rgb(20,20,20)" fill-opacity="0.7843137254901961"/>
+<text x="1014" y="264" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">ON</text>
+</g>
+</g>
+<defs><clipPath id="clip18"><rect x="204" y="280" width="852" height="34"/></clipPath></defs><g clip-path="url(#clip18)">
+<rect x="204" y="280" width="852" height="34" rx="8" fill="rgb(45,43,36)" fill-opacity="0.9215686274509803"/>
+<defs><clipPath id="clip19"><rect x="216" y="280" width="472" height="34"/></clipPath></defs><g clip-path="url(#clip19)">
+<text x="216" y="302" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">Soldado</text>
+</g>
+<defs><clipPath id="clip20"><rect x="696" y="280" width="64" height="34"/></clipPath></defs><g clip-path="url(#clip20)">
+<text x="721" y="302" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">65</text>
+</g>
+<defs><clipPath id="clip21"><rect x="768" y="280" width="64" height="34"/></clipPath></defs><g clip-path="url(#clip21)">
+<text x="796.5" y="302" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">2</text>
+</g>
+<defs><clipPath id="clip22"><rect x="840" y="280" width="100" height="34"/></clipPath></defs><g clip-path="url(#clip22)">
+<text x="876" y="302" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">Vivo</text>
+</g>
+<defs><clipPath id="clip23"><rect x="948" y="280" width="52" height="34"/></clipPath></defs><g clip-path="url(#clip23)">
+<text x="967" y="302" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">42</text>
+</g>
+<defs><clipPath id="clip24"><rect x="1008" y="284" width="36" height="26"/></clipPath></defs><g clip-path="url(#clip24)">
+<rect x="1008" y="284" width="36" height="26" rx="8" fill="rgb(20,20,20)" fill-opacity="0.7843137254901961"/>
+<text x="1014" y="302" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">ON</text>
+</g>
+</g>
+<defs><clipPath id="clip25"><rect x="204" y="318" width="852" height="34"/></clipPath></defs><g clip-path="url(#clip25)">
+<rect x="204" y="318" width="852" height="34" rx="8" fill="rgb(45,43,36)" fill-opacity="0.9215686274509803"/>
+<rect x="204" y="318" width="3" height="34" rx="0" fill="rgb(255,160,0)" fill-opacity="1"/>
+<defs><clipPath id="clip26"><rect x="216" y="318" width="472" height="34"/></clipPath></defs><g clip-path="url(#clip26)">
+<text x="216" y="340" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">Você</text>
+</g>
+<defs><clipPath id="clip27"><rect x="696" y="318" width="64" height="34"/></clipPath></defs><g clip-path="url(#clip27)">
+<text x="721" y="340" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">40</text>
+</g>
+<defs><clipPath id="clip28"><rect x="768" y="318" width="64" height="34"/></clipPath></defs><g clip-path="url(#clip28)">
+<text x="796.5" y="340" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">2</text>
+</g>
+<defs><clipPath id="clip29"><rect x="840" y="318" width="100" height="34"/></clipPath></defs><g clip-path="url(#clip29)">
+<text x="876" y="340" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">Vivo</text>
+</g>
+<defs><clipPath id="clip30"><rect x="948" y="318" width="52" height="34"/></clipPath></defs><g clip-path="url(#clip30)">
+<text x="967" y="340" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">42</text>
+</g>
+</g>
+<defs><clipPath id="clip31"><rect x="204" y="360" width="852" height="28"/></clipPath></defs><g clip-path="url(#clip31)">
+<text x="208" y="386" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="24" fill="rgb(255,160,0)">Zombies  (2)</text>
+</g>
+<defs><clipPath id="clip32"><rect x="204" y="390" width="852" height="24"/></clipPath></defs><g clip-path="url(#clip32)">
+<rect x="204" y="390" width="852" height="24" rx="0" fill="rgb(45,43,36)" fill-opacity="0.9215686274509803"/>
+<defs><clipPath id="clip33"><rect x="216" y="390" width="472" height="24"/></clipPath></defs><g clip-path="url(#clip33)">
+<text x="216" y="407" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(195,174,140)">Nome</text>
+</g>
+<defs><clipPath id="clip34"><rect x="696" y="390" width="64" height="24"/></clipPath></defs><g clip-path="url(#clip34)">
+<text x="707" y="407" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(195,174,140)">Pontos</text>
+</g>
+<defs><clipPath id="clip35"><rect x="768" y="390" width="64" height="24"/></clipPath></defs><g clip-path="url(#clip35)">
+<text x="779" y="407" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(195,174,140)">Mortes</text>
+</g>
+<defs><clipPath id="clip36"><rect x="840" y="390" width="100" height="24"/></clipPath></defs><g clip-path="url(#clip36)">
+<text x="869" y="407" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(195,174,140)">Estado</text>
+</g>
+<defs><clipPath id="clip37"><rect x="948" y="390" width="52" height="24"/></clipPath></defs><g clip-path="url(#clip37)">
+<text x="948" y="407" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(195,174,140)">Latência</text>
+</g>
+<defs><clipPath id="clip38"><rect x="1008" y="390" width="36" height="24"/></clipPath></defs><g clip-path="url(#clip38)">
+<text x="1015.5" y="407" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(195,174,140)">Som</text>
+</g>
+</g>
+<defs><clipPath id="clip39"><rect x="204" y="416" width="852" height="34"/></clipPath></defs><g clip-path="url(#clip39)">
+<rect x="204" y="416" width="852" height="34" rx="8" fill="rgb(45,43,36)" fill-opacity="0.9215686274509803"/>
+<defs><clipPath id="clip40"><rect x="216" y="416" width="472" height="34"/></clipPath></defs><g clip-path="url(#clip40)">
+<text x="216" y="438" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">Predador</text>
+</g>
+<defs><clipPath id="clip41"><rect x="696" y="416" width="64" height="34"/></clipPath></defs><g clip-path="url(#clip41)">
+<text x="721" y="438" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">90</text>
+</g>
+<defs><clipPath id="clip42"><rect x="768" y="416" width="64" height="34"/></clipPath></defs><g clip-path="url(#clip42)">
+<text x="796.5" y="438" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">2</text>
+</g>
+<defs><clipPath id="clip43"><rect x="840" y="416" width="100" height="34"/></clipPath></defs><g clip-path="url(#clip43)">
+<text x="876" y="438" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">Vivo</text>
+</g>
+<defs><clipPath id="clip44"><rect x="948" y="416" width="52" height="34"/></clipPath></defs><g clip-path="url(#clip44)">
+<text x="967" y="438" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">42</text>
+</g>
+<defs><clipPath id="clip45"><rect x="1008" y="420" width="36" height="26"/></clipPath></defs><g clip-path="url(#clip45)">
+<rect x="1008" y="420" width="36" height="26" rx="8" fill="rgb(255,160,0)" fill-opacity="1"/>
+<text x="1014" y="438" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(12,18,22)">OFF</text>
+</g>
+</g>
+<defs><clipPath id="clip46"><rect x="204" y="454" width="852" height="34"/></clipPath></defs><g clip-path="url(#clip46)">
+<rect x="204" y="454" width="852" height="34" rx="8" fill="rgb(45,43,36)" fill-opacity="0.9215686274509803"/>
+<defs><clipPath id="clip47"><rect x="216" y="454" width="472" height="34"/></clipPath></defs><g clip-path="url(#clip47)">
+<text x="216" y="476" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">Infectado</text>
+</g>
+<defs><clipPath id="clip48"><rect x="696" y="454" width="64" height="34"/></clipPath></defs><g clip-path="url(#clip48)">
+<text x="721" y="476" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">60</text>
+</g>
+<defs><clipPath id="clip49"><rect x="768" y="454" width="64" height="34"/></clipPath></defs><g clip-path="url(#clip49)">
+<text x="796.5" y="476" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">2</text>
+</g>
+<defs><clipPath id="clip50"><rect x="840" y="454" width="100" height="34"/></clipPath></defs><g clip-path="url(#clip50)">
+<text x="872.5" y="476" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">Morto</text>
+</g>
+<defs><clipPath id="clip51"><rect x="948" y="454" width="52" height="34"/></clipPath></defs><g clip-path="url(#clip51)">
+<text x="967" y="476" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">42</text>
+</g>
+<defs><clipPath id="clip52"><rect x="1008" y="458" width="36" height="26"/></clipPath></defs><g clip-path="url(#clip52)">
+<rect x="1008" y="458" width="36" height="26" rx="8" fill="rgb(20,20,20)" fill-opacity="0.7843137254901961"/>
+<text x="1014" y="476" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">ON</text>
+</g>
+</g>
+<defs><clipPath id="clip53"><rect x="204" y="496" width="852" height="28"/></clipPath></defs><g clip-path="url(#clip53)">
+<text x="208" y="522" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="24" fill="rgb(255,160,0)">Espectadores  (1)</text>
+</g>
+<defs><clipPath id="clip54"><rect x="204" y="526" width="852" height="24"/></clipPath></defs><g clip-path="url(#clip54)">
+<rect x="204" y="526" width="852" height="24" rx="0" fill="rgb(45,43,36)" fill-opacity="0.9215686274509803"/>
+<defs><clipPath id="clip55"><rect x="216" y="526" width="472" height="24"/></clipPath></defs><g clip-path="url(#clip55)">
+<text x="216" y="543" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(195,174,140)">Nome</text>
+</g>
+<defs><clipPath id="clip56"><rect x="696" y="526" width="64" height="24"/></clipPath></defs><g clip-path="url(#clip56)">
+<text x="707" y="543" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(195,174,140)">Pontos</text>
+</g>
+<defs><clipPath id="clip57"><rect x="768" y="526" width="64" height="24"/></clipPath></defs><g clip-path="url(#clip57)">
+<text x="779" y="543" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(195,174,140)">Mortes</text>
+</g>
+<defs><clipPath id="clip58"><rect x="840" y="526" width="100" height="24"/></clipPath></defs><g clip-path="url(#clip58)">
+<text x="869" y="543" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(195,174,140)">Estado</text>
+</g>
+<defs><clipPath id="clip59"><rect x="948" y="526" width="52" height="24"/></clipPath></defs><g clip-path="url(#clip59)">
+<text x="948" y="543" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(195,174,140)">Latência</text>
+</g>
+<defs><clipPath id="clip60"><rect x="1008" y="526" width="36" height="24"/></clipPath></defs><g clip-path="url(#clip60)">
+<text x="1015.5" y="543" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(195,174,140)">Som</text>
+</g>
+</g>
+<defs><clipPath id="clip61"><rect x="204" y="552" width="852" height="34"/></clipPath></defs><g clip-path="url(#clip61)">
+<rect x="204" y="552" width="852" height="34" rx="8" fill="rgb(45,43,36)" fill-opacity="0.9215686274509803"/>
+<defs><clipPath id="clip62"><rect x="216" y="552" width="472" height="34"/></clipPath></defs><g clip-path="url(#clip62)">
+<text x="216" y="574" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">Observador</text>
+</g>
+<defs><clipPath id="clip63"><rect x="696" y="552" width="64" height="34"/></clipPath></defs><g clip-path="url(#clip63)">
+<text x="721" y="574" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">10</text>
+</g>
+<defs><clipPath id="clip64"><rect x="768" y="552" width="64" height="34"/></clipPath></defs><g clip-path="url(#clip64)">
+<text x="796.5" y="574" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">2</text>
+</g>
+<defs><clipPath id="clip65"><rect x="840" y="552" width="100" height="34"/></clipPath></defs><g clip-path="url(#clip65)">
+<text x="855" y="574" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">Observando</text>
+</g>
+<defs><clipPath id="clip66"><rect x="948" y="552" width="52" height="34"/></clipPath></defs><g clip-path="url(#clip66)">
+<text x="967" y="574" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">42</text>
+</g>
+<defs><clipPath id="clip67"><rect x="1008" y="556" width="36" height="26"/></clipPath></defs><g clip-path="url(#clip67)">
+<rect x="1008" y="556" width="36" height="26" rx="8" fill="rgb(20,20,20)" fill-opacity="0.7843137254901961"/>
+<text x="1014" y="574" font-family="Trebuchet MS,Segoe UI,sans-serif" font-size="13" fill="rgb(255,218,154)">ON</text>
+</g>
+</g>
+</g>
+</g>
+<text x="160" y="718" font-family="Segoe UI,sans-serif" font-size="11" fill="#a5b6bf">Prévia simulada do Lua compilado. Não é uma captura do Garry’s Mod.</text></svg>

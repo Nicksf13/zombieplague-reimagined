@@ -1,615 +1,139 @@
-ConvarManager:CreateConVar("zp_min_players", 2, 8, "cvar used to define minimun players to start the round.")
-ConvarManager:CreateConVar("zp_newround_delay", 10, 8, "cvar used to define new round time delay.")
-ConvarManager:CreateConVar("zp_infection_delay", 10, 8, "cvar used to define infection time delay.")
-ConvarManager:CreateConVar("zp_freeze_time_delay", 10, 8, "cvar used to define freeze time delay.")
-ConvarManager:CreateConVar("zp_max_rounds", 10, 8, "cvar used to define the total of rounds.")
-ConvarManager:CreateConVar("zp_round_time", 300, 8, "cvar used to define round time")
-ConvarManager:CreateConVar("zp_should_winning_reward", 1, 8, "cvar used to define if ZP will reward the round winners")
-ConvarManager:CreateConVar("zp_winning_reward_prize", 5, 8, "cvar used to define the winning reward prize")
-
-RoundManager.Rounds = {}
-RoundManager.PlayersToPlay = {}
-RoundManager.ExtraRounds = 0
-RoundManager.PlayersToReward = {}
-RoundManager.PlayersToReward[TEAM_HUMANS] = {}
-RoundManager.PlayersToReward[TEAM_ZOMBIES] = {}
-function RoundManager:SearchRounds()
-	RoundManager:AddDefaultRounds() -- Cleanest way to do this
-
-	local Files = Utils:RecursiveFileSearch("zombieplague/gamemode/rounds", ".lua")
-	if Files then
-		for k, File in pairs(Files) do
-			local RoundToAdd = {}
-			RoundToAdd.MinPlayers = cvars.Number("zp_min_players", 2)
-			RoundToAdd.Chance = 100
-			RoundToAdd.SpecialRound = false
-			RoundToAdd.Respawn = false
-			RoundToAdd.ShouldBeEnabled = function()return true end
-			RoundToAdd.Order = 100
-			include(Files)
-			
-			if RoundToAdd:ShouldBeEnabled() then
-				if !RoundToAdd.StartFunction || !RoundToAdd.Name then
-					Utils:Print(WARNING_MESSAGE, "Invalid round format: '" .. File .. "'!")
-				else
-					RoundManager:AddRoundType(RoundToAdd)
-				end
-			end
-		end
-	end
+-- Generated from src/gamemodes/zombieplague/gamemode/rounds/server/sv_roundmanager.ts. DO NOT EDIT; run npm run build.
+-- Lua Library inline imports
+local function __TS__ArrayMap(self, callbackfn, thisArg)
+    local result = {}
+    for i = 1, #self do
+        result[i] = callbackfn(thisArg, self[i], i - 1, self)
+    end
+    return result
 end
-function RoundManager:AddExtraRounds(ExtraRounds)
-	self.ExtraRounds = self.ExtraRounds + ExtraRounds
+-- End of Lua Library inline imports
+local ____exports = {}
+local manager = RoundManager
+for ____, ____value in ipairs({
+    {"zp_min_players", 2, "Minimum players to start a round"},
+    {"zp_newround_delay", 10, "Delay before a new round"},
+    {"zp_infection_delay", 10, "Delay before infection"},
+    {"zp_freeze_time_delay", 10, "Freeze time before a round"},
+    {"zp_max_rounds", 10, "Rounds before the map vote"},
+    {"zp_round_time", 300, "Round duration"},
+    {"zp_should_winning_reward", 1, "Reward round winners"},
+    {"zp_winning_reward_prize", 5, "Winner ammo pack reward"}
+}) do
+    local name = ____value[1]
+    local value = ____value[2]
+    local description = ____value[3]
+    ConvarManager:CreateConVar(name, value, 8, description)
 end
-function RoundManager:AddRoundType(RoundID, RoundType)
-	RoundManager.Rounds[RoundID] = RoundType
-	if RoundType.StartSound then
-		for k, SoundPath in pairs(RoundType.StartSound) do
-			resource.AddFile("sound/" .. SoundPath)
-		end
-	end
+manager.Rounds = {}
+manager.PlayersToPlay = {}
+manager.ExtraRounds = 0
+manager.PlayersToReward = {[TEAM_HUMANS] = {}, [TEAM_ZOMBIES] = {}}
+include("sv_round_players.lua")
+include("sv_round_defaults.lua")
+include("sv_round_lifecycle.lua")
+manager.SearchRounds = function(self)
+    self:AddDefaultRounds()
+    for ____, path in pairs(Utils:RecursiveFileSearch("zombieplague/gamemode/rounds", ".lua")) do
+        include(path)
+    end
 end
-function RoundManager:GetServerStatus(Requester)
-	local ServerStatus = {
-		Timer = RoundManager:GetTime(),
-		RoundState = RoundManager:GetRoundState(),
-		Round = RoundManager:GetRound(),
-		Players = {}
-	}
-
-	for i, ply in ipairs(RoundManager:GetPlayersToPlay()) do
-		table.insert(ServerStatus.Players, {ID = PlayerManager:GetPlayerID(ply),
-			AmmoPacks = ply:GetAmmoPacks(),
-			Battery = ply:GetMaxBatteryCharge(),
-			ZombieClass = ply:GetZombieClass().Name,
-			HumanClass = ply:GetHumanClass().Name,
-			Light = ply:GetLight(),
-			Footstep = ply:GetFootstep(),
-			AbilityPower = ply:GetAbilityPower(),
-			MaxAbilityPower = ply:GetMaxAbilityPower()
-		})
-	end
-
-	return ServerStatus
+manager.AddExtraRounds = function(self, amount)
+    self.ExtraRounds = self.ExtraRounds + amount
 end
-function RoundManager:SetTimer(Time, TimeFunction)
-	timer.Destroy("ZombiePlagueTimer")
-	timer.Create("ZombiePlagueTimer", Time, 1, TimeFunction)
-	net.Start("SyncTimer")
-		net.WriteInt(Time, 16)
-	net.Broadcast()
+manager.AddRoundType = function(self, id, round)
+    self.Rounds[id] = round
+    for ____, sound in ipairs(round.StartSound or ({})) do
+        resource.AddFile("sound/" .. sound)
+    end
 end
-function RoundManager:GetTime()
-	return timer.TimeLeft("ZombiePlagueTimer") or 0
+manager.GetServerStatus = function(self)
+    return {
+        Timer = self:GetTime(),
+        RoundState = self:GetRoundState(),
+        Round = self:GetRound(),
+        Players = __TS__ArrayMap(
+            self:GetPlayersToPlay(),
+            function(____, ply) return {
+                ID = PlayerManager:GetPlayerID(ply),
+                AmmoPacks = ply:GetAmmoPacks(),
+                Battery = ply:GetMaxBatteryCharge(),
+                ZombieClass = ply:GetZombieClass().Name,
+                HumanClass = ply:GetHumanClass().Name,
+                Light = ply:GetLight(),
+                Footstep = ply:GetFootstep(),
+                AbilityPower = ply:GetAbilityPower(),
+                MaxAbilityPower = ply:GetMaxAbilityPower()
+            } end
+        )
+    }
 end
-function RoundManager:CheckRoundEnd()
-	local CurrentRoundPlaying = RoundManager:GetCurrentRoundPlaying()
-
-	if CurrentRoundPlaying.Respawn && CurrentRoundPlaying.RoundEndFunction then
-		CurrentRoundPlaying:RoundEndFunction()
-	else
-		local HumansAlive = RoundManager:CountHumansAlive()
-		local ZombiesAlive = RoundManager:CountZombiesAlive()
-		if HumansAlive == 0 && ZombiesAlive == 0 then
-			RoundManager:EndRound(ROUND_DRAW)
-		elseif HumansAlive == 0 then
-			RoundManager:EndRound(ZOMBIES_WIN)
-		elseif ZombiesAlive == 0 then
-			RoundManager:EndRound(HUMANS_WIN)
-		end
-	end
+manager.RoundsLeft = function(self)
+    return cvars.Number("zp_max_rounds", 10) + self.ExtraRounds - self:GetRound()
 end
-function RoundManager:WaitPlayers()
-	timer.Destroy("ZombiePlagueTimer")
-	RoundManager:SetRoundState(ROUND_WAITING_PLAYERS)
+manager.GetCurrentRoundPlaying = function(self)
+    return self.RoundPlaying
 end
-function RoundManager:Prepare()
-	if RoundManager:CountPlayersToPlay() >= cvars.Number("zp_min_players",  2) then
-		hook.Call("ZPPrePreparingRound")
-		game.CleanUpMap()
-		RoundManager:SetRoundState(ROUND_STARTING_NEW_ROUND)
-		for i, ply in ipairs(RoundManager:GetPlayersToPlay()) do
-			ply:SetNemesis(false)
-			ply:SetSurvivor(false)
-			ply:SetLight(nil)
-			ply:ResetZombieAllowedWeapons()
-			ply:SetTeam(TEAM_HUMANS)
-			ply:Spawn()
-		end
-		hook.Call("ZPPostPreparingRound")
-		return true
-	end
-	return false
+manager.GetRounds = function(self)
+    return self.Rounds
 end
-function RoundManager:FreezeTime()
-	for Key, Ply in pairs(RoundManager:GetAlivePlayers()) do
-		RoundManager:FreezePlayer(Ply)
-	end
-
-	local FreezeDelayTime = cvars.Number("zp_freeze_time_delay",  10)
-
-	RoundManager:SetTimer(FreezeDelayTime, function()
-		for Key, Ply in pairs(player.GetAll()) do
-			RoundManager:UnfreezePlayer(Ply)
-		end
-
-		local InfectionDelayTime = cvars.Number("zp_infection_delay",  10)
-		if InfectionDelayTime > 0 then
-			local TimerSoundIdentifier = "TimerSound"
-			local Count = InfectionDelayTime
-
-			if Count > #CountDownSound then
-				Count = #CountDownSound
-			end
-
-			local TimeToWait = (InfectionDelayTime - #CountDownSound)
-			if TimeToWait < 0 then
-				TimeToWait = 0
-			end
-
-			timer.Create("NoSoundInfectionDelayTimer", TimeToWait, 1, function()
-				BroadcastSound(SafeTableRandom(UnfreezeSounds))
-				BroadcastSound(CountDownSound[Count])
-
-				timer.Create(TimerSoundIdentifier, 1, Count, function()
-					local RepsLeft = timer.RepsLeft(TimerSoundIdentifier)
-
-					if RepsLeft > 0 then
-						BroadcastSound(CountDownSound[RepsLeft])
-					end
-				end)
-			end)
-		end
-
-		RoundManager:SetTimer(cvars.Number("zp_infection_delay",  10), RoundManager.NewRound)
-	end)
+manager.GetGoodRounds = function(self)
+    local result = {}
+    local count = self:CountPlayersToPlayAlive()
+    for id, round in pairs(self.Rounds) do
+        if count >= round.MinPlayers then
+            result[id] = round
+        end
+    end
+    return result
 end
-function RoundManager:FreezePlayer(Ply)
-	Ply:SetWalkSpeed(1)
-	Ply:SetRunSpeed(1)
-	Ply:SetCrouchedWalkSpeed(1)
-	Ply:SetJumpPower(1)
+manager.ShouldRoundEnd = function(self)
+    return self:NoHumans() or self:NoZombies()
 end
-function RoundManager:UnfreezePlayer(Ply)
-	local ZPClass = Ply:IsHuman() and Ply:GetHumanClass() or Ply:GetZombieClass()
-
-	Ply:SetWalkSpeed(ZPClass.Speed)
-	Ply:SetRunSpeed(ZPClass.RunSpeed)
-	Ply:SetCrouchedWalkSpeed(ZPClass.CrouchSpeed)
-	Ply:SetJumpPower(ZPClass.JumpPower)
+hook.Add(
+    "PostPlayerDeath",
+    "RoundEndCheck",
+    function(ply)
+        if manager:GetRoundState() ~= ROUND_PLAYING then
+            return
+        end
+        local round = manager:GetCurrentRoundPlaying()
+        local ____opt_0 = round and round.OnDeathFunction
+        if ____opt_0 ~= nil then
+            ____opt_0(ply)
+        end
+        timer.Create(
+            "ZPEndRound" .. tostring(CurTime()),
+            0.1,
+            1,
+            function() return manager:CheckRoundEnd() end
+        )
+    end
+)
+hook.Add(
+    "ZPPrePreparingRound",
+    "ZPPrePreparingRoundWinnerClean",
+    function()
+        manager.PlayersToReward = {[TEAM_HUMANS] = {}, [TEAM_ZOMBIES] = {}}
+    end
+)
+hook.Add(
+    "ZPEndRound",
+    "ZPEndRoundWinnerReward",
+    function(reason)
+        if not cvars.Bool("zp_should_winning_reward", true) or reason == ROUND_DRAW then
+            return
+        end
+        local team = reason == ZOMBIES_WIN and TEAM_ZOMBIES or TEAM_HUMANS
+        for ____, id in ipairs(manager.PlayersToReward[team] or ({})) do
+            local ____opt_4 = manager:ReturnValidPlayerToBeRewardedOrNil(id, team)
+            if ____opt_4 ~= nil then
+                ____opt_4:GiveAmmoPacks(cvars.Number("zp_winning_reward_prize", 5))
+            end
+        end
+    end
+)
+for ____, name in ipairs({"SyncTimer", "SendRoundEnd"}) do
+    util.AddNetworkString(name)
 end
-function RoundManager:TryNewRound()
-	if RoundManager:Prepare() then
-		RoundManager:FreezeTime()
-	else
-		RoundManager:WaitPlayers()
-	end
-
-	for i, ply in ipairs(player.GetAll()) do
-		hook.Call("ZPResetAbilityEvent" .. ply:SteamID64(), GAMEMODE)
-	end
-end
-function RoundManager:NewRound()
-	local TotalChance = 0
-	local ValidRounds = {}
-	local TotalPlayers = RoundManager:CountPlayersToPlayAlive()
-	for k, Round in pairs(RoundManager:GetRounds()) do
-		if TotalPlayers >= Round.MinPlayers then
-			TotalChance = TotalChance + Round.Chance
-			table.insert(ValidRounds, Round)
-		end
-	end
-	if TotalChance > 0 then
-		local Floor = 1
-		local Dice = math.random(Floor, TotalChance)
-
-		for k, Round in pairs(ValidRounds) do
-			Floor = Floor + Round.Chance
-			if Dice < Floor then
-				RoundManager:StartRound(Round)
-				break
-			end
-		end
-	else
-		RoundManager:TryNewRound()
-	end
-end
-function RoundManager:RestartRound()
-	RoundManager:SetTimer(cvars.Number("zp_newround_delay",  10), RoundManager.TryNewRound)
-	RoundManager:SetRoundState(ROUND_RESTARTING)
-
-	hook.Call("ZPRestartRound")
-end
-function RoundManager:EndRound(Reason)
-	net.Start("SendRoundEnd")
-		net.WriteInt(Reason, 4)
-	net.Broadcast()
-
-	if Reason == ZOMBIES_WIN then
-		for i, ply in ipairs(player.GetAll()) do
-			SendNotifyMessage(ply, Dictionary:GetPhrase("ZombiesWin", ply), 5, Color(0, 255, 0))
-		end
-		BroadcastSound(SafeTableRandom(ZombieWinSounds))
-	elseif Reason == HUMANS_WIN then
-		for i, ply in ipairs(player.GetAll()) do
-			SendNotifyMessage(ply, Dictionary:GetPhrase("HumansWin", ply), 5, Color(0, 255, 0))
-		end
-		BroadcastSound(SafeTableRandom(HumanWinSounds))
-	else
-		for i, ply in ipairs(player.GetAll()) do
-			SendNotifyMessage(ply, Dictionary:GetPhrase("RoundDraw", ply), 5, Color(0, 255, 0))
-		end
-		BroadcastSound(SafeTableRandom(DrawSounds))
-	end
-
-	if RoundManager:GetRound() < (cvars.Number("zp_max_rounds", 10) + self.ExtraRounds) then
-		RoundManager:SetRoundState(ROUND_ENDING)
-		RoundManager:SetTimer(cvars.Number("zp_newround_delay",  10), RoundManager.TryNewRound)
-	else
-		ZPVoteMap:StartVotemap(ALLOWED_PREFIX)
-	end
-	hook.Call("ZPEndRound", GAMEMODE, Reason)
-end
-function RoundManager:RoundsLeft()
-	return (cvars.Number("zp_max_rounds", 10) + self.ExtraRounds) - RoundManager:GetRound()
-end
-function RoundManager:StartRound(RoundToStart, ply)
-	hook.Call("ZPPreNewRound", GAMEMODE, RoundToStart)
-	RoundToStart.StartFunction(ply)
-	self:SetSpecialRound(RoundToStart.SpecialRound)
-	self:SetRespawn(RoundToStart.Respawn)
-	if RoundToStart.StartSound then
-		BroadcastSound(SafeTableRandom(RoundToStart.StartSound))
-	end
-
-	self:SetTimer(cvars.Number("zp_round_time", 300), function()
-		self:EndRound(ROUND_DRAW)
-	end)
-
-	self:SetRound(self:GetRound() + 1)
-	self:SetRoundState(ROUND_PLAYING)
-	self.RoundPlaying = RoundToStart
-
-	hook.Call("ZPNewRound", GAMEMODE, RoundToStart, self:GetRound())
-end
-function RoundManager:GetCurrentRoundPlaying()
-	return self.RoundPlaying
-end
-
-function RoundManager:GetGoodRounds()
-	local GoodRounds = {}
-	local TotalPlayers = RoundManager:CountPlayersToPlayAlive()
-	for k, Round in pairs(RoundManager:GetRounds()) do
-		if TotalPlayers >= Round.MinPlayers then
-			GoodRounds[k] = Round
-		end
-	end
-
-	return GoodRounds
-end
-function RoundManager:IsRealisticMod()
-	return cvars.Bool("zp_realistic_mode", false)
-end
-function RoundManager:GetRounds()
-	return RoundManager.Rounds
-end
-function RoundManager:ShouldRoundEnd()
-	return RoundManager:CountHumansAlive() == 0 || RoundManager:CountZombiesAlive() == 0
-end
-function RoundManager:OpenRoundsMenu(ply)
-	local Pretty = {}
-	local GoodRounds = RoundManager:GetGoodRounds()
-
-	for RoundID, Round in pairs(GoodRounds) do
-		Pretty[RoundID] = {
-			Description = Dictionary:GetPhrase(Round.Name, ply),
-			Order = Round.Order
-		}
-	end
-	
-	net.Start("OpenBackMenu")
-		net.WriteString("SendRounds")
-		net.WriteTable(Pretty)
-		net.WriteBool(false)
-	net.Send(ply)
-end
-function RoundManager:AddPlayerToPlay(ply)
-	table.insert(RoundManager.PlayersToPlay, ply)
-	ply:SetTeam(TEAM_HUMANS)
-
-	if RoundManager:GetRoundState() == ROUND_WAITING_PLAYERS && RoundManager:CountPlayersToPlay() >= cvars.Number("zp_min_players", 2) then
-		RoundManager:RestartRound()
-	end
-end
-function RoundManager:RemovePlayerToPlay(ply)
-	ply:SetTeam(TEAM_SPECTATOR)
-	table.RemoveByValue(RoundManager.PlayersToPlay, ply)
-
-	if ply:IsZombie() && RoundManager:CountZombiesAlive() == 0 && RoundManager:CountHumansAlive() > 1 then
-		local NewZombie = SafeTableRandom(RoundManager:GetAliveHumans())
-		NewZombie:Infect()
-
-		for i, ply in ipairs(player.GetAll()) do
-			SendPopupMessage(ply, string.format(Dictionary:GetPhrase("LastZombieLeft", ply), NewZombie:Name()))
-		end
-	elseif ply:IsHuman() && RoundManager:CountHumansAlive() == 0 && RoundManager:CountZombiesAlive() > 1 then
-		local NewHuman = SafeTableRandom(RoundManager:GetAliveZombies())
-		NewHuman:Cure()
-
-		for i, ply in ipairs(player.GetAll()) do
-			SendPopupMessage(ply, string.format(Dictionary:GetPhrase("LastHumanLeft", ply), NewHuman:Name()))
-		end
-	end
-	
-	if RoundManager:GetRoundState() == ROUND_PLAYING then
-		RoundManager:CheckRoundEnd()
-	end
-
-	hook.Call("ZPResetAbilityEvent" .. ply:SteamID64(), GAMEMODE)
-end
-function RoundManager:CountPlayersToPlay()
-	local PlayersToPlay = 0
-	for i, ply in ipairs(self.PlayersToPlay) do
-		if IsValid(ply) then
-			PlayersToPlay = PlayersToPlay + 1
-		end
-	end
-
-	return PlayersToPlay
-end
-function RoundManager:CountPlayersToPlayAlive()
-	local Alive = 0
-	for i, ply in ipairs(self.PlayersToPlay) do
-		if IsValid(ply) && ply:Alive() then
-			Alive = Alive + 1
-		end
-	end
-
-	return Alive
-end
-function RoundManager:GetPlayersToPlay(Alive)
-	local PlayersToPlay = {}
-
-	for i, ply in ipairs(self.PlayersToPlay) do
-		if IsValid(ply) then
-			if !Alive || ply:Alive() then
-				table.insert(PlayersToPlay, ply)
-			end
-		else
-			table.remove(self.PlayersToPlay, k)
-		end
-	end
-
-	return PlayersToPlay
-end
-function RoundManager:AddPlayerToBeRewarded(ply)
-	table.insert(self.PlayersToReward[ply:Team()], ply:SteamID64())
-end
-function RoundManager:ReturnValidPlayerToBeRewardedOrNil(SteamID64, Team)
-	local ply = player.GetBySteamID64(SteamID64)
-	
-	return (ply && ply:Team() == Team) and ply or nil
-end
-function RoundManager:AddDefaultRounds()
-	local ROUND = {}
-	ROUND.Name = "RoundSimpleName"
-	ROUND.MinPlayers = cvars.Number("zp_min_players", 2)
-	ROUND.Chance = 100
-	ROUND.SpecialRound = false
-	ROUND.Respawn = false
-	ROUND.Order = 1
-	ROUND.StartFunction = function(ply)
-		local PlayersToPlay = RoundManager:GetPlayersToPlay(true)
-		local FirstZombie = (ply and ply or table.Random(PlayersToPlay))
-		FirstZombie:Infect()
-		for i, ply in ipairs(PlayersToPlay) do
-			self:AddPlayerToBeRewarded(ply)
-			SendNotifyMessage(ply, Dictionary:GetPhrase("RoundSimple", ply), 5, Color(0, 255, 0))
-			SendPopupMessage(ply, string.format(Dictionary:GetPhrase("NoticeFirstZombie", ply), FirstZombie:Name()))
-		end
-		
-	end
-	ROUND.RespawnFunction = function(ply)
-		return RoundManager:CountHumansAlive() > 1
-	end
-
-	RoundManager:AddRoundType("SimpleRound", ROUND)
-	
-	ROUND = {}
-	ROUND.Name = "RoundMultiInfectionName"
-	ROUND.Chance = 15
-	ROUND.MinPlayers = 4
-	ROUND.Order = 2
-	ROUND.Respawn = false
-	ROUND.StartFunction = function()
-		local ValidPlayers = RoundManager:GetPlayersToPlay(true)
-		table.remove(ValidPlayers, math.random(1, table.Count(ValidPlayers))):Infect()
-		table.remove(ValidPlayers, math.random(1, table.Count(ValidPlayers))):Infect()
-		
-		for i, ply in ipairs(ValidPlayers) do
-			self:AddPlayerToBeRewarded(ply)
-			SendNotifyMessage(ply, Dictionary:GetPhrase("NoticeMultiInfection", ply), 5, Color(0, 255, 0))
-		end
-	end
-	ROUND.RespawnFunction = function(ply)
-		return RoundManager:CountHumansAlive() > 1
-	end
-
-	RoundManager:AddRoundType("MultiInfectionRound", ROUND)
-	
-	ROUND = {}
-	ROUND.Name = "RoundNemesisName"
-	ROUND.Chance = 5
-	ROUND.MinPlayers = 5
-	ROUND.SpecialRound = true
-	ROUND.Respawn = false
-	ROUND.StartSound = {"zombieplague/nemesis1.mp3", "zombieplague/nemesis2.mp3"}
-	ROUND.Order = 3
-	ROUND.StartFunction = function()
-		local PlayersToPlay = RoundManager:GetPlayersToPlay(true)
-		local Nemesis = SafeTableRandom(PlayersToPlay)
-
-		Nemesis:MakeNemesis()
-		
-		for i, ply in ipairs(PlayersToPlay) do
-			self:AddPlayerToBeRewarded(ply)
-			SendPopupMessage(ply, string.format(Dictionary:GetPhrase("NoticeNemesis", ply), Nemesis:Name()))
-
-			if ROUND.Respawn && ply:IsHuman() then
-				ply.Lifes = 5
-			end
-		end
-	end
-	if ROUND.Respawn then
-		ROUND.OnDeathFunction = function(ply)
-			ply.Lifes = (ply.Lifes or 0) - 1
-		end
-		ROUND.RespawnFunction = function(ply)
-			return ply.Lifes > 0
-		end
-	end
-	RoundManager:AddRoundType("NemesisRound", ROUND)
-	
-	ROUND = {}
-	ROUND.Name = "RoundSurvivorName"
-	ROUND.Chance = 5
-	ROUND.MinPlayers = 3
-	ROUND.SpecialRound = true
-	ROUND.StartSound = {"zombieplague/survivor1.mp3", "zombieplague/survivor2.mp3"}
-	ROUND.Order = 4
-	ROUND.StartFunction = function()
-		local Players = RoundManager:GetPlayersToPlay(true)
-		local Survivor = table.Random(Players)
-		table.RemoveByValue(Players, Survivor)
-		for i, ply in ipairs(Players) do
-			if ROUND.Respawn then
-				ply.Lifes = 5
-			end
-			ply:Infect()
-			self:AddPlayerToBeRewarded(ply)
-			SendNotifyMessage(ply, string.format(Dictionary:GetPhrase("NoticeSurvivor", ply), Survivor:Name()), 5, SURVIVOR_COLOR)
-		end
-		Survivor:MakeSurvivor()
-		self:AddPlayerToBeRewarded(Survivor)
-	end
-	if ROUND.Respawn then
-		ROUND.OnDeathFunction = function(ply)
-			ply.Lifes = (ply.Lifes or 0) - 1
-		end
-		ROUND.RespawnFunction = function(ply)
-			return ply.Lifes > 0
-		end
-	end
-	RoundManager:AddRoundType("SurvivalRound", ROUND)
-	
-	ROUND = {}
-	ROUND.Name = "RoundSwarmName"
-	ROUND.Chance = 10
-	ROUND.MinPlayers = 4
-	ROUND.SpecialRound = true
-	ROUND.StartSound = {"zombieplague/swarmmode.mp3"}
-	ROUND.Order = 5
-	ROUND.StartFunction = function()
-		local Players = RoundManager:GetPlayersToPlay(true)
-		local i = 1
-		while(table.Count(Players) > 0) do
-			local v = table.Random(Players)
-			table.RemoveByValue(Players, v)
-			if i % 2 == 0 then
-				v:Infect()
-			end
-			i = i + 1
-
-			self:AddPlayerToBeRewarded(v)
-			SendNotifyMessage(v, Dictionary:GetPhrase("NoticeSwarm", v), 5, Color(0, 255, 0))
-		end
-	end
-	RoundManager:AddRoundType("SwarmRound", ROUND)
-	
-	ROUND = {}
-	ROUND.Name = "RoundPlagueName"
-	ROUND.Chance = 10
-	ROUND.MinPlayers = 4
-	ROUND.SpecialRound = true
-	ROUND.StartSound = {"zombieplague/plaguemode.mp3"}
-	ROUND.Order = 6
-	ROUND.StartFunction = function()
-		local Players = RoundManager:GetPlayersToPlay(true)
-		local i = 1
-		while(table.Count(Players) > 0) do
-			local v = table.Random(Players)
-			table.RemoveByValue(Players, v)
-			if i % 2 == 0 then
-				v:Infect()
-			end
-			i = i + 1
-
-			self:AddPlayerToBeRewarded(v)
-			SendNotifyMessage(v, Dictionary:GetPhrase("NoticePlague", v), 5, Color(0, 255, 0))
-		end
-		SafeTableRandom(RoundManager:GetAliveZombies()):MakeNemesis()
-		SafeTableRandom(RoundManager:GetAliveHumans()):MakeSurvivor()
-	end
-	RoundManager:AddRoundType("PlagueRound", ROUND)
-end
-hook.Add("PostPlayerDeath", "RoundEndCheck", function(ply)
-	if RoundManager:GetRoundState() == ROUND_PLAYING then
-		local OnDeathFunction = RoundManager:GetCurrentRoundPlaying().OnDeathFunction
-		if OnDeathFunction then
-			OnDeathFunction(ply)
-		end
-		timer.Create("ZPEndRound" .. CurTime(), 0.1, 1, RoundManager.CheckRoundEnd)
-	end
-end)
-net.Receive("SendRounds", function(len, ply)
-	if (ply:IsAdmin() || ply:IsSuperAdmin()) && RoundManager:GetRoundState() == ROUND_STARTING_NEW_ROUND then
-		local Round = RoundManager:GetGoodRounds()[net.ReadString()]
-		if Round then
-			RoundManager:StartRound(Round)
-			for k, Play in ipairs(player.GetAll()) do
-				SendPopupMessage(Play, string.format(Dictionary:GetPhrase("NoticeForceRound", Play), ply:Name(), Dictionary:GetPhrase(Round.Name, ply)))
-			end
-		else
-			SendPopupMessage(ply, Dictionary:GetPhrase("NoticeNotAllowed", ply))
-		end
-	else
-		SendPopupMessage(ply, Dictionary:GetPhrase("NoticeNotAllowed", ply))
-	end
-end)
-net.Receive("RequestRoundsMenu", function(len, ply)
-	if ply:IsAdmin() || ply:IsSuperAdmin() then
-		RoundManager:OpenRoundsMenu(ply)
-	else
-		SendPopupMessage(ply, Dictionary:GetPhrase("NoticeNotAllowed", ply))
-	end
-end)
-
-hook.Add("ZPPrePreparingRound", "ZPPrePreparingRoundWinnerClean", function()
-	RoundManager.PlayersToReward = {}
-	RoundManager.PlayersToReward[TEAM_HUMANS] = {}
-	RoundManager.PlayersToReward[TEAM_ZOMBIES] = {}
-end)
-hook.Add("ZPEndRound", "ZPEndRoundWinnerReward", function(Reason)
-	if cvars.Bool("zp_should_winning_reward", true) then
-		if Reason == ZOMBIES_WIN then
-			for k, SteamID64 in pairs(RoundManager.PlayersToReward[TEAM_ZOMBIES]) do
-				local ply = RoundManager:ReturnValidPlayerToBeRewardedOrNil(SteamID64, TEAM_ZOMBIES)
-				if ply then
-					ply:GiveAmmoPacks(cvars.Number("zp_winning_reward_prize", 5))
-				end
-			end
-		elseif Reason == HUMANS_WIN then
-			for k, SteamID64 in pairs(RoundManager.PlayersToReward[TEAM_HUMANS]) do
-				local ply = RoundManager:ReturnValidPlayerToBeRewardedOrNil(SteamID64, TEAM_HUMANS)
-				if ply then
-					ply:GiveAmmoPacks(cvars.Number("zp_winning_reward_prize", 5))
-				end
-			end
-		end
-	end
-end)
-
-util.AddNetworkString("SyncTimer")
-util.AddNetworkString("SendRounds")
-util.AddNetworkString("SendRoundEnd")
-util.AddNetworkString("RequestRoundsMenu")
+return ____exports

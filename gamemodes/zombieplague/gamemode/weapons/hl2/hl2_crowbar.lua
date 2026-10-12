@@ -1,4 +1,11 @@
-Weapon.PrettyName = "Crowbar"
-Weapon.WeaponID = "weapon_crowbar"
-Weapon.DamageMultiplier = 5
-Weapon.WeaponType = WEAPON_MELEE
+-- Generated from src/gamemodes/zombieplague/gamemode/weapons/server/hl2/hl2_crowbar.ts. DO NOT EDIT; run npm run build.
+-- Lua Library inline imports
+local function __TS__New(target, ...)
+    local instance = setmetatable({}, target.prototype)
+    instance:____constructor(...)
+    return instance
+end
+-- End of Lua Library inline imports
+local ____exports = {}
+____exports.default = __TS__New(WeaponDefinition, {PrettyName = "Crowbar", WeaponID = "weapon_crowbar", DamageMultiplier = 5, WeaponType = WEAPON_MELEE})
+return ____exports

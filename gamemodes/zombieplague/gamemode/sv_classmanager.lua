@@ -1,182 +1,225 @@
-ClassManager = {
-	ZombieClasses = {},
-	HumanClasses = {}
-}
-function ClassManager:SearchClasses()
-	local Files = Utils:RecursiveFileSearch("zombieplague/gamemode/classes/zombies", ".lua")
-	if Files then
-		for k, File in pairs(Files) do
-			ZPClass = ClassManager:NewZombieClass()
-			include(File)
-		end
-	end
-	
-	Files = Utils:RecursiveFileSearch("zombieplague/gamemode/classes/humans", ".lua")
-	if Files then
-		for k, File in pairs(Files) do
-			ZPClass = ClassManager:NewHumanClass()
-			include(File)
-		end
-	end
-end
-function ClassManager:GetZombieClasses()
-	return ClassManager.ZombieClasses
-end
-function ClassManager:GetHumanClasses()
-	return ClassManager.HumanClasses
+-- Generated from src/gamemodes/zombieplague/gamemode/classes/server/sv_classmanager.ts. DO NOT EDIT; run npm run build.
+-- Lua Library inline imports
+local function __TS__Class(self)
+    local c = {prototype = {}}
+    c.prototype.__index = c.prototype
+    c.prototype.constructor = c
+    return c
 end
 
-function ClassManager:CreateClassAbility(DrainOnActivation, ActivationAction, ResetAction, ResetDelay)
-	local Ability = {
-		DrainOnActivation = DrainOnActivation,
-		Drain = 60,
-		MaxAbilityPower = 60
-	}
-	function Ability:UseAction(ply)
-		ActivationAction(ply)
-
-		if ResetAction then
-			local ResetTime = ResetDelay or (Ability.Drain - 10)
-			ply:SetAbilityTimer("ZPClassAbility", ResetTime, function()
-				ResetAction(ply)
-			end)
-		end
-	end
-	function Ability:CanUseAbility()
-		return true
-	end
-
-	return Ability
+local __TS__Symbol, Symbol
+do
+    local symbolMetatable = {__tostring = function(self)
+        return ("Symbol(" .. (self.description or "")) .. ")"
+    end}
+    function __TS__Symbol(description)
+        return setmetatable({description = description}, symbolMetatable)
+    end
+    Symbol = {
+        asyncDispose = __TS__Symbol("Symbol.asyncDispose"),
+        dispose = __TS__Symbol("Symbol.dispose"),
+        iterator = __TS__Symbol("Symbol.iterator"),
+        hasInstance = __TS__Symbol("Symbol.hasInstance"),
+        species = __TS__Symbol("Symbol.species"),
+        toStringTag = __TS__Symbol("Symbol.toStringTag")
+    }
 end
 
-function ClassManager:AddZPClass(ClassID, ZPClass, TeamID)
-	if ZombieClass || (TeamID == TEAM_HUMANS || TeamID == TEAM_ZOMBIES) then
-		local ZPTeamClasses = (TeamID == TEAM_HUMANS) and ClassManager.HumanClasses or ClassManager.ZombieClasses
-		ZPTeamClasses[ClassID] = ZPClass
+local function __TS__InstanceOf(obj, classTbl)
+    if type(classTbl) ~= "table" then
+        error("Right-hand side of 'instanceof' is not an object", 0)
+    end
+    if classTbl[Symbol.hasInstance] ~= nil then
+        return not not classTbl[Symbol.hasInstance](classTbl, obj)
+    end
+    if type(obj) == "table" then
+        local luaClass = obj.constructor
+        while luaClass ~= nil do
+            if luaClass == classTbl then
+                return true
+            end
+            luaClass = luaClass.____super
+        end
+    end
+    return false
+end
 
-		resource.AddFile(ZPClass.PModel)
-	else
-		Utils:Print(WARNING_MESSAGE, "Invalid ZP class: " .. ClassID)
-	end
+local function __TS__New(target, ...)
+    local instance = setmetatable({}, target.prototype)
+    instance:____constructor(...)
+    return instance
 end
-function ClassManager:GetZPClass(ID, TeamID)
-	return ((TeamID == TEAM_HUMANS) and ClassManager.HumanClasses or ClassManager.ZombieClasses)[ID] or SafeTableRandom(ZPTeamClasses)
+-- End of Lua Library inline imports
+local ____exports = {}
+include("sv_class_definitions.lua")
+____exports.ClassManager = __TS__Class()
+local ClassManager = ____exports.ClassManager
+ClassManager.name = "ClassManager"
+function ClassManager.prototype.____constructor(self)
+    self.ZombieClasses = {}
+    self.HumanClasses = {}
 end
-function ClassManager:SetZPClass(ply, ClassID, TeamID)
-	if TeamID == TEAM_HUMANS then
-		ply:SetHumanClass(ClassManager:GetHumanClass(ClassID))
-	else
-		ply:SetZombieClass(ClassManager:GetZombieClass(ClassID))
-	end
+function ClassManager.prototype.SearchClasses(self)
+    for ____, ____value in ipairs({{"zombies", false}, {"humans", true}}) do
+        local folder = ____value[1]
+        local human = ____value[2]
+        for ____, path in pairs(Utils:RecursiveFileSearch("zombieplague/gamemode/classes/" .. folder, ".lua")) do
+            _G.ZPClass = human and self:NewHumanClass() or self:NewZombieClass()
+            local loaded = include(path)
+            local ____temp_0
+            if type(loaded) == "table" and loaded ~= nil and loaded.default ~= nil then
+                ____temp_0 = loaded.default
+            else
+                ____temp_0 = loaded
+            end
+            local exported = ____temp_0
+            if (__TS__InstanceOf(exported, HumanClassDefinition) or __TS__InstanceOf(exported, ZombieClassDefinition)) and exported:ShouldBeEnabled() then
+                self:AddZPClass(exported.ID, exported, exported.Team)
+            end
+        end
+    end
 end
-function ClassManager:NewHumanClass()
-	return {Name = "HumanDefaultClassName",
-		Description = "HumanDefaultClassDescription",
-		MaxHealth = 100,
-		Armor = 25,
-		PModel = "models/player/gasmask.mdl",
-		Speed = 230,
-		RunSpeed = 100,
-		CrouchSpeed = 0.4,
-		Gravity = 1,
-		Battery = 100,
-		Breath = 100,
-		JumpPower = 200,
-		Footstep = true,
-		DamageAmplifier = 1,
-		FallFunction = function()return true end,
-		ShouldBeEnabled = function()return true end,
-		Order = 100
-	}
+function ClassManager.prototype.GetZombieClasses(self)
+    return self.ZombieClasses
 end
-function ClassManager:NewZombieClass()
-	local ZombieClass = {Name = "ZombieDefaultClassName",
-		Description = "ZombieDefaultClassDescription",
-		MaxHealth = 2000,
-		PModel = "models/player/zombie_classic.mdl",
-		Speed = 290,
-		RunSpeed = 100,
-		CrouchSpeed = 0.4,
-		Gravity = 0.8,
-		Breath = 100,
-		Footstep = false,
-		JumpPower = 200,
-		DamageAmplifier = 1,
-		FallFunction = function()return false end,
-		ShouldBeEnabled = function()return true end,
-		Order = 100
-	}
-	function ZombieClass:WeaponGive(ply)
-		ply:Give(ZOMBIE_KNIFE)
-	end
-	return ZombieClass
+function ClassManager.prototype.GetHumanClasses(self)
+    return self.HumanClasses
 end
-function ClassManager:OpenZPClassMenu(ply, IsHuman)
-	local Pretty = {}
-	local ZPClasses = IsHuman and ClassManager:GetHumanClasses() or ClassManager:GetZombieClasses()
-
-	for ZPClassID, ZPClass in pairs(ZPClasses) do
-		Pretty[ZPClassID] = {
-			Description = ZPClass.Name .. " - " .. ZPClass.Description,
-			PhraseKeys = {ZPClass.Name, ZPClass.Description},
-			Order = ZPClass.Order
-		}
-	end
-	
-	net.Start("OpenBackMenu")
-		net.WriteString(IsHuman and "SendHumanClass" or "SendZombieClass")
-		net.WriteTable(Pretty)
-		net.WriteBool(false)
-	net.Send(ply)
+function ClassManager.prototype.CreateClassAbility(self, drain, activate, reset, delay)
+    local ability
+    ability = {
+        DrainOnActivation = drain,
+        Drain = 60,
+        MaxAbilityPower = 60,
+        UseAction = function(self, ply)
+            activate(ply)
+            if reset then
+                ply:SetAbilityTimer(
+                    "ZPClassAbility",
+                    delay or ability.Drain - 10,
+                    function() return reset(ply) end
+                )
+            end
+        end,
+        CanUseAbility = function(self)
+            return true
+        end
+    }
+    return ability
 end
-net.Receive("RequestAbility", function(len, ply)
-	if ply:Alive() && ply:Team() != TEAM_SPECTATOR then
-		local Ability = ply:GetZPClass().Ability
-		if Ability then
-			if !(ply:IsNemesis() || ply:IsSurvivor()) then
-				if Ability:CanUseAbility() then
-					if ply:GetAbilityPower() >= Ability.Drain then
-						if Ability.DrainOnActivation then
-							ply:DrainAbilityPower(Ability.Drain)
-						end
-						Ability:UseAction(ply)
-					else
-						SendPopupMessage(ply, Dictionary:GetPhrase("NoticeNotEnoughAbilityPower", ply))
-					end
-				else
-					SendPopupMessage(ply, Dictionary:GetPhrase("NoticeNotAllowed", ply))
-				end
-			else
-				SendPopupMessage(ply, Dictionary:GetPhrase("NoticeSpecialClassNotAllowed", ply))
-			end
-		else
-			SendPopupMessage(ply, Dictionary:GetPhrase("NoticeNoAbility", ply))
-		end
-	else
-		SendPopupMessage(ply, Dictionary:GetPhrase("NoticeIsNotAlive", ply))
-	end
-end)
-net.Receive("SendHumanClass", function(len, ply)
-	ply:SetNextHumanClass(ClassManager:GetZPClass(net.ReadString(), TEAM_HUMANS))
-end)
-net.Receive("SendZombieClass", function(len, ply)
-	ply:SetNextZombieClass(ClassManager:GetZPClass(net.ReadString(), TEAM_ZOMBIES))
-end)
-Commands:AddCommand("zombies", "Open zombie class menu.", function(ply, args)
-	ClassManager:OpenZPClassMenu(ply, false)
-end)
-Commands:AddCommand("humans", "Open human class menu.", function(ply, args)
-	ClassManager:OpenZPClassMenu(ply, true)
-end)
-net.Receive("RequestZombieMenu", function(len, ply)
-	ClassManager:OpenZPClassMenu(ply, false)
-end)
-net.Receive("RequestHumanMenu", function(len, ply)
-	ClassManager:OpenZPClassMenu(ply, true)
-end)
-
-util.AddNetworkString("RequestZombieMenu")
-util.AddNetworkString("RequestHumanMenu")
+function ClassManager.prototype.AddZPClass(self, id, definition, teamID)
+    if teamID == TEAM_HUMANS or teamID == TEAM_ZOMBIES then
+        local registry = teamID == TEAM_HUMANS and self.HumanClasses or self.ZombieClasses
+        registry[id] = definition
+        resource.AddFile(definition.PModel)
+    else
+        Utils:Print(WARNING_MESSAGE, "Invalid ZP class: " .. id)
+    end
+end
+function ClassManager.prototype.GetZPClass(self, id, teamID)
+    local registry = teamID == TEAM_HUMANS and self.HumanClasses or self.ZombieClasses
+    return registry[id] or SafeTableRandom(registry)
+end
+function ClassManager.prototype.GetHumanClass(self, id)
+    return self:GetZPClass(id, TEAM_HUMANS)
+end
+function ClassManager.prototype.GetZombieClass(self, id)
+    return self:GetZPClass(id, TEAM_ZOMBIES)
+end
+function ClassManager.prototype.SetZPClass(self, ply, id, teamID)
+    local definition = self:GetZPClass(id, teamID)
+    if not definition then
+        return
+    end
+    if teamID == TEAM_HUMANS then
+        ply:SetHumanClass(definition)
+    else
+        ply:SetZombieClass(definition)
+    end
+end
+function ClassManager.prototype.NewHumanClass(self)
+    return {
+        Name = "HumanDefaultClassName",
+        Description = "HumanDefaultClassDescription",
+        MaxHealth = 100,
+        Armor = 25,
+        PModel = "models/player/gasmask.mdl",
+        Speed = 230,
+        RunSpeed = 100,
+        CrouchSpeed = 0.4,
+        Gravity = 1,
+        Battery = 100,
+        Breath = 100,
+        JumpPower = 200,
+        Footstep = true,
+        DamageAmplifier = 1,
+        Order = 100,
+        FallFunction = function(self)
+            return true
+        end,
+        ShouldBeEnabled = function(self)
+            return true
+        end
+    }
+end
+function ClassManager.prototype.NewZombieClass(self)
+    return {
+        Name = "ZombieDefaultClassName",
+        Description = "ZombieDefaultClassDescription",
+        MaxHealth = 2000,
+        PModel = "models/player/zombie_classic.mdl",
+        Speed = 290,
+        RunSpeed = 100,
+        CrouchSpeed = 0.4,
+        Gravity = 0.8,
+        Breath = 100,
+        JumpPower = 200,
+        Footstep = false,
+        DamageAmplifier = 1,
+        Order = 100,
+        FallFunction = function(self)
+            return false
+        end,
+        ShouldBeEnabled = function(self)
+            return true
+        end,
+        WeaponGive = function(self, ply)
+            ply:Give(ZOMBIE_KNIFE)
+        end
+    }
+end
+local classManager = __TS__New(____exports.ClassManager)
+_G.ClassManager = classManager
+net.Receive(
+    "RequestAbility",
+    function(_length, ply)
+        local phrase
+        if not ply:Alive() or ply:Team() == TEAM_SPECTATOR then
+            phrase = "NoticeIsNotAlive"
+        else
+            local ability = ply:GetZPClass().Ability
+            if not ability then
+                phrase = "NoticeNoAbility"
+            elseif ply:IsNemesis() or ply:IsSurvivor() then
+                phrase = "NoticeSpecialClassNotAllowed"
+            elseif not ability:CanUseAbility() then
+                phrase = "NoticeNotAllowed"
+            elseif ply:GetAbilityPower() < ability.Drain then
+                phrase = "NoticeNotEnoughAbilityPower"
+            else
+                if ability.DrainOnActivation then
+                    ply:DrainAbilityPower(ability.Drain)
+                end
+                ability:UseAction(ply)
+            end
+        end
+        if phrase then
+            SendPopupMessage(
+                ply,
+                {Phrase = "zombieplague." .. string.lower(phrase)}
+            )
+        end
+    end
+)
 util.AddNetworkString("RequestAbility")
-util.AddNetworkString("SendHumanClass")
-util.AddNetworkString("SendZombieClass")
+return ____exports

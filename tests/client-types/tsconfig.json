@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.client.json",
+  "compilerOptions": { "rootDir": "../..", "noEmit": true, "composite": false },
+  "include": ["../../types/glua.d.ts", "../../types/zombieplague.d.ts", "../../types/weapon-menu.d.ts", "../../types/client/**/*.d.ts", "contracts.ts"],
+  "exclude": []
+}

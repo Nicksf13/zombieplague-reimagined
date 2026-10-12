@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": { "composite": true },
+  "include": [
+    "src/**/shared.ts", "src/**/sh_*.ts", "src/**/cl_*.ts", "src/**/vgui/**/*.ts",
+    "types/glua.d.ts", "types/zombieplague.d.ts", "types/weapon-menu.d.ts", "types/client/**/*.d.ts"
+  ],
+  "exclude": []
+}

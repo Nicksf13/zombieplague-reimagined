@@ -1,25 +1,34 @@
-ExtraItem.ID = "ZPOrbitalStrike"
-ExtraItem.Name = "ExtraItemOrbitalStrikeName"
-ExtraItem.Price = 30
-function ExtraItem:OnBuy(ply)
-	local Weap = ply:GetWeapon("m9k_orbital_strike")
-	if IsValid(Weap) then
-		ply:GiveAmmo(1, Weap:GetPrimaryAmmoType(), true) 
-	else
-		ply:Give("m9k_orbital_strike")
-	end
+-- Generated from src/gamemodes/zombieplague/gamemode/extraitems/server/zp_m9k_orbital_strike.ts. DO NOT EDIT; run npm run build.
+-- Lua Library inline imports
+local function __TS__New(target, ...)
+    local instance = setmetatable({}, target.prototype)
+    instance:____constructor(...)
+    return instance
 end
-function ExtraItem:ShouldBeEnabled()
-	return WeaponManager:ServerHasWeapon("m9k_orbital_strike")
-end
-
+-- End of Lua Library inline imports
+local ____exports = {}
 WeaponManager:AddWeaponMultiplier("m9k_oribital_cannon", 5)
-
-Dictionary:RegisterPhrase("en-us", "ExtraItemOrbitalStrikeName", "Orbital Strike", false)
-Dictionary:RegisterPhrase("pt-br", "ExtraItemOrbitalStrikeName", "Orbital Strike", false)
-Dictionary:RegisterPhrase("es-ar", "ExtraItemOrbitalStrikeName", "Golpe Orbital", false)
-Dictionary:RegisterPhrase("ru", "ExtraItemOrbitalStrikeName", "Orbital Strike", false)
-Dictionary:RegisterPhrase("uk", "ExtraItemOrbitalStrikeName", "Orbital Strike", false)
-Dictionary:RegisterPhrase("tchinese", "ExtraItemOrbitalStrikeName", "Orbital Strike", false)
-Dictionary:RegisterPhrase("ja", "ExtraItemOrbitalStrikeName", "Orbital Strike", false)
-Dictionary:RegisterPhrase("ko", "ExtraItemOrbitalStrikeName", "Orbital Strike", false)
+____exports.default = __TS__New(
+    ExtraItemDefinition,
+    {
+        ID = "ZPOrbitalStrike",
+        Name = "ExtraItemOrbitalStrikeName",
+        Price = 30,
+        OnBuy = function(self, ply)
+            local Weap = ply:GetWeapon("m9k_orbital_strike")
+            if IsValid(Weap) then
+                ply:GiveAmmo(
+                    1,
+                    Weap:GetPrimaryAmmoType(),
+                    true
+                )
+            else
+                ply:Give("m9k_orbital_strike")
+            end
+        end,
+        ShouldBeEnabled = function(self)
+            return WeaponManager:ServerHasWeapon("m9k_orbital_strike")
+        end
+    }
+)
+return ____exports
