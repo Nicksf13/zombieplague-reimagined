@@ -12,6 +12,7 @@ interface ZPRoundDefinition {
     OnDeathFunction?(this: void, ply: ZPServerPlayer): void;
 }
 interface ZPServerRoundManager {
+    FreezeTimeActive: boolean;
     GetAlivePlayers(this: ZPServerRoundManager): ZPServerPlayer[];
     Rounds: Record<string, ZPRoundDefinition>;
     PlayersToPlay: ZPServerPlayer[];

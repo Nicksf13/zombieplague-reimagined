@@ -11,6 +11,8 @@ interface GLuaDamageInfo {
 }
 declare function DamageInfo(this: void): GLuaDamageInfo;
 interface ZPServerPlayer {
+    Freeze(this: ZPServerPlayer, frozen: boolean): void;
+    IsFrozen(this: ZPServerPlayer): boolean;
     IsBot(this: ZPServerPlayer): boolean;
     SetTeam(this: ZPServerPlayer, team: number): void;
     GetActiveWeapon(this: ZPServerPlayer): GLuaWeapon;

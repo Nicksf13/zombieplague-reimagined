@@ -12,6 +12,7 @@ NIGHTVISION_ON_SOUND,NIGHTVISION_OFF_SOUND="nv_on.mp3","nv_off.mp3"
 function SendSound(ply,path) localSounds[#localSounds+1]={ply,path} end
 function serverMeta:EmitSound(path) worldSounds[#worldSounds+1]={self,path} end
 function serverMeta:Alive() return self.alive end
+function serverMeta:IsFrozen() return self.frozen==true end
 function serverMeta:IsHuman() return self.team==TEAM_HUMANS end
 function serverMeta:Team() return self.team end
 function serverMeta:GetBattery() return 100 end

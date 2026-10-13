@@ -20,7 +20,8 @@ export class AdminMenuController implements ZPAdminController {
                 return entry.Kind === "exposure" && normalized !== undefined && saved !== undefined ?
                     Number(normalized) !== Number(saved) : (normalized ?? value) !== saved;
             }),
-            ReloadRequired: this.reloadRequired, CanReload: this.token > 0, Feedback: this.feedback };
+            ReloadRequired: this.reloadRequired, CanReload: this.token > 0, Feedback: this.feedback,
+            CanAddBot: this.Allowed() && GetGlobalBool("ZPTestBotsEnabled", false) && LocalPlayer().IsSuperAdmin() && !game.SinglePlayer() };
     }
     private Update(): void { if (this.opened) this.presentation?.Update(this.GetState()); }
     private Allowed(): boolean { const player = LocalPlayer(); return IsValid(player) && player.IsAdmin(); }
@@ -52,8 +53,13 @@ export class AdminMenuController implements ZPAdminController {
     }
     Back(): void {
         if (this.page === "environment") this.Navigate("settings");
-        else if (this.page === "settings") this.Navigate("admin");
+        else if (this.page === "settings" || this.page === "bots") this.Navigate("admin");
         else { this.Close(); ZPMainMenu.Open(); }
+    }
+    AddBot(): void {
+        if (!this.opened || this.page !== "bots" || !this.GetState().CanAddBot) return;
+        // Reuse the server command's permission, slot and argument validation.
+        RunConsoleCommand("zp_addbot", "1");
     }
     Close(): void {
         this.opened = false;

@@ -2,6 +2,8 @@ import test from "node:test";
 import { run } from "./helpers/lua-runtime.mjs";
 
 const setup = `
+local botsEnabled
+function SetGlobalBool(name,value) assert(name=="ZPTestBotsEnabled"); botsEnabled=value end
 ROUND_WAITING_PLAYERS,ROUND_RESTARTING=0,4
 local state,restarts=ROUND_WAITING_PLAYERS,0
 local clients,consoleCommands,messages={}, {}, {}
@@ -90,8 +92,10 @@ test("singleplayer and failed engine creation are reported without phantom parti
 
 test("dedicated console can create bots and command registration respects BOT_MODE", () => run(setup + `
     BOT_MODE=false; include("sv_commands.lua")
+    assert(botsEnabled==false)
     assert(not consoleCommands.zp_addbot and not Commands.CommandList.bot and not hooks.StartCommand)
     BOT_MODE=true; include("sv_commands.lua")
+    assert(botsEnabled==true)
     local log
     print=function(text) log=text end
     consoleCommands.zp_addbot(nil,"zp_addbot",{"1"})

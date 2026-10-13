@@ -69,6 +69,8 @@ export class ClassManager implements ZPServerClassManager {
 const classManager = new ClassManager();
 _G.ClassManager = classManager;
 net.Receive("RequestAbility", (_length, ply) => {
+    if (ply.IsFrozen())
+        return;
     let phrase: string | undefined;
     if (!ply.Alive() || ply.Team() === TEAM_SPECTATOR)
         phrase = "NoticeIsNotAlive";

@@ -17,6 +17,8 @@ team={GetPlayers=function(id) local found={} for _,ply in ipairs(players) do if 
 function meta:Team() return self.team end
 function meta:SetTeam(id) self.team=id end
 function meta:Alive() return self.alive end
+function meta:Freeze(frozen) self.frozen=frozen end
+function meta:IsFrozen() return self.frozen==true end
 function meta:SteamID64() return self.id end
 function meta:Name() return self.id end
 function meta:IsHuman() return self.team==TEAM_HUMANS end
@@ -69,6 +71,66 @@ test("round timer captures its manager and calls the start callback without an i
     RoundManager.TryNewRound=function(self) assert(self==RoundManager); called=true end
     timers.ZombiePlagueTimer[2]()
     assert(called)
+`));
+
+test("freeze time uses engine freezing and releases players before the infection delay", () => run(setup + `
+    local human=addPlayer("h",TEAM_HUMANS,true)
+    local zombie=addPlayer("z",TEAM_ZOMBIES,true)
+    local spectator=addPlayer("s",TEAM_SPECTATOR,false)
+    -- Engine Freeze owns camera/attack suppression; class movement values stay intact.
+    human.walkSpeed,human.runSpeed,human.jumpPower=110,240,190
+    RoundManager:FreezeTime()
+    assert(RoundManager.FreezeTimeActive and human:IsFrozen() and zombie:IsFrozen())
+    assert(not spectator:IsFrozen())
+    timers.ZombiePlagueTimer[2]()
+    assert(not RoundManager.FreezeTimeActive and not human:IsFrozen() and not zombie:IsFrozen())
+    assert(human.walkSpeed==110 and human.runSpeed==240 and human.jumpPower==190)
+    assert(timers.ZombiePlagueTimer[1]==10)
+`));
+
+test("interrupted preparation and leaving participation release frozen players", () => run(setup + `
+    local ply=addPlayer("h",TEAM_HUMANS,true)
+    RoundManager:FreezeTime()
+    RoundManager:WaitPlayers()
+    assert(not ply:IsFrozen() and not RoundManager.FreezeTimeActive and not timers.ZombiePlagueTimer)
+    RoundManager:FreezeTime()
+    RoundManager:RestartRound()
+    assert(not ply:IsFrozen() and not RoundManager.FreezeTimeActive)
+    RoundManager:FreezeTime()
+    RoundManager:RemovePlayerToPlay(ply)
+    assert(not ply:IsFrozen() and ply:Team()==TEAM_SPECTATOR)
+    ply:SetTeam(TEAM_HUMANS)
+    RoundManager:FreezeTime()
+    assert(not RoundManager:Prepare())
+    assert(not ply:IsFrozen() and not RoundManager.FreezeTimeActive)
+`));
+
+test("respawning during freeze stays frozen and custom actions resume after unfreezing", () => run(setup + `
+    include("sv_event_players.lua"); include("sv_classmanager.lua")
+    local ply=addPlayer("h",TEAM_HUMANS,true)
+    ply.FirstSpawn=true
+    meta.SetNightvision=function(self,on) self.nightvision=on end
+    meta.NightvisionIsOn=function(self) return self.nightvision end
+    meta.GetBattery=function() return 100 end
+    meta.UnSpectate=function() end
+    local activations=0
+    local ability={Drain=0,CanUseAbility=function() return true end,UseAction=function() activations=activations+1 end}
+    meta.GetZPClass=function() return {Ability=ability} end
+    meta.IsNemesis=function() return false end
+    meta.IsSurvivor=function() return false end
+    meta.GetAbilityPower=function() return 100 end
+    RoundManager:FreezeTime()
+    ply:Freeze(false) -- Simulate the engine clearing flags at respawn.
+    GM:PlayerSpawn(ply)
+    assert(ply:IsFrozen())
+    receivers.RequestAbility(0,ply); receivers.RequestNightvision(0,ply)
+    assert(activations==0 and not ply.nightvision)
+    timers.ZombiePlagueTimer[2]()
+    ply:Freeze(false)
+    GM:PlayerSpawn(ply)
+    assert(not ply:IsFrozen())
+    receivers.RequestAbility(0,ply); receivers.RequestNightvision(0,ply)
+    assert(activations==1 and ply.nightvision)
 `));
 
 test("default special-round callbacks retain their own definition after all rounds register", () => run(setup + `

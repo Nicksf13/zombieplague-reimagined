@@ -1,5 +1,14 @@
 export {};
 const manager = RoundManager as ZPServerRoundManager;
+manager.FreezeTimeActive = false;
+// The round state also covers the infection delay, so track freezing separately.
+function endFreezeTime(this: void, rounds: ZPServerRoundManager): void {
+    if (!rounds.FreezeTimeActive)
+        return;
+    rounds.FreezeTimeActive = false;
+    for (const ply of player.GetAll() as ZPServerPlayer[])
+        rounds.UnfreezePlayer(ply);
+}
 manager.SetTimer = function (seconds, callback): void {
     timer.Destroy("ZombiePlagueTimer");
     timer.Create("ZombiePlagueTimer", seconds, 1, callback);
@@ -25,10 +34,12 @@ manager.CheckRoundEnd = function (): void {
     }
 };
 manager.WaitPlayers = function (): void {
+    endFreezeTime(this);
     timer.Destroy("ZombiePlagueTimer");
     this.SetRoundState(ROUND_WAITING_PLAYERS);
 };
 manager.Prepare = function (): boolean {
+    endFreezeTime(this);
     if (this.CountPlayersToPlay() < cvars.Number("zp_min_players", 2))
         return false;
     hook.Call("ZPPrePreparingRound");
@@ -46,24 +57,18 @@ manager.Prepare = function (): boolean {
     return true;
 };
 manager.FreezePlayer = function (ply): void {
-    ply.SetWalkSpeed(1);
-    ply.SetRunSpeed(1);
-    ply.SetCrouchedWalkSpeed(1);
-    ply.SetJumpPower(1);
+    // Engine freezing blocks movement, view changes and attacks while preserving UI bindings.
+    ply.Freeze(true);
 };
 manager.UnfreezePlayer = function (ply): void {
-    const definition = ply.IsHuman() ? ply.GetHumanClass() : ply.GetZombieClass();
-    ply.SetWalkSpeed(definition.Speed);
-    ply.SetRunSpeed(definition.RunSpeed);
-    ply.SetCrouchedWalkSpeed(definition.CrouchSpeed);
-    ply.SetJumpPower(definition.JumpPower);
+    ply.Freeze(false);
 };
 manager.FreezeTime = function (): void {
+    this.FreezeTimeActive = true;
     for (const ply of this.GetAlivePlayers())
         this.FreezePlayer(ply);
     this.SetTimer(cvars.Number("zp_freeze_time_delay", 10), () => {
-        for (const ply of (player.GetAll() as ZPServerPlayer[]))
-            this.UnfreezePlayer(ply);
+        endFreezeTime(this);
         const delay = cvars.Number("zp_infection_delay", 10);
         if (delay > 0) {
             const count = Math.min(delay, CountDownSound.length);
@@ -118,6 +123,7 @@ manager.NewRound = function (): void {
     }
 };
 manager.RestartRound = function (): void {
+    endFreezeTime(this);
     this.SetTimer(cvars.Number("zp_newround_delay", 10), () => this.TryNewRound());
     this.SetRoundState(ROUND_RESTARTING);
     hook.Call("ZPRestartRound");

@@ -1,4 +1,4 @@
-type ZPAdminPage = "admin" | "settings" | "environment";
+type ZPAdminPage = "admin" | "settings" | "environment" | "bots";
 interface ZPAdminState {
     readonly Page: ZPAdminPage;
     readonly Values: readonly string[];
@@ -8,8 +8,10 @@ interface ZPAdminState {
     readonly ReloadRequired: boolean;
     readonly CanReload: boolean;
     readonly Feedback: string;
+    readonly CanAddBot: boolean;
 }
 interface ZPAdminActions {
+    AddBot(this: ZPAdminActions): void;
     Navigate(this: ZPAdminActions, page: ZPAdminPage): void;
     SetValue(this: ZPAdminActions, index: number, value: string): void;
     Save(this: ZPAdminActions): void;
@@ -35,7 +37,13 @@ interface ZPGlobals {
     ZPAdminMenu: ZPAdminController;
     ZPCreateAdminHUD: typeof ZPCreateAdminHUD;
 }
-interface ZPClientPlayer { IsAdmin(this: ZPClientPlayer): boolean; }
+interface ZPClientPlayer {
+    IsAdmin(this: ZPClientPlayer): boolean;
+    IsSuperAdmin(this: ZPClientPlayer): boolean;
+}
+declare function RunConsoleCommand(this: void, name: string, ...args: string[]): void;
+/** @noSelf */
+declare namespace game { function SinglePlayer(): boolean; }
 interface ZPAdminTextEntry extends GLuaPanel {
     GetValue(this: ZPAdminTextEntry): string;
     OnChange?: (this: ZPAdminTextEntry) => void;

@@ -30,6 +30,8 @@ GM.PlayerSpawn = function (ply): void {
             ply.UnSpectate();
             hook.Call("PlayerSetModel", GAMEMODE, ply);
             hook.Call("PlayerLoadout", GAMEMODE, ply);
+            if (rounds.FreezeTimeActive && ply.Alive())
+                rounds.FreezePlayer(ply);
         }
     }
     else {
@@ -129,6 +131,6 @@ hook.Add("PostPlayerDeath", "ZPDeathEvents", ply => {
     else if (ply.IsHuman() && rounds.LastHuman())
         hook.Call("ZPLastHumanEvent");
 });
-_G.ToggleNightvision = ply => { if (ply.GetBattery() > 0)
+_G.ToggleNightvision = ply => { if (!ply.IsFrozen() && ply.GetBattery() > 0)
     ply.SetNightvision(!ply.NightvisionIsOn()); };
 net.Receive("RequestNightvision", (_length, ply) => ToggleNightvision(ply));
