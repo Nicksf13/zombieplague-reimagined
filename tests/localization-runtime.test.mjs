@@ -4,14 +4,44 @@ import test from "node:test";
 import { run } from "./helpers/lua-runtime.mjs";
 import { books, locales, nativeLanguage } from "./helpers/native-localization.mjs";
 
+test("admin navigation, environment labels, and restart confirmation resolve in every catalog", () => {
+    const sources = ["shared/sh_admin_config", "client/cl_admin_menu", "client/cl_admin_menu_hud"]
+        .map(name => readFileSync(new URL(`../src/gamemodes/zombieplague/gamemode/menus/${name}.ts`, import.meta.url), "utf8"))
+        .join("\n");
+    const keys = [...new Set([...sources.matchAll(/"(zombieplague\.[a-z]+)"/g)].map(match => match[1]))];
+    assert(keys.includes("zombieplague.adminreloadwarning"));
+    for (const locale of locales)
+        for (const key of keys) assert(books[locale][key]?.trim(), `${locale}: missing admin label ${key}`);
+});
+
 test("main menu convar labels resolve in every native catalog", () => {
     const settings = readFileSync(new URL("../gamemodes/zombieplague/zombieplague.txt", import.meta.url), "utf8");
     const keys = [...settings.matchAll(/"text"\s+"#([^"]+)"/g)].map(match => match[1]);
-    assert.equal(keys.length, 11);
+    assert.equal(keys.length, 17);
     for (const locale of locales) {
         for (const key of keys) assert(books[locale][key]?.trim(), `${locale}: missing menu label ${key}`);
     }
     assert.equal(books["pt-BR"]["zombieplague.cvarminplayers"], "Mínimo de jogadores");
+});
+
+test("night brightness controls stay together in the main menu text group, including singleplayer", () => {
+    const settings = readFileSync(new URL("../gamemodes/zombieplague/zombieplague.txt", import.meta.url), "utf8");
+    const entries = [...settings.matchAll(/\b\d+\s*\{([^{}]*)\}/g)].map(match =>
+        Object.fromEntries([...match[1].matchAll(/"([^"]+)"\s+"([^"]*)"/g)]
+            .map(field => [field[1], field[2]])));
+    // GMod renders Text controls before Numeric and CheckBox controls, regardless
+    // of their order in the settings file. Keep the environment fields adjacent.
+    const textFields = entries.filter(entry => entry.type === "Text");
+    assert.deepEqual(textFields.map(entry => entry.name), [
+        "zp_map_skybox", "zp_map_night_brightness", "zp_map_night_exposure",
+    ]);
+    for (const entry of textFields) assert.equal(entry.singleplayer, "1", entry.name);
+    assert.equal(textFields[2].default, "100");
+    const cycle = entries.find(entry => entry.name === "zp_map_day_cycle");
+    assert.equal(cycle?.type, "CheckBox");
+    assert.equal(cycle.default, "0");
+    assert.equal(cycle.singleplayer, "1");
+    assert.equal(cycle.replicate, "0");
 });
 
 test("all 32 GMod languages have complete native catalogs and valid format parameters", () => {

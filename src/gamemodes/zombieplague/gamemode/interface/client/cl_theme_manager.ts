@@ -38,6 +38,7 @@ export class ThemeManager implements ZPThemeManager {
             ZPMainMenu.Rebuild();
             _G.ZPScoreboard?.Rebuild();
             _G.ZPSettings?.Rebuild();
+            _G.ZPAdminMenu?.Rebuild();
         }
         if (this.preferredID !== id) {
             this.preferredID = id;

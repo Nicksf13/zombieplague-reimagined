@@ -59,7 +59,11 @@ net = {
     ReadTable=function() return readTable end
 }
 util = {AddNetworkString=function(name) registered[name]=true end}
-hook = {Add=function(name,id,callback) hooks[name]=hooks[name] or {}; hooks[name][id]=callback end}
+hook = {
+    Add=function(name,id,callback) hooks[name]=hooks[name] or {}; hooks[name][id]=callback end,
+    Remove=function(name,id) if hooks[name] then hooks[name][id]=nil end end,
+    Run=function(name,...) for _,callback in pairs(hooks[name] or {}) do callback(...) end end
+}
 timer = {Create=function(name, delay, repetitions, callback) timers[name]={delay,callback} end}
 weapons = {GetList=function() return {{ClassName="m9k_usp"}} end}
 `;

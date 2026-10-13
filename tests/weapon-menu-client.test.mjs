@@ -118,6 +118,11 @@ test("built-in themed menus paint, switch, dispatch selections and clean their p
     local firstFrame=panels[1]
     assert(firstFrame.kind=="DFrame" and firstFrame.popup and firstFrame.keyboard==false)
     reply(1); paintAll()
+    local refresh
+    for _,panel in ipairs(panels) do
+        if not panel.removed and panel.tooltip=="zombieplague.weaponmenurefreshhelp" then refresh=panel end
+    end
+    assert(refresh and refresh.kind=="DButton")
     for _,panel in ipairs(panels) do if not panel.removed then assert(panel.keyboard==false) end end
     local content=firstFrame.children[#firstFrame.children]
     local scroll
