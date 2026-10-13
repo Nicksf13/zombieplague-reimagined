@@ -23,6 +23,8 @@ include("cl_settings.lua");
 include("cl_settings_hud.lua");
 include("cl_theme_hud.lua");
 include("cl_weapon_menu_hud.lua");
+include("cl_map_vote_hud.lua");
+include("cl_map_vote.lua");
 include("cl_player_hud.lua");
 include("cl_keymanager.lua");
 include("cl_scoreboard.lua");

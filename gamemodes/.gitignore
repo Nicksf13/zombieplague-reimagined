@@ -20,6 +20,8 @@
 /zombieplague/gamemode/cl_main_menu_hud.lua
 /zombieplague/gamemode/cl_map_environment.lua
 /zombieplague/gamemode/cl_map_material_catalog.lua
+/zombieplague/gamemode/cl_map_vote.lua
+/zombieplague/gamemode/cl_map_vote_hud.lua
 /zombieplague/gamemode/cl_menu_controls.lua
 /zombieplague/gamemode/cl_message.lua
 /zombieplague/gamemode/cl_nightvision.lua
@@ -81,6 +83,7 @@
 /zombieplague/gamemode/sh_bank.lua
 /zombieplague/gamemode/sh_class_menu_protocol.lua
 /zombieplague/gamemode/sh_extra_menu_protocol.lua
+/zombieplague/gamemode/sh_map_vote_protocol.lua
 /zombieplague/gamemode/sh_player.lua
 /zombieplague/gamemode/sh_playermanager.lua
 /zombieplague/gamemode/sh_roundmanager.lua
@@ -106,6 +109,7 @@
 /zombieplague/gamemode/sv_localization.lua
 /zombieplague/gamemode/sv_map_environment.lua
 /zombieplague/gamemode/sv_map_lighting.lua
+/zombieplague/gamemode/sv_map_nominations.lua
 /zombieplague/gamemode/sv_mapmanager.lua
 /zombieplague/gamemode/sv_message.lua
 /zombieplague/gamemode/sv_particlemanager.lua

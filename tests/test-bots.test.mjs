@@ -41,6 +41,18 @@ include("sv_round_players.lua")
 RoundManager:AddPlayerToPlay(host)
 `;
 
+test("command listings send localized descriptions as phrase packets", () => run(setup + `
+    include("sv_commands.lua")
+    Commands:AddCommand("votemap","zombieplague.mapvotecommand",function() end)
+    Commands.CommandList.commands.Function(host,{})
+    local found=false
+    for _,message in ipairs(messages) do
+        if type(message)=="table" and message.Phrase=="zombieplague.mapvotecommand" then found=true end
+        if type(message)=="string" then assert(not message:find("zombieplague.mapvotecommand",1,true)) end
+    end
+    assert(found)
+`));
+
 test("zp_addbot adds a real bot participant and crosses the normal round-start threshold", () => run(setup + `
     include("sv_commands.lua")
     assert(restarts==0 and RoundManager:CountPlayersToPlay()==1)

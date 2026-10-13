@@ -20,6 +20,7 @@ export class ClassMenuController implements ZPClassMenuController {
     private Update(): void { if (this.opened) this.presentation?.Update(this.GetState()); }
 
     Open(kind?: ZPClassMenuKind, automatic: boolean = false): void {
+        _G.ZPMapVoteMenu?.Close();
         if (kind !== undefined && !ZPClassMenuProtocol.Kind(kind)) return;
         _G.ZPExtraMenu?.Close();
         ZPWeaponMenu.Close(); ZPMainMenu.Close(); _G.ZPAdminMenu?.Close(); _G.ZPSettings?.Close();

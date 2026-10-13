@@ -31,6 +31,7 @@ export class AdminMenuController implements ZPAdminController {
     }
 
     Open(): void {
+        _G.ZPMapVoteMenu?.Close();
         _G.ZPExtraMenu?.Close();
         _G.ZPClassMenu?.Close();
         if (!this.Allowed()) return;
