@@ -6,6 +6,7 @@ export class AdminMenuHUD implements ZPAdminPresentation {
     private refresh: GLuaPanel | undefined;
     private reload: GLuaPanel | undefined;
     private feedback: GLuaPanel | undefined;
+    private addBot: GLuaPanel | undefined;
     constructor(private palette: ZPThemePalette, private square: boolean) {}
 
     private Label(parent: GLuaPanel, key: string, y: number, width: number, height: number): GLuaPanel {
@@ -47,16 +48,23 @@ export class AdminMenuHUD implements ZPAdminPresentation {
             draw.RoundedBox(0, 0, 0, w, 3, this.palette.Accent);
         };
         const title = this.Label(frame, state.Page === "admin" ? "zombieplague.admintitle" :
-            state.Page === "settings" ? "zombieplague.adminmapsettings" : "zombieplague.adminenvironment", 20, width - 100, 66);
+            state.Page === "settings" ? "zombieplague.adminmapsettings" :
+            state.Page === "bots" ? "zombieplague.adminbots" : "zombieplague.adminenvironment", 20, width - 100, 66);
         title.SetPos(24, 16); title.SetFont("Trebuchet24");
         this.Button(frame, "X", width - 62, 22, 38, () => actions.Close(), true);
         const content = vgui.Create("DScrollPanel", frame);
         content.SetPos(24, 96); content.SetSize(width - 48, height - 210);
         const rowWidth = width - 68;
-        if (state.Page === "admin")
+        if (state.Page === "admin") {
             this.Button(content, "zombieplague.adminmapsettings", 0, 0, rowWidth, () => actions.Navigate("settings"));
+            this.Button(content, "zombieplague.adminbots", 0, 48, rowWidth, () => actions.Navigate("bots"));
+        }
         else if (state.Page === "settings")
             this.Button(content, "zombieplague.adminenvironment", 0, 0, rowWidth, () => actions.Navigate("environment"));
+        else if (state.Page === "bots") {
+            this.Label(content, "zombieplague.adminbotshelp", 0, rowWidth, 90);
+            this.addBot = this.Button(content, "zombieplague.adminaddbot", 0, 102, rowWidth, () => actions.AddBot());
+        }
         else {
             this.feedback = this.Label(content, "", 0, rowWidth, 48);
             this.Label(content, "zombieplague.adminhelp", 48, rowWidth, 60);
@@ -94,6 +102,7 @@ export class AdminMenuHUD implements ZPAdminPresentation {
     }
     Update(state: ZPAdminState): void {
         this.state = state;
+        this.addBot?.SetEnabled(state.CanAddBot);
         for (const control of this.controls) {
             control.Panel.SetEnabled(state.Ready && !state.Pending);
             const value = state.Values[control.Index];
@@ -136,6 +145,7 @@ export class AdminMenuHUD implements ZPAdminPresentation {
     Destroy(): void {
         this.frame?.Remove(); this.frame = undefined;
         this.controls = []; this.state = undefined;
+        this.addBot = undefined;
         this.save = undefined; this.refresh = undefined; this.reload = undefined; this.feedback = undefined;
     }
 }

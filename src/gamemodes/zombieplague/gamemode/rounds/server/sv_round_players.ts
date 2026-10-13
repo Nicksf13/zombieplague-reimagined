@@ -11,6 +11,8 @@ manager.AddPlayerToPlay = function (this: ZPServerRoundManager, entry): void {
 };
 manager.RemovePlayerToPlay = function (this: ZPServerRoundManager, entry): void {
     const ply = entry as ZPServerPlayer, previousTeam = ply.Team();
+    if (this.FreezeTimeActive)
+        this.UnfreezePlayer(ply);
     ply.SetTeam(TEAM_SPECTATOR);
     for (let i = this.PlayersToPlay.length - 1; i >= 0; i--)
         if (this.PlayersToPlay[i] === ply)

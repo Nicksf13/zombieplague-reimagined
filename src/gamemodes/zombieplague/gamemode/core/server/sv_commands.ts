@@ -72,6 +72,7 @@ function addIdleBots(ply: ZPServerPlayer, args: string[]): void {
     if (created > 0)
         reportBots(ply, "created", created);
 }
+SetGlobalBool("ZPTestBotsEnabled", BOT_MODE);
 if (BOT_MODE) {
     commands.AddCommand("bot", "Add idle test bots to the match", addIdleBots, "[1-16]", true, ply => ply.IsSuperAdmin());
     concommand.Add("zp_addbot", (ply, _command, args) => addIdleBots(ply, args));

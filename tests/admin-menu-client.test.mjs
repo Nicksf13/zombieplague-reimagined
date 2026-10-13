@@ -4,9 +4,17 @@ import { clientSetup, panelsSetup } from "./helpers/weapon-menu.mjs";
 
 const setup = clientSetup + panelsSetup + `
 viewer.admin=true
+viewer.superadmin=true
+local singleplayer=false
+local botsEnabled=true
+GetGlobalBool=function(name,fallback) assert(name=="ZPTestBotsEnabled"); return botsEnabled end
+game={SinglePlayer=function() return singleplayer end}
+local botCommands={}
+RunConsoleCommand=function(name,count) botCommands[#botCommands+1]={name,count} end
 surface.SetFont=function() end
 surface.GetTextSize=function(text) return #text*8,16 end
 function viewer:IsAdmin() return self.admin end
+function viewer:IsSuperAdmin() return self.superadmin end
 function panelMeta:SetEnabled(value) self.enabled=value end
 function panelMeta:SetWrap(value) self.wrap=value end
 function panelMeta:SetFont(value) self.font=value end
@@ -57,6 +65,36 @@ test("admin navigation is visible only to admins and loads authoritative values"
     ZPAdminMenu:Back(); assert(ZPAdminMenu:GetState().Page=="admin")
     ZPAdminMenu:Back(); assert(ZPMainMenu:GetState().Open)
     paintAll()
+`));
+
+test("bots page adds one bot through the authorized server command in every theme", () => run(setup + `
+    for _,theme in ipairs({"classic","hl2","cs16"}) do
+        ZPThemes:UseTheme(theme)
+        ZPAdminMenu:Open()
+        activeFrame().children[3].children[2]:DoClick()
+        assert(ZPAdminMenu:GetState().Page=="bots" and requests==0)
+        local content=activeFrame().children[3]
+        assert(content.children[1].text=="zombieplague.adminbotshelp")
+        content.children[2]:DoClick()
+        assert(botCommands[#botCommands][1]=="zp_addbot" and botCommands[#botCommands][2]=="1")
+        paintAll()
+        ZPAdminMenu:Back(); assert(ZPAdminMenu:GetState().Page=="admin")
+    end
+    assert(#botCommands==3)
+    ZPAdminMenu:AddBot(); assert(#botCommands==3)
+    ZPAdminMenu:Navigate("bots")
+    for _,reason in ipairs({"permission","singleplayer","disabled"}) do
+        viewer.superadmin=reason~="permission"
+        singleplayer=reason=="singleplayer"; botsEnabled=reason~="disabled"
+        ZPAdminMenu:Rebuild()
+        assert(not ZPAdminMenu:GetState().CanAddBot)
+        local button=activeFrame().children[3].children[2]
+        assert(not button:IsEnabled())
+        button:DoClick(); ZPAdminMenu:AddBot(); assert(#botCommands==3)
+    end
+    viewer.superadmin=true; singleplayer=false; botsEnabled=true
+    viewer.admin=false; ZPAdminMenu:AddBot(); assert(#botCommands==3)
+    viewer.admin=true; ZPAdminMenu:Close(); ZPAdminMenu:AddBot(); assert(#botCommands==3)
 `));
 
 test("form edits wait for save, validate bounds, and stay disabled until acknowledgment", () => run(setup + `
