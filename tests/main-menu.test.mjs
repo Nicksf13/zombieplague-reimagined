@@ -20,7 +20,7 @@ test("F4 opens the themed main menu and its weapons option opens the existing se
     draw.DrawText=originalDraw
     assert(first.popup and first.keyboard==false)
     local list=first.children[#first.children]
-    assert(list.kind=="DScrollPanel" and #list.children==3)
+    assert(list.kind=="DScrollPanel" and #list.children==4)
     list.children[1]:DoClick()
     assert(first.removed and not ZPMainMenu:GetState().Open and ZPWeaponMenu:GetState().Open and requests==1)
     -- F4 from a submenu returns to the main menu without making a new request.
@@ -84,12 +84,12 @@ test("main menu options expose detached data and recheck availability when click
         Action=function() calls=calls+1 end,IsVisible=function() return visible end})
     ZPMainMenu:Open()
     local state=ZPMainMenu:GetState()
-    assert(#state.Entries==4 and not state.Entries[4].Action)
-    state.Entries[4].Label="tampered"
-    assert(ZPMainMenu:GetState().Entries[4].Label=="Addon")
+    assert(#state.Entries==5 and not state.Entries[5].Action)
+    state.Entries[5].Label="tampered"
+    assert(ZPMainMenu:GetState().Entries[5].Label=="Addon")
     visible=false
     ZPMainMenu:Activate("addon"); assert(calls==0 and ZPMainMenu:GetState().Open)
-    hooks.Think.ZPMainMenuController(); assert(#ZPMainMenu:GetState().Entries==3)
+    hooks.Think.ZPMainMenuController(); assert(#ZPMainMenu:GetState().Entries==4)
     visible=true
     ZPMainMenu:Activate("addon"); assert(calls==1 and not ZPMainMenu:GetState().Open)
     ZPMainMenu:Activate("addon"); assert(calls==1)

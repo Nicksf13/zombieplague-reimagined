@@ -13,6 +13,8 @@ include("cl_menu_controls.lua");
 include("cl_weapon_menu.lua");
 include("cl_class_menu.lua");
 include("cl_class_menu_hud.lua");
+include("cl_extra_menu.lua");
+include("cl_extra_menu_hud.lua");
 include("cl_main_menu.lua");
 include("cl_main_menu_hud.lua");
 include("cl_admin_menu.lua");
