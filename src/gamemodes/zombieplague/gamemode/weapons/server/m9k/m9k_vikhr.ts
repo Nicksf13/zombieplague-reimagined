@@ -1,6 +1,7 @@
 export default new WeaponDefinition({
     PrettyName: "SR-3M Vikhr",
     WeaponID: "m9k_vikhr",
+    Family: "rifle",
     DamageMultiplier: 0.6,
     WeaponType: WEAPON_PRIMARY,
 });

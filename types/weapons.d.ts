@@ -20,6 +20,7 @@ interface ZPServerWeaponManager {
     CountPlayerWeaponsByWeaponType(this: ZPServerWeaponManager, ply: ZPServerPlayer, kind: ZPWeaponType): number;
 }
 interface ZPServerPlayer {
+    RememberWeaponChoices?: boolean;
     GetPrimaryWeapon(this: ZPServerPlayer): ZPRegisteredWeapon | undefined;
     GetSecondaryWeapon(this: ZPServerPlayer): ZPRegisteredWeapon | undefined;
     GetMeleeWeapon(this: ZPServerPlayer): ZPRegisteredWeapon | undefined;

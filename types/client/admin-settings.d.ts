@@ -44,14 +44,10 @@ interface ZPClientPlayer {
 declare function RunConsoleCommand(this: void, name: string, ...args: string[]): void;
 /** @noSelf */
 declare namespace game { function SinglePlayer(): boolean; }
-interface ZPAdminTextEntry extends GLuaPanel {
-    GetValue(this: ZPAdminTextEntry): string;
-    OnChange?: (this: ZPAdminTextEntry) => void;
-}
+type ZPAdminTextEntry = ZPTextEntry;
 interface ZPAdminLabel extends GLuaPanel { SetWrap(this: ZPAdminLabel, wrap: boolean): void; }
 /** @noSelf */
 declare namespace vgui {
-    function Create(name: "DTextEntry", parent?: GLuaPanel): ZPAdminTextEntry;
     function Create(name: "DLabel", parent?: GLuaPanel): ZPAdminLabel;
 }
 interface GLuaPanel {

@@ -8,6 +8,8 @@ export class WeaponMenuController implements ZPWeaponMenuController {
     private opened: boolean = false;
     private automatic: boolean = false;
     private category: ZPWeaponMenuCategory = "primary";
+    private search = "";
+    private family: ZPWeaponFamilyFilter = "all";
     private snapshot: ZPWeaponMenuSnapshot | undefined;
     private pending: PendingRequest | undefined;
     private sequence: number = 0;
@@ -21,11 +23,12 @@ export class WeaponMenuController implements ZPWeaponMenuController {
     // Detached data prevents a presentation from editing the controller's snapshot.
     GetState(): ZPWeaponMenuState {
         const state = { Open: this.opened, Category: this.category, Presentation: this.presentationID,
-            Pending: this.pending !== undefined, Feedback: this.feedback };
+            Pending: this.pending !== undefined, Feedback: this.feedback, Search: this.search, Family: this.family };
         if (!this.snapshot)
             return state;
         return { ...state, Snapshot: { Entries: this.snapshot.Entries.map(entry => ({ ...entry })),
-            Selected: { ...this.snapshot.Selected }, CanReceive: { ...this.snapshot.CanReceive }, Truncated: this.snapshot.Truncated } };
+            Selected: { ...this.snapshot.Selected }, CanReceive: { ...this.snapshot.CanReceive }, Truncated: this.snapshot.Truncated,
+            Remember: this.snapshot.Remember ?? true } };
     }
 
     private Update(): void {
@@ -62,6 +65,7 @@ export class WeaponMenuController implements ZPWeaponMenuController {
         if (!ZPWeaponMenuProtocol.Category(kind))
             return;
         this.category = kind;
+        this.search = ""; this.family = "all";
         this.Open();
         this.automatic = true;
         this.Refresh();
@@ -82,7 +86,27 @@ export class WeaponMenuController implements ZPWeaponMenuController {
         if (!ZPWeaponMenuProtocol.Category(kind))
             return;
         this.category = kind;
+        this.search = ""; this.family = "all";
         this.Update();
+    }
+
+    SetSearch(text: string): void {
+        this.search = text.substring(0, 128);
+        this.Update();
+    }
+
+    SetFamily(family: ZPWeaponFamilyFilter): void {
+        if (family !== "all" && !ZPWeaponMenuProtocol.Family(family)) return;
+        this.family = family;
+        this.Update();
+    }
+
+    SetRemember(remember: boolean): void {
+        if (!this.opened || this.pending || !this.snapshot || typeof remember !== "boolean") return;
+        const id = this.Begin();
+        net.Start("ZPWeaponMenuRemember");
+        net.WriteUInt(1, 8); net.WriteUInt(id, 31); net.WriteBool(remember);
+        net.SendToServer();
     }
 
     private Begin(): number {
@@ -119,15 +143,17 @@ export class WeaponMenuController implements ZPWeaponMenuController {
         this.pending = undefined;
         if (reply.Snapshot)
             this.snapshot = reply.Snapshot;
-        const code = reply.Code === "catalog" ? "ready" : reply.Code === "invalid_weapon" ? "invalidweapon" :
+        const code = reply.Code === "catalog" || reply.Code === "preferences" ? "ready" : reply.Code === "invalid_weapon" ? "invalidweapon" :
             reply.Code === "rate_limited" ? "ratelimited" : reply.Code;
         this.feedback = "zombieplague.weaponmenu" + code;
         // Advance only after the server confirms the catalog or a saved choice.
-        if (this.opened && this.automatic && reply.Snapshot) {
+        if (this.opened && reply.Snapshot && ((this.automatic && reply.Code === "catalog") || reply.Code === "issued" || reply.Code === "saved")) {
             const missing = (["primary", "secondary", "melee"] as const).find(kind =>
                 reply.Snapshot?.Selected[kind] === "" && reply.Snapshot.Entries.some(entry => entry.Kind === kind));
-            if (missing)
+            if (missing) {
                 this.category = missing;
+                this.search = ""; this.family = "all";
+            }
             else
                 this.Close();
         }

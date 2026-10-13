@@ -26,7 +26,8 @@ test("F4 settings option moves theme selection out of the main and weapon menus"
     activeFrame().children[2]:DoClick() -- Back
     assert(not ZPSettings:GetState().Open and ZPMainMenu:GetState().Open)
     ZPMainMenu:Activate("weapons"); reply(1)
-    local weaponContent=activeFrame().children[2]
+    local frame=activeFrame()
+    local weaponContent=frame.children[#frame.children]
     local categories=0
     for _,panel in ipairs(weaponContent.children) do
         if panel.kind=="DButton" then categories=categories+1 end

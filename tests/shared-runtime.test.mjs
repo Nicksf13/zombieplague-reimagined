@@ -359,7 +359,7 @@ test("server init preserves include order, client downloads and network registra
     assert(table.concat(includeOrder, ",") == table.concat(expectedIncludes, ","))
     local expectedClientFiles = {
         "shared.lua", "sh_bank.lua", "sh_roundmanager.lua", "sh_player.lua", "sh_playermanager.lua",
-        "cl_hud.lua", "cl_theme_manager.lua", "cl_theme_hud.lua", "cl_player_hud.lua",
+        "cl_hud.lua", "cl_theme_manager.lua", "cl_menu_controls.lua", "cl_theme_hud.lua", "cl_player_hud.lua",
         "cl_data.lua", "cl_message.lua", "cl_player.lua", "cl_nightvision.lua", "cl_roundmanager.lua",
         "cl_particlemanager.lua", "cl_keymanager.lua", "cl_scoreboard.lua", "cl_scoreboard_hud.lua",
         "sh_weapon_menu_protocol.lua", "cl_weapon_menu.lua", "cl_weapon_menu_hud.lua", "cl_main_menu.lua", "cl_main_menu_hud.lua",

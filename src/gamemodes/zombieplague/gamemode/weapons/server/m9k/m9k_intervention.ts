@@ -1,6 +1,7 @@
 export default new WeaponDefinition({
     PrettyName: "Intervention",
     WeaponID: "m9k_intervention",
+    Family: "sniper",
     DamageMultiplier: 2.4,
     WeaponType: WEAPON_PRIMARY,
 });

@@ -28,6 +28,7 @@ AddCSLuaFile("sh_player.lua");
 AddCSLuaFile("sh_playermanager.lua");
 AddCSLuaFile("cl_hud.lua");
 AddCSLuaFile("cl_theme_manager.lua");
+AddCSLuaFile("cl_menu_controls.lua");
 AddCSLuaFile("cl_theme_hud.lua");
 AddCSLuaFile("cl_player_hud.lua");
 AddCSLuaFile("cl_data.lua");

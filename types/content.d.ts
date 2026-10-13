@@ -14,7 +14,10 @@ interface ZPServerPlayer {
 }
 
 interface ZPWeaponDefinition {
+    Family?: ZPWeaponFamily;
     PrettyName?: string;
+    NamePhrase?: string;
+    Description?: string;
     WeaponID?: string;
     WeaponType: ZPWeaponType;
     DamageMultiplier: number;

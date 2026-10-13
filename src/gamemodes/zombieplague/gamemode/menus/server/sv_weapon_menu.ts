@@ -6,6 +6,7 @@ interface WeaponMenuServiceContract {
     Select(ply: ZPServerPlayer, request: ZPWeaponMenuRequest): void;
     Disconnect(ply: ZPPlayer): void;
     OpenMissing(ply: ZPServerPlayer): void;
+    Remember(ply: ZPServerPlayer, id: number, remember: boolean): void;
 }
 
 // The adapter delegates to existing Player setters: saving and delivery keep their rules.
@@ -35,13 +36,17 @@ class WeaponMenuService implements WeaponMenuServiceContract {
                 if (!weapon.ShouldBeEnabled())
                     continue;
                 // Bound WriteTable well below GMod's message limit, including field/type overhead.
-                const cost = weapon.WeaponID.length + weapon.PrettyName.length + 256;
+                const namePhrase = typeof weapon.NamePhrase === "string" && weapon.NamePhrase.length <= 128 ? weapon.NamePhrase : undefined;
+                const description = typeof weapon.Description === "string" && weapon.Description.length <= 128 ? weapon.Description : undefined;
+                const cost = weapon.WeaponID.length + weapon.PrettyName.length + (namePhrase?.length ?? 0) + (description?.length ?? 0) + 256;
                 if (entries.length >= 256 || budget + cost > 48000 || weapon.WeaponID.length > 128 || weapon.PrettyName.length > 128) {
                     truncated = true;
                     continue;
                 }
                 budget += cost;
-                entries.push({ ID: weapon.WeaponID, Name: weapon.PrettyName, Kind: kind, Order: weapon.Order });
+                entries.push({ ID: weapon.WeaponID, Name: weapon.PrettyName, Kind: kind, Order: weapon.Order,
+                    ...(namePhrase ? { NamePhrase: namePhrase } : {}), ...(description ? { Description: description } : {}),
+                    Family: ZPWeaponMenuProtocol.Family(weapon.Family) ? weapon.Family : kind === "secondary" ? "pistol" : kind === "melee" ? "melee" : "other" });
             }
         }
         entries.sort((a, b) => a.Order !== b.Order ? a.Order - b.Order : a.ID < b.ID ? -1 : a.ID === b.ID ? 0 : 1);
@@ -51,6 +56,7 @@ class WeaponMenuService implements WeaponMenuServiceContract {
             Selected: { primary: ply.GetPrimaryWeapon()?.WeaponID ?? "", secondary: ply.GetSecondaryWeapon()?.WeaponID ?? "", melee: ply.MeleeWeapon?.WeaponID ?? "" },
             CanReceive: { primary: this.CanReceive(ply, "primary"), secondary: this.CanReceive(ply, "secondary"), melee: this.CanReceive(ply, "melee") },
             Truncated: truncated,
+            Remember: ply.RememberWeaponChoices ?? true,
         };
     }
 
@@ -90,6 +96,16 @@ class WeaponMenuService implements WeaponMenuServiceContract {
         this.Reply(ply, id, "catalog");
     }
 
+    Remember(ply: ZPServerPlayer, id: number, remember: boolean): void {
+        if (!this.Allow(this.Session(ply))) {
+            this.Reply(ply, id, "rate_limited");
+            return;
+        }
+        // Applies at the next round boundary; current inventory and choices stay intact.
+        ply.RememberWeaponChoices = remember;
+        this.Reply(ply, id, "preferences");
+    }
+
     Select(ply: ZPServerPlayer, request: ZPWeaponMenuRequest): void {
         const session = this.Session(ply);
         if (!this.Allow(session)) {
@@ -123,7 +139,7 @@ class WeaponMenuService implements WeaponMenuServiceContract {
 }
 
 const service = new WeaponMenuService();
-for (const name of ["ZPWeaponMenuCatalog", "ZPWeaponMenuSelect", "ZPWeaponMenuReply", "ZPWeaponMenuOpen", "ZPWeaponMenuMissing"])
+for (const name of ["ZPWeaponMenuCatalog", "ZPWeaponMenuSelect", "ZPWeaponMenuReply", "ZPWeaponMenuOpen", "ZPWeaponMenuMissing", "ZPWeaponMenuRemember"])
     util.AddNetworkString(name);
 net.Receive("ZPWeaponMenuCatalog", (length, ply) => {
     if (!IsValid(ply) || length > 128)
@@ -138,6 +154,13 @@ net.Receive("ZPWeaponMenuSelect", (length, ply) => {
     const request = ZPWeaponMenuProtocol.Selection(net.ReadTable());
     if (request)
         service.Select(ply, request);
+});
+net.Receive("ZPWeaponMenuRemember", (length, ply) => {
+    if (!IsValid(ply) || length < 40 || length > 48)
+        return;
+    const version = net.ReadUInt(8), id = net.ReadUInt(31);
+    if (version === 1 && ZPWeaponMenuProtocol.RequestID(id))
+        service.Remember(ply, id, net.ReadBool());
 });
 hook.Add("PlayerDisconnected", "ZPWeaponMenuCleanup", ply => service.Disconnect(ply));
 // PlayerLoadout establishes the human/zombie state inside GM.PlayerSpawn.

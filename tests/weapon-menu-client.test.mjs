@@ -2,6 +2,77 @@ import test from "node:test";
 import { run } from "./helpers/lua-runtime.mjs";
 import { clientSetup, panelsSetup } from "./helpers/weapon-menu.mjs";
 
+test("manual selection skips saved slots and closes only after the last choice is confirmed", () => run(clientSetup + `
+    snapshot.Entries[3]={ID="weapon_crowbar",Name="Crowbar",Kind="melee",Order=100}
+    snapshot.Selected.secondary="weapon_pistol"
+    ZPWeaponMenu:Open(); reply(1)
+    ZPWeaponMenu:SetSearch("AR"); ZPWeaponMenu:SetFamily("rifle")
+    ZPWeaponMenu:Select("weapon_ar2")
+    assert(ZPWeaponMenu:GetState().Category=="primary")
+    reply(2,"rate_limited")
+    assert(ZPWeaponMenu:GetState().Category=="primary")
+    ZPWeaponMenu:Select("weapon_ar2")
+    snapshot.Selected.primary="weapon_ar2"; reply(3,"issued")
+    local state=ZPWeaponMenu:GetState()
+    assert(state.Category=="melee" and state.Search=="" and state.Family=="all")
+    ZPWeaponMenu:Select("weapon_crowbar")
+    assert(ZPWeaponMenu:GetState().Open)
+    snapshot.Selected.melee="weapon_crowbar"; reply(4,"issued")
+    assert(not ZPWeaponMenu:GetState().Open)
+`));
+
+test("search and family filters combine locally and preserve the text field in every theme", () => run(clientSetup + panelsSetup + `
+    include("cl_theme_hud.lua"); include("cl_weapon_menu_hud.lua")
+    snapshot.Entries[1].Family="rifle"
+    snapshot.Entries[3]={ID="test_smg",Name="Test SMG",Kind="primary",Family="smg",Order=100}
+    for _,theme in ipairs({"classic","hl2","cs16"}) do
+        ZPWeaponMenu:SetCategory("primary")
+        ZPWeaponMenu:UsePresentation(theme); ZPWeaponMenu:Open()
+        reply(sent[3])
+        local frame
+        for _,panel in ipairs(panels) do if panel.kind=="DFrame" and not panel.removed then frame=panel end end
+        local search,combo=frame.children[2],frame.children[3]
+        assert(#combo.choices==3 and combo.choices[1][2]=="all")
+        local function cards()
+            local content=frame.children[#frame.children]
+            for _,panel in ipairs(content.children) do if panel.kind=="DScrollPanel" then return panel.children end end
+        end
+        local before=requests
+        search:SetText("  tEsT "); search:OnChange()
+        assert(#cards()==1 and cards()[1].kind=="DButton")
+        assert(not search.removed and search:GetValue()=="  tEsT ")
+        ZPWeaponMenu:SetFamily("rifle")
+        assert(#cards()==1 and cards()[1].kind=="DLabel")
+        search:SetText(""); search:OnChange()
+        assert(#cards()==1 and cards()[1].kind=="DButton" and requests==before)
+        combo:OnSelect(1,"", "all"); assert(#cards()==2)
+        ZPWeaponMenu:SetSearch("missing"); assert(cards()[1].kind=="DLabel")
+        ZPWeaponMenu:SetCategory("secondary")
+        assert(search:GetValue()=="" and ZPWeaponMenu:GetState().Family=="all" and #combo.choices==2)
+        paintAll(); ZPWeaponMenu:Close()
+    end
+`));
+
+test("remember choice waits for acknowledgment and rejects malformed preference snapshots", () => run(clientSetup + panelsSetup + `
+    include("cl_theme_hud.lua"); include("cl_weapon_menu_hud.lua")
+    ZPWeaponMenu:SetRemember(false); assert(requests==0)
+    ZPWeaponMenu:Open(); reply(1)
+    local frame=panels[1]; local checkbox=frame.children[4]
+    assert(checkbox.checked==true and checkbox:IsEnabled())
+    checkbox:OnChange(false)
+    assert(sent[1]=="ZPWeaponMenuRemember" and sent[2]==1 and sent[3]==2 and sent[4]==false)
+    assert(not checkbox:IsEnabled() and ZPWeaponMenu:GetState().Snapshot.Remember==true)
+    snapshot.Remember="false"; reply(2,"preferences")
+    assert(ZPWeaponMenu:GetState().Pending)
+    snapshot.Remember=false; snapshot.Entries[1].Family="invalid"; reply(2,"preferences")
+    assert(ZPWeaponMenu:GetState().Pending)
+    snapshot.Entries[1].Family="rifle"; reply(2,"preferences")
+    assert(not ZPWeaponMenu:GetState().Pending and checkbox.checked==false and checkbox:IsEnabled())
+    assert(ZPWeaponMenu:GetState().Category=="primary")
+    ZPWeaponMenu:SetRemember(true); reply(3,"rate_limited")
+    assert(ZPWeaponMenu:GetState().Snapshot.Remember==false and checkbox.checked==false)
+`));
+
 test("spawn selection advances only on server confirmation and closes after the missing choices", () => run(clientSetup + `
     snapshot.Entries[3]={ID="weapon_crowbar",Name="Crowbar",Kind="melee",Order=100}
     readString="primary"; receivers.ZPWeaponMenuMissing(64)
@@ -116,14 +187,14 @@ test("built-in themed menus paint, switch, dispatch selections and clean their p
     include("cl_weapon_menu_hud.lua")
     consoleCommands.zp_weapons()
     local firstFrame=panels[1]
-    assert(firstFrame.kind=="DFrame" and firstFrame.popup and firstFrame.keyboard==false)
+    assert(firstFrame.kind=="DFrame" and firstFrame.popup and firstFrame.keyboard==true)
     reply(1); paintAll()
     local refresh
     for _,panel in ipairs(panels) do
         if not panel.removed and panel.tooltip=="zombieplague.weaponmenurefreshhelp" then refresh=panel end
     end
     assert(refresh and refresh.kind=="DButton")
-    for _,panel in ipairs(panels) do if not panel.removed then assert(panel.keyboard==false) end end
+    assert(firstFrame.children[2].kind=="DTextEntry")
     local content=firstFrame.children[#firstFrame.children]
     local scroll
     for _,panel in ipairs(content.children) do if panel.kind=="DScrollPanel" then scroll=panel end end
@@ -140,7 +211,7 @@ test("built-in themed menus paint, switch, dispatch selections and clean their p
     ZPWeaponMenu:SetCategory("secondary"); paintAll()
     local liveChildren=0
     for _,panel in ipairs(activeFrame.children) do if not panel.removed then liveChildren=liveChildren+1 end end
-    assert(liveChildren==2)
+    assert(liveChildren==5)
     ZPWeaponMenu:Close()
     for _,panel in ipairs(panels) do assert(panel.removed) end
 `));

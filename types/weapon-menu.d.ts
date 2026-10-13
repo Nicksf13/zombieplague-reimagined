@@ -1,16 +1,22 @@
 // Wire data has no Player, weapon instance, callback or presentation information.
 type ZPWeaponMenuCategory = "primary" | "secondary" | "melee";
+type ZPWeaponFamily = "smg" | "machinegun" | "rifle" | "sniper" | "shotgun" | "pistol" | "revolver" | "melee" | "other";
+type ZPWeaponFamilyFilter = ZPWeaponFamily | "all";
 interface ZPWeaponMenuEntry {
     readonly ID: string;
     readonly Name: string;
+    readonly NamePhrase?: string;
+    readonly Description?: string;
     readonly Kind: ZPWeaponMenuCategory;
     readonly Order: number;
+    readonly Family?: ZPWeaponFamily;
 }
 interface ZPWeaponMenuSnapshot {
     readonly Entries: readonly ZPWeaponMenuEntry[];
     readonly Selected: Readonly<Record<ZPWeaponMenuCategory, string>>;
     readonly CanReceive: Readonly<Record<ZPWeaponMenuCategory, boolean>>;
     readonly Truncated: boolean;
+    readonly Remember?: boolean;
 }
 interface ZPWeaponMenuRequest {
     readonly Version: 1;
@@ -18,7 +24,7 @@ interface ZPWeaponMenuRequest {
     readonly Kind: ZPWeaponMenuCategory;
     readonly ID: string;
 }
-type ZPWeaponMenuReplyCode = "catalog" | "saved" | "issued" | "invalid_weapon" | "rate_limited";
+type ZPWeaponMenuReplyCode = "catalog" | "saved" | "issued" | "preferences" | "invalid_weapon" | "rate_limited";
 interface ZPWeaponMenuReply {
     readonly Version: 1;
     readonly RequestID: number;
@@ -27,6 +33,7 @@ interface ZPWeaponMenuReply {
 }
 interface ZPWeaponMenuProtocol {
     Category(this: void, value: unknown): value is ZPWeaponMenuCategory;
+    Family(this: void, value: unknown): value is ZPWeaponFamily;
     RequestID(this: void, value: unknown): value is number;
     Selection(this: void, value: unknown): ZPWeaponMenuRequest | undefined;
     Reply(this: void, value: unknown): ZPWeaponMenuReply | undefined;
