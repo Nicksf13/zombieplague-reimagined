@@ -45,13 +45,7 @@ declare namespace net {
     function WriteUInt(value: number, bits: number): void;
 }
 type ZPWeaponSearchEntry = ZPTextEntry;
-interface ZPWeaponFamilyCombo extends ZPThemedComboBox {
-    Clear(this: ZPWeaponFamilyCombo): void;
-    AddChoice(this: ZPWeaponFamilyCombo, text: string, data: ZPWeaponFamilyFilter): number;
-    SetValue(this: ZPWeaponFamilyCombo, text: string): void;
-    SetSortItems(this: ZPWeaponFamilyCombo, enabled: boolean): void;
-    OnSelect?: (this: ZPWeaponFamilyCombo, index: number, text: string, data: ZPWeaponFamilyFilter) => void;
-}
+type ZPWeaponFamilyCombo = ZPMenuComboBox<ZPWeaponFamilyFilter>;
 interface ZPWeaponRememberCheckbox extends GLuaPanel {
     SetChecked(this: ZPWeaponRememberCheckbox, checked: boolean): void;
     SetTextColor(this: ZPWeaponRememberCheckbox, color: GLuaColor): void;
@@ -59,6 +53,6 @@ interface ZPWeaponRememberCheckbox extends GLuaPanel {
 }
 /** @noSelf */
 declare namespace vgui {
-    function Create(name: "DComboBox", parent?: GLuaPanel): ZPWeaponFamilyCombo;
+    function Create<T = ZPWeaponFamilyFilter>(name: "DComboBox", parent?: GLuaPanel): ZPMenuComboBox<T>;
     function Create(name: "DCheckBoxLabel", parent?: GLuaPanel): ZPWeaponRememberCheckbox;
 }

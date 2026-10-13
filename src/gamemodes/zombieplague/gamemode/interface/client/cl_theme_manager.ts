@@ -36,6 +36,7 @@ export class ThemeManager implements ZPThemeManager {
             ZPWeaponMenu.UsePresentation(id);
         if (changed) {
             ZPMainMenu.Rebuild();
+            _G.ZPClassMenu?.Rebuild();
             _G.ZPScoreboard?.Rebuild();
             _G.ZPSettings?.Rebuild();
             _G.ZPAdminMenu?.Rebuild();

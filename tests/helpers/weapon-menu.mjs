@@ -115,6 +115,7 @@ end
 function panelMeta:IsHovered() return false end
 function panelMeta:IsEnabled() return self.enabled~=false end
 function panelMeta:SetEnabled(value) self.enabled=value end
+function panelMeta:SetVisible(value) self.visible=value end
 function panelMeta:SetTooltip(value) self.tooltip=value end
 function panelMeta:SetText(value) self.text=value end
 function panelMeta:GetValue() return self.text or "" end
@@ -127,6 +128,7 @@ function panelMeta:DrawTextEntryText(text,highlight,cursor) self.entryColors={te
 function panelMeta:IsMenuOpen() return self.menuOpen==true end
 function panelMeta:SetPlaceholderText(value) self.placeholder=value end
 function panelMeta:SetTextColor(value) self.textColor=value end
+function panelMeta:SetWrap(value) self.wrap=value end
 function panelMeta:SetChecked(value) self.checked=value end
 function panelMeta:SetSortItems(value) self.sorted=value end
 function panelMeta:SetValue(value) self.value=value end
@@ -155,7 +157,7 @@ vgui={Create=function(kind,parent)
 end}
 local function paintAll()
     for _,panel in ipairs(panels) do
-        if not panel.removed and panel.Paint then panel:Paint(panel.w,panel.h) end
+        if not panel.removed and panel.visible~=false and panel.Paint then panel:Paint(panel.w,panel.h) end
     end
 end
 `;

@@ -31,6 +31,7 @@ export class AdminMenuController implements ZPAdminController {
     }
 
     Open(): void {
+        _G.ZPClassMenu?.Close();
         if (!this.Allowed()) return;
         ZPMainMenu.Close(); ZPSettings.Close(); ZPWeaponMenu.Close();
         this.opened = true;

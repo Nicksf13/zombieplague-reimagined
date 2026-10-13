@@ -52,9 +52,9 @@ end
 `;
 
 test("admin navigation is visible only to admins and loads authoritative values", () => run(setup + `
-    assert(#ZPMainMenu:GetState().Entries==3)
+    assert(#ZPMainMenu:GetState().Entries==4)
     viewer.admin=false
-    assert(#ZPMainMenu:GetState().Entries==2)
+    assert(#ZPMainMenu:GetState().Entries==3)
     ZPAdminMenu:Open(); assert(not activeFrame() and requests==0)
     viewer.admin=true; openEnvironment()
     local state=ZPAdminMenu:GetState()

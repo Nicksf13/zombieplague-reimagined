@@ -17,6 +17,7 @@ export class MainMenuController implements ZPMainMenuController {
     }
 
     Open(): void {
+        _G.ZPClassMenu?.Close();
         _G.ZPAdminMenu?.Close();
         _G.ZPSettings?.Close();
         ZPWeaponMenu.Close();
@@ -72,5 +73,7 @@ const controller = new MainMenuController();
 _G.ZPMainMenu = controller;
 controller.RegisterOption({ ID: "weapons", Label: "zombieplague.mainmenuweapons",
     Description: "zombieplague.mainmenuweaponsdescription", Action: () => ZPWeaponMenu.Open() });
+controller.RegisterOption({ ID: "classes", Label: "zombieplague.mainmenuclasses",
+    Description: "zombieplague.mainmenuclassesdescription", Action: () => ZPClassMenu.Open() });
 hook.Add("Think", "ZPMainMenuController", () => controller.Tick());
 concommand.Add("zp_menu", () => controller.Toggle());

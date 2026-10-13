@@ -8,6 +8,8 @@
 /zombieplague/gamemode/bankstorage/text.lua
 /zombieplague/gamemode/cl_admin_menu.lua
 /zombieplague/gamemode/cl_admin_menu_hud.lua
+/zombieplague/gamemode/cl_class_menu.lua
+/zombieplague/gamemode/cl_class_menu_hud.lua
 /zombieplague/gamemode/cl_data.lua
 /zombieplague/gamemode/cl_hud.lua
 /zombieplague/gamemode/cl_init.lua
@@ -75,6 +77,7 @@
 /zombieplague/gamemode/mapconfigs/ze_maps.lua
 /zombieplague/gamemode/sh_admin_config.lua
 /zombieplague/gamemode/sh_bank.lua
+/zombieplague/gamemode/sh_class_menu_protocol.lua
 /zombieplague/gamemode/sh_player.lua
 /zombieplague/gamemode/sh_playermanager.lua
 /zombieplague/gamemode/sh_roundmanager.lua
@@ -83,6 +86,8 @@
 /zombieplague/gamemode/sv_admin_settings.lua
 /zombieplague/gamemode/sv_bank.lua
 /zombieplague/gamemode/sv_class_definitions.lua
+/zombieplague/gamemode/sv_class_menu.lua
+/zombieplague/gamemode/sv_class_menu_apply.lua
 /zombieplague/gamemode/sv_classmanager.lua
 /zombieplague/gamemode/sv_commands.lua
 /zombieplague/gamemode/sv_config.lua

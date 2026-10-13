@@ -51,6 +51,7 @@ export class WeaponMenuController implements ZPWeaponMenuController {
     }
 
     Open(): void {
+        _G.ZPClassMenu?.Close();
         _G.ZPAdminMenu?.Close();
         _G.ZPSettings?.Close();
         ZPMainMenu.Close();

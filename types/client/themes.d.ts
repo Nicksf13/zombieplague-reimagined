@@ -31,6 +31,7 @@ interface ZPThemeDefinition {
     readonly Palette: ZPThemePalette;
     readonly CreateWeaponMenu: ZPWeaponMenuPresentationFactory;
     readonly CreateMainMenu?: ZPMainMenuPresentationFactory;
+    readonly CreateClassMenu?: ZPClassMenuPresentationFactory;
     readonly CreateScoreboard?: ZPScoreboardPresentationFactory;
     readonly CreateSettingsMenu?: ZPSettingsPresentationFactory;
     readonly PaintPlayerHUD: (this: void, state: ZPPlayerHUDState, palette: ZPThemePalette) => void;
