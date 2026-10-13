@@ -42,14 +42,18 @@ export class ExtraItemsManager implements ZPServerExtraItemsManager {
                 return item;
         return undefined;
     }
-    BuyItem(ply: ZPServerPlayer, item: ZPRegisteredExtraItem | undefined): void {
+    BuyItem(ply: ZPServerPlayer, item: ZPRegisteredExtraItem | undefined): ZPExtraItemPurchaseCode {
         let phrase: string;
-        if (!item)
-            phrase = "ExtraItemChoose";
-        else if (!item.CanBuy(ply))
-            phrase = "ExtraItemCantBuy";
-        else if (ply.GetAmmoPacks() < item.Price)
-            phrase = "ExtraItemEnought";
+        let result: ZPExtraItemPurchaseCode;
+        if (!item) {
+            phrase = "ExtraItemChoose"; result = "invalid_item";
+        }
+        else if (!item.CanBuy(ply)) {
+            phrase = "ExtraItemCantBuy"; result = "restricted";
+        }
+        else if (ply.GetAmmoPacks() < item.Price) {
+            phrase = "ExtraItemEnought"; result = "insufficient";
+        }
         else {
             item.OnBuy(ply);
             if (item.RemoveFunction)
@@ -61,9 +65,10 @@ export class ExtraItemsManager implements ZPServerExtraItemsManager {
             }
             ply.TakeAmmoPacks(item.Price);
             SendPopupMessage(ply, { Phrase: "zombieplague.extraitembought", Arguments: [{ Phrase: "zombieplague." + string.lower(item.Name) }] });
-            return;
+            return "bought";
         }
         SendPopupMessage(ply, { Phrase: "zombieplague." + string.lower(phrase) });
+        return result;
     }
 }
 const extraItemsManager = new ExtraItemsManager();

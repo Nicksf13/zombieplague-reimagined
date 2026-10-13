@@ -11,6 +11,8 @@
 /zombieplague/gamemode/cl_class_menu.lua
 /zombieplague/gamemode/cl_class_menu_hud.lua
 /zombieplague/gamemode/cl_data.lua
+/zombieplague/gamemode/cl_extra_menu.lua
+/zombieplague/gamemode/cl_extra_menu_hud.lua
 /zombieplague/gamemode/cl_hud.lua
 /zombieplague/gamemode/cl_init.lua
 /zombieplague/gamemode/cl_keymanager.lua
@@ -78,6 +80,7 @@
 /zombieplague/gamemode/sh_admin_config.lua
 /zombieplague/gamemode/sh_bank.lua
 /zombieplague/gamemode/sh_class_menu_protocol.lua
+/zombieplague/gamemode/sh_extra_menu_protocol.lua
 /zombieplague/gamemode/sh_player.lua
 /zombieplague/gamemode/sh_playermanager.lua
 /zombieplague/gamemode/sh_roundmanager.lua
@@ -96,6 +99,7 @@
 /zombieplague/gamemode/sv_event_players.lua
 /zombieplague/gamemode/sv_event_ticks.lua
 /zombieplague/gamemode/sv_eventmanager.lua
+/zombieplague/gamemode/sv_extra_menu.lua
 /zombieplague/gamemode/sv_extraitem_definition.lua
 /zombieplague/gamemode/sv_extraitems.lua
 /zombieplague/gamemode/sv_infectionmanager.lua

@@ -37,6 +37,7 @@ export class ThemeManager implements ZPThemeManager {
         if (changed) {
             ZPMainMenu.Rebuild();
             _G.ZPClassMenu?.Rebuild();
+            _G.ZPExtraMenu?.Rebuild();
             _G.ZPScoreboard?.Rebuild();
             _G.ZPSettings?.Rebuild();
             _G.ZPAdminMenu?.Rebuild();

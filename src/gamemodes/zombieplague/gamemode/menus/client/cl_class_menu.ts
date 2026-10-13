@@ -21,6 +21,7 @@ export class ClassMenuController implements ZPClassMenuController {
 
     Open(kind?: ZPClassMenuKind, automatic: boolean = false): void {
         if (kind !== undefined && !ZPClassMenuProtocol.Kind(kind)) return;
+        _G.ZPExtraMenu?.Close();
         ZPWeaponMenu.Close(); ZPMainMenu.Close(); _G.ZPAdminMenu?.Close(); _G.ZPSettings?.Close();
         this.kind = kind ?? (LocalPlayer().IsHuman() ? "human" : "zombie");
         this.automatic = automatic;

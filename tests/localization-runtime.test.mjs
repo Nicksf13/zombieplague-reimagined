@@ -4,6 +4,13 @@ import test from "node:test";
 import { run } from "./helpers/lua-runtime.mjs";
 import { books, locales, nativeLanguage } from "./helpers/native-localization.mjs";
 
+test("extra item shop labels resolve in every native catalog", () => {
+    for (const locale of locales)
+        for (const key of ["mainmenuextras", "mainmenuextrasdescription", "extramenubuy", "extramenuempty",
+            "extramenuwrongteam", "extramenunotalive", "extramenubought", "extramenutruncated"])
+            assert(books[locale]["zombieplague." + key]?.trim(), `${locale}: ${key}`);
+});
+
 test("class selection labels resolve in all catalogs", () => {
     for (const locale of locales)
         for (const key of ["mainmenuclasses", "mainmenuclassesdescription", "classmenufirst", "classmenunext",

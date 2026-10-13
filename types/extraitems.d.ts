@@ -13,7 +13,7 @@ interface ZPServerExtraItemsManager {
     GetHumansExtraItems(this: ZPServerExtraItemsManager): ZPRegisteredExtraItem[];
     AddRemoveFunction(this: ZPServerExtraItemsManager, callback: (this: void) => void): void;
     GetItemById(this: ZPServerExtraItemsManager, team: number, id: string): ZPRegisteredExtraItem | undefined;
-    BuyItem(this: ZPServerExtraItemsManager, ply: ZPServerPlayer, item: ZPRegisteredExtraItem | undefined): void;
+    BuyItem(this: ZPServerExtraItemsManager, ply: ZPServerPlayer, item: ZPRegisteredExtraItem | undefined): ZPExtraItemPurchaseCode;
 }
 interface ZPServerPlayer { GetAmmoPacks(this: ZPServerPlayer): number; }
 interface ZPGlobals {
