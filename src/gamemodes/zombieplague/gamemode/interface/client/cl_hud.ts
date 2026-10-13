@@ -50,8 +50,6 @@ function light(this: void, ply: ZPClientPlayer, tint: GLuaColor, size: number, d
 hook.Add("Think", "ZPSpecialLights", () => {
     if (!IsValid(LocalPlayer()))
         return;
-    if (IsNightvisionOn())
-        light(LocalPlayer(), LocalPlayer().GetNightvisionColor(), 750, 1, true);
     for (const entry of player.GetAll()) {
         const ply = entry as ZPClientPlayer, tint = ply.GetLight();
         if (tint)

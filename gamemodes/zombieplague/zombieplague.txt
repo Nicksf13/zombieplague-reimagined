@@ -96,6 +96,66 @@
 			"type"		"CheckBox"
 			"default"	"1"
 		}
+
+		12
+		{
+			"name"		"zp_map_mute_ambient"
+			"text"		"#zombieplague.cvarmapmuteambient"
+			"type"		"CheckBox"
+			"default"	"1"
+			"singleplayer" "1"
+			"replicate"	"0"
+		}
+
+		13
+		{
+			"name"		"zp_map_night"
+			"text"		"#zombieplague.cvarmapnight"
+			"type"		"CheckBox"
+			"default"	"1"
+			"singleplayer" "1"
+			"replicate"	"0"
+		}
+
+		14
+		{
+			"name"		"zp_map_skybox"
+			"text"		"#zombieplague.cvarmapskybox"
+			"type"		"Text"
+			"default"	""
+			"singleplayer" "1"
+			"replicate"	"0"
+		}
+
+		15
+		{
+			"name"		"zp_map_night_brightness"
+			"text"		"#zombieplague.cvarmapnightbrightness"
+			"type"		"Text"
+			"default"	"c"
+			"singleplayer" "1"
+			"replicate"	"0"
+		}
+
+		16
+		{
+			"name"		"zp_map_night_exposure"
+			"text"		"#zombieplague.cvarmapnightexposure"
+			"type"		"Text"
+			"default"	"100"
+			"singleplayer" "1"
+			"replicate"	"0"
+		}
+
+		17
+		{
+			"name"		"zp_map_day_cycle"
+			"text"		"#zombieplague.cvarmapdaycycle"
+			"type"		"CheckBox"
+			"default"	"0"
+			"singleplayer" "1"
+			"replicate"	"0"
+		}
 		
     }
 }

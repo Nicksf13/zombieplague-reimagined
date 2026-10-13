@@ -4,6 +4,7 @@
 
 - This is a Garry's Mod gamemode undergoing a gradual migration from GLua to TypeScriptToLua.
 - Respond to the user in Portuguese and explain behavior changes clearly.
+- Write all new documentation and documentation updates in English.
 - Consult `docs/typescript-migration.md` for the development workflow and
   `docs/project-diagnosis.md` for findings and the proposed migration sequence.
 - Preserve existing workspace changes that are unrelated to the current task.

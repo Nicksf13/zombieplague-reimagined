@@ -3,7 +3,7 @@
   "compilerOptions": { "composite": true },
   "include": [
     "src/**/shared.ts", "src/**/sh_*.ts", "src/**/cl_*.ts", "src/**/vgui/**/*.ts",
-    "types/glua.d.ts", "types/zombieplague.d.ts", "types/weapon-menu.d.ts", "types/client/**/*.d.ts"
+    "types/glua.d.ts", "types/zombieplague.d.ts", "types/weapon-menu.d.ts", "types/admin-settings.d.ts", "types/client/**/*.d.ts"
   ],
   "exclude": []
 }

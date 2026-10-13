@@ -64,7 +64,10 @@ export class MainMenuHUD implements ZPMainMenuPresentation {
         button.SetSize(width, height);
         button.Paint = (w, h) => {
             draw.RoundedBox(this.square ? 0 : 4, 0, 0, w, h, this.palette.Panel);
-            draw.DrawText(text, "Trebuchet18", 8, 5, this.palette.Accent, TEXT_ALIGN_LEFT);
+            surface.SetFont("Trebuchet18");
+            const [textWidth, textHeight] = surface.GetTextSize(text);
+            draw.DrawText(text, "Trebuchet18", (w - textWidth) / 2, (h - textHeight) / 2,
+                this.palette.Accent, TEXT_ALIGN_LEFT);
         };
         button.DoClick = () => action();
         return button;

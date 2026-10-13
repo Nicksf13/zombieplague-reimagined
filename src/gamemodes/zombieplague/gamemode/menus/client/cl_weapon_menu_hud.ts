@@ -110,7 +110,9 @@ class WeaponMenuHUD implements ZPWeaponMenuPresentation {
             if (current.Snapshot?.Truncated)
                 this.Text(phrase("truncated"), "DermaDefault", 0, compact ? 34 : 46, this.palette.Muted);
         };
-        this.Button(footer, phrase("refresh"), 0, compact ? 50 : 60, 130, compact ? 24 : 28, () => this.actions?.Refresh());
+        const refresh = this.Button(footer, phrase("refresh"), 0, compact ? 50 : 60,
+            Math.min(240, listWidth - 20), compact ? 24 : 28, () => this.actions?.Refresh());
+        refresh.SetTooltip(phrase("refreshhelp"));
         // Newly created buttons must not take keyboard focus from gameplay either.
         frame.SetKeyboardInputEnabled(false);
     }

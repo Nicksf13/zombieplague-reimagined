@@ -1,7 +1,7 @@
 # Desenvolvimento em TypeScript
 
 A conversão dos fontes para TypeScript está concluída. Após a remoção do menu
-antigo, a adoção da localização nativa, os construtores de conteúdo e os temas de HUD/menu/placar, o projeto gera 266 arquivos Lua, incluindo
+antigo, a adoção da localização nativa, os construtores de conteúdo, os temas de HUD/menu/placar e o controle de ambiente dos mapas, o projeto gera 272 arquivos Lua, incluindo
 módulos extraídos para separar responsabilidades. A validação no Garry's Mod está pendente.
 
 Edite os `.ts` em `src/`. O GMod executa exclusivamente os `.lua` gerados em
@@ -83,7 +83,7 @@ player/
 | `classes/` | Manager e definições das classes humanas/zumbis |
 | `extraitems/` | Manager e definições de itens extras |
 | `bank/` e `bank/server/storage/` | Banco e persistência de saldos |
-| `maps/server/` e `maps/server/configs/` | Manager e configurações dos mapas |
+| `maps/server/`, `maps/server/configs/` e `maps/client/` | Manager, configurações e [ambiente dos mapas](map-environment.md) |
 | `languages/server/` | Distribuição dos catálogos nativos em `content/resource/localization/` |
 | `interface/client/` | Dados do HUD, temas de HUD/menu, teclado e scoreboard |
 | `menus/` | Contratos, serviço de seleção de armas e apresentações substituíveis da POC |

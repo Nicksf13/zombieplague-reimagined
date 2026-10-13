@@ -21,6 +21,7 @@ export class SettingsController implements ZPSettingsController {
     }
 
     Open(): void {
+        _G.ZPAdminMenu?.Close();
         ZPMainMenu.Close();
         ZPWeaponMenu.Close();
         this.opened = true;

@@ -95,6 +95,8 @@ end
 // Panels model parenting/deletion and execute Paint/DoClick; no claim about engine rendering.
 export const panelsSetup = `
 local panels={}
+surface.SetFont=function() end
+surface.GetTextSize=function(text) return #text*8,16 end
 function ScrW() return 1280 end
 function ScrH() return 720 end
 function IsValid(value) return type(value)=="table" and not value.removed end
@@ -110,13 +112,16 @@ function panelMeta:Remove()
     for _,child in ipairs(self.children) do child:Remove() end
 end
 function panelMeta:IsHovered() return false end
+function panelMeta:IsEnabled() return self.enabled~=false end
+function panelMeta:SetEnabled(value) self.enabled=value end
+function panelMeta:SetTooltip(value) self.tooltip=value end
 function panelMeta:SetKeyboardInputEnabled(enabled)
     self.keyboard=enabled
     for _,child in ipairs(self.children) do child:SetKeyboardInputEnabled(enabled) end
 end
 function panelMeta:MakePopup() self.popup=true; self.keyboard=true end
 function panelMeta:Add(kind) return vgui.Create(kind,self) end
-for _,method in ipairs({"SetText","SetColor","SetTitle","SetTooltip","ShowCloseButton","SetDraggable","SetDeleteOnClose","Center"}) do
+for _,method in ipairs({"SetText","SetColor","SetTitle","ShowCloseButton","SetDraggable","SetDeleteOnClose","Center"}) do
     panelMeta[method]=function() end
 end
 vgui={Create=function(kind,parent)

@@ -10,6 +10,14 @@ test("F4 opens the themed main menu and its weapons option opens the existing se
     assert(ZPMainMenu:GetState().Open and not ZPWeaponMenu:GetState().Open and requests==0)
     paintAll()
     local first=panels[1]
+    local originalDraw=draw.DrawText
+    local close=first.children[1]
+    draw.DrawText=function(text,font,x,y)
+        assert(text=="X" and font=="Trebuchet18")
+        assert(x==(close.w-8)/2 and y==(close.h-16)/2, "F4 close label must be centered on both axes")
+    end
+    close:Paint(close.w,close.h)
+    draw.DrawText=originalDraw
     assert(first.popup and first.keyboard==false)
     local list=first.children[#first.children]
     assert(list.kind=="DScrollPanel" and #list.children==2)

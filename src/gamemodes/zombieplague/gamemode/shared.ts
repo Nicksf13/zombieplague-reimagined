@@ -43,3 +43,4 @@ include("sh_player.lua");
 include("sh_bank.lua");
 include("sh_playermanager.lua");
 include("sh_weapon_menu_protocol.lua");
+include("sh_admin_config.lua");
