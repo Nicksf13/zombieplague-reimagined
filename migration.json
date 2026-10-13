@@ -1,5 +1,9 @@
 {
   "files": [
+    "gamemodes/zombieplague/gamemode/sh_map_vote_protocol",
+    "gamemodes/zombieplague/gamemode/sv_map_nominations",
+    "gamemodes/zombieplague/gamemode/cl_map_vote",
+    "gamemodes/zombieplague/gamemode/cl_map_vote_hud",
     "gamemodes/zombieplague/gamemode/shared",
     "gamemodes/zombieplague/gamemode/sh_admin_config",
     "gamemodes/zombieplague/gamemode/sv_admin_settings",
@@ -288,6 +292,10 @@
     "gamemodes/zombieplague/gamemode/sv_class_definitions"
   ],
   "sourcePaths": {
+    "gamemodes/zombieplague/gamemode/sh_map_vote_protocol": "gamemodes/zombieplague/gamemode/rounds/shared/sh_map_vote_protocol",
+    "gamemodes/zombieplague/gamemode/sv_map_nominations": "gamemodes/zombieplague/gamemode/rounds/server/sv_map_nominations",
+    "gamemodes/zombieplague/gamemode/cl_map_vote": "gamemodes/zombieplague/gamemode/menus/client/cl_map_vote",
+    "gamemodes/zombieplague/gamemode/cl_map_vote_hud": "gamemodes/zombieplague/gamemode/menus/client/cl_map_vote_hud",
     "gamemodes/zombieplague/gamemode/cl_menu_controls": "gamemodes/zombieplague/gamemode/interface/client/cl_menu_controls",
     "gamemodes/zombieplague/gamemode/sh_admin_config": "gamemodes/zombieplague/gamemode/menus/shared/sh_admin_config",
     "gamemodes/zombieplague/gamemode/sv_admin_settings": "gamemodes/zombieplague/gamemode/menus/server/sv_admin_settings",

@@ -23,6 +23,7 @@ export class ExtraMenuController implements ZPExtraMenuController {
     }
     private Update(): void { if (this.opened) this.presentation?.Update(this.GetState()); }
     Open(): void {
+        _G.ZPMapVoteMenu?.Close();
         ZPMainMenu.Close(); ZPWeaponMenu.Close(); _G.ZPClassMenu?.Close(); _G.ZPAdminMenu?.Close(); _G.ZPSettings?.Close();
         if (this.opened) return;
         this.opened = true;

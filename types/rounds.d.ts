@@ -51,7 +51,19 @@ interface ZPVoteMapManager {
     Voters: Record<string, boolean>;
     StartVotemap(this: ZPVoteMapManager, prefixes: string[]): void;
     EndVotemap(this: ZPVoteMapManager): void;
+    SendSnapshot(this: ZPVoteMapManager, ply?: ZPServerPlayer): void;
+    Vote(this: ZPVoteMapManager, ply: ZPServerPlayer, request: ZPMapVoteRequest): void;
+    Remove(this: ZPVoteMapManager, ply: ZPServerPlayer): void;
 }
+interface ZPMapNominations {
+    GetMaps(this: ZPMapNominations, prefixes: string[]): string[];
+    Candidates(this: ZPMapNominations, prefixes: string[], limit: number): string[];
+    Nominate(this: ZPMapNominations, ply: ZPServerPlayer, args: string[]): void;
+    Remove(this: ZPMapNominations, ply: ZPServerPlayer): void;
+    Clear(this: ZPMapNominations): void;
+}
+declare const ZPMapNominations: ZPMapNominations;
+interface ZPGlobals { ZPMapNominations: ZPMapNominations; }
 interface ZPGlobals { ZPVoteMap: ZPVoteMapManager; }
 declare const ZPVoteMap: ZPVoteMapManager;
 /** @noSelf */

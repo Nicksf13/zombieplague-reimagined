@@ -164,14 +164,16 @@ test("default special-round callbacks retain their own definition after all roun
     assert(b.Lifes==5 and a.Lifes==nil)
 `));
 
-test("map vote lifecycle runs extension with the right manager without the retired UI", () => run(setup + `
+test("map vote lifecycle runs extension with the right manager and the new vote protocol", () => run(setup + `
+    concommand={Add=function() end}
     string.StartWith=function(text,prefix) return text:sub(1,#prefix)==prefix end
     table.RemoveByValue=function(values,value) for i=#values,1,-1 do if values[i]==value then table.remove(values,i) end end end
     file.Find=function() return {"zm_current.bsp","zm_other.bsp","de_no.bsp"},{} end
-    include("sv_votemap.lua")
+    include("sh_map_vote_protocol.lua"); include("sv_map_nominations.lua"); include("sv_votemap.lua")
     ZPVoteMap:StartVotemap({"zm_"})
     assert(ZPVoteMap.Voting and ZPVoteMap.MapsToVote.zm_other==0 and not ZPVoteMap.MapsToVote.de_no)
     assert(not receivers.SendVotemap and not registered.SendVotemap)
+    assert(receivers.ZPMapVoteSelect and registered.ZPMapVoteSnapshot)
     assert(sent[1]=="SyncTimer")
     ZPVoteMap.MapsToVote.zm_current=1
     ZPVoteMap:EndVotemap(); assert(not ZPVoteMap.Voting and RoundManager.ExtraRounds==5)

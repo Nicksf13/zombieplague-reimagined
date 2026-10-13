@@ -17,6 +17,12 @@ commands.AddCommand("commands", "Print the server's commands.", (ply) => {
     let text = "--------------------------Commands--------------------------\n";
     for (const [name, command] of pairs(commands.CommandList)) {
         if (!command.Private || ply.IsSuperAdmin()) {
+            if (command.Description.startsWith("zombieplague.")) {
+                SendConsoleMessage(ply, text);
+                SendConsoleMessage(ply, { Phrase: command.Description });
+                text = "";
+                continue;
+            }
             text += name + " - Description: " + command.Description + " - Sintax: /" + name + " " + command.Help + "\n";
         }
     }

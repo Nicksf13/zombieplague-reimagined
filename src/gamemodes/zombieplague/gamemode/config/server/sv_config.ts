@@ -2,7 +2,7 @@ export {};
 _G.ZOMBIE_KNIFE = "zp_weapon_fists";
 _G.INFECTION_BOMB = "zp_infection_grenade_thrower";
 _G.ANTIDOTE_GRENADE = "zp_antidote_grenade_thrower";
-_G.ALLOWED_PREFIX = ["zm_", "ze_", "zp_"];
+_G.ALLOWED_PREFIX = ["zm_", "ze_", "zp_", "gm_"];
 _G.AdminHumanPlayerModel = "models/player/combine_super_soldier.mdl";
 _G.AdminZombiePlayerModel = "models/player/zombie_soldier.mdl";
 _G.NemesisClass = { Health: 5000, RunSpeed: 270, Speed: 270, CrouchedSpeed: 0.7, Gravity: 0.5, Ability: false, PlayerModel: "models/player/zombie_soldier.mdl" };
@@ -120,7 +120,7 @@ ConvarManager.CreateConVar("zp_voice_all", 1, 8, "cvar used to set if players wi
 ConvarManager.CreateConVar("zp_can_hear_death", 0, 8, "cvar used to set if players will hear death players");
 ConvarManager.CreateConVar("zp_chat_all", 1, 8, "cvar used to set if players will read other team players.");
 ConvarManager.CreateConVar("zp_can_see_death", 0, 8, "cvar used to set if players will read death players");
-ConvarManager.CreateConVar("zp_maps_to_vote", 7, 8, "cvar used to set how many maps will be displayed on votemap");
+ConvarManager.CreateConVar("zp_maps_to_vote", 8, 8, "Maps offered in a vote (1-8), plus the optional extension");
 ConvarManager.CreateConVar("zp_map_prop_damage_multiplier", 1, 8, "cvar used to set the map prop multiplier");
 ConvarManager.CreateConVar("zp_nemesis_earn", 0, 8, "cvar used to set if nemesis will earn class atributes");
 ConvarManager.CreateConVar("zp_survivor_earn", 0, 8, "cvar used to set if survivor will earn class atributes");

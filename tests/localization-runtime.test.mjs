@@ -11,6 +11,13 @@ test("extra item shop labels resolve in every native catalog", () => {
             assert(books[locale]["zombieplague." + key]?.trim(), `${locale}: ${key}`);
 });
 
+test("map voting and nomination labels resolve in all catalogs", () => {
+    const suffixes = ["title", "remaining", "winner", "help", "nominatehelp", "extend", "votes", "won",
+        "selected", "leading", "usage", "maplist", "locked", "nominated", "invalid", "command"];
+    for (const locale of locales)
+        for (const suffix of suffixes) assert(books[locale]["zombieplague.mapvote" + suffix]?.trim(), `${locale}: ${suffix}`);
+});
+
 test("class selection labels resolve in all catalogs", () => {
     for (const locale of locales)
         for (const key of ["mainmenuclasses", "mainmenuclassesdescription", "classmenufirst", "classmenunext",

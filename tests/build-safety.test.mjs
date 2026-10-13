@@ -67,7 +67,7 @@ test("build rejects type errors, detects stale Lua and preserves unmigrated file
         await rm(missingOutput);
         const built = run();
         assert.equal(built.status, 0, built.stdout + built.stderr);
-        assert.equal(await readFile(output, "utf8"), originalOutputs[0]);
+        assert.equal(await readFile(output, "utf8"), originalOutputs[manifest.files.indexOf("gamemodes/zombieplague/gamemode/shared")]);
         assert.equal(await readFile(missingOutput, "utf8"), originalOutputs.at(-1));
         assert.equal(await readFile(ignorePath, "utf8"), originalIgnore);
         assert(!originalIgnore.includes("__unmigrated_fixture.lua"));
@@ -90,7 +90,7 @@ test("build rejects type errors, detects stale Lua and preserves unmigrated file
         assert.equal(unsafeMapping.status, 1);
         assert.match(unsafeMapping.stderr, /Invalid source mapping/);
         await writeFile(manifestPath, JSON.stringify({ ...manifest, sourcePaths: {
-            ...manifest.sourcePaths, [manifest.files[0]]: mappedSource,
+            ...manifest.sourcePaths, [manifest.files.find(name => name !== mappedRuntime)]: mappedSource,
         } }));
         const duplicatedSource = run();
         assert.equal(duplicatedSource.status, 1);

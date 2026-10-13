@@ -45,4 +45,5 @@ include("sh_playermanager.lua");
 include("sh_weapon_menu_protocol.lua");
 include("sh_class_menu_protocol.lua");
 include("sh_extra_menu_protocol.lua");
+include("sh_map_vote_protocol.lua");
 include("sh_admin_config.lua");

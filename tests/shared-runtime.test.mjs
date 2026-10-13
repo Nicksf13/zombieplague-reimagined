@@ -7,7 +7,7 @@ import fengari from "fengari";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const { lua, lauxlib, lualib, to_luastring } = fengari;
-const names = ["init", "shared", "sh_roundmanager", "sh_player", "sh_bank", "sh_playermanager", "sh_weapon_menu_protocol", "sh_class_menu_protocol", "sh_extra_menu_protocol", "sh_admin_config"];
+const names = ["init", "shared", "sh_roundmanager", "sh_player", "sh_bank", "sh_playermanager", "sh_weapon_menu_protocol", "sh_class_menu_protocol", "sh_extra_menu_protocol", "sh_map_vote_protocol", "sh_admin_config"];
 const files = Object.fromEntries(await Promise.all(names.map(async name => [
     `${name}.lua`, await readFile(path.join(root, "gamemodes/zombieplague/gamemode", `${name}.lua`), "utf8"),
 ])));
@@ -149,7 +149,7 @@ for (const server of [true, false]) {
         assert(GM.Name == "Zombie Plague (For GMOD)")
         assert(TEAM_HUMANS == 3 and TEAM_ZOMBIES == 2)
         assert(ROUND_WAITING_PLAYERS == 0 and ROUND_CHANGING_MAP == 6)
-        assert(table.concat(includeOrder, ",") == "shared.lua,sh_roundmanager.lua,sh_player.lua,sh_bank.lua,sh_playermanager.lua,sh_weapon_menu_protocol.lua,sh_class_menu_protocol.lua,sh_extra_menu_protocol.lua,sh_admin_config.lua")
+        assert(table.concat(includeOrder, ",") == "shared.lua,sh_roundmanager.lua,sh_player.lua,sh_bank.lua,sh_playermanager.lua,sh_weapon_menu_protocol.lua,sh_class_menu_protocol.lua,sh_extra_menu_protocol.lua,sh_map_vote_protocol.lua,sh_admin_config.lua")
         assert(PLAYER == nil, "Player metatable alias leaked into globals")
         assert(#ZombieKnifeSound == 2 and NIGHTVISION_COLOR.g == 255)
         assert(convars.zp_givetake_ammopacks_allowed.value == "1")
@@ -257,7 +257,7 @@ const serverSetup = `
         "sv_player.lua", "sv_localization.lua", "sv_message.lua", "sv_classmanager.lua",
         "sv_roundmanager.lua", "sv_eventmanager.lua", "sv_infectionmanager.lua",
         "sv_weaponmanager.lua", "sv_weapon_menu.lua", "sv_class_menu_apply.lua", "sv_class_menu.lua", "sv_extraitems.lua", "sv_extra_menu.lua", "sv_particlemanager.lua",
-        "sv_votemap.lua", "sv_mapmanager.lua", "sv_map_environment.lua", "sv_admin_settings.lua", "sv_bank.lua"
+        "sv_votemap.lua", "sv_map_nominations.lua", "sv_mapmanager.lua", "sv_map_environment.lua", "sv_admin_settings.lua", "sv_bank.lua"
     }
     for _, name in ipairs(expectedServerIncludes) do
         legacyIncludes[name] = function() assert(BOT_MODE == true) end
@@ -354,7 +354,7 @@ const runServer = scenario => runLua(scenario, true, { entry: "init.lua", setup:
 
 test("server init preserves include order, client downloads and network registration", () => runServer(`
     assert(BOT_MODE == true)
-    local expectedIncludes = {"init.lua", "shared.lua", "sh_roundmanager.lua", "sh_player.lua", "sh_bank.lua", "sh_playermanager.lua", "sh_weapon_menu_protocol.lua", "sh_class_menu_protocol.lua", "sh_extra_menu_protocol.lua", "sh_admin_config.lua"}
+    local expectedIncludes = {"init.lua", "shared.lua", "sh_roundmanager.lua", "sh_player.lua", "sh_bank.lua", "sh_playermanager.lua", "sh_weapon_menu_protocol.lua", "sh_class_menu_protocol.lua", "sh_extra_menu_protocol.lua", "sh_map_vote_protocol.lua", "sh_admin_config.lua"}
     for _, name in ipairs(expectedServerIncludes) do expectedIncludes[#expectedIncludes + 1] = name end
     assert(table.concat(includeOrder, ",") == table.concat(expectedIncludes, ","))
     local expectedClientFiles = {
@@ -362,7 +362,7 @@ test("server init preserves include order, client downloads and network registra
         "cl_hud.lua", "cl_theme_manager.lua", "cl_menu_controls.lua", "cl_theme_hud.lua", "cl_player_hud.lua",
         "cl_data.lua", "cl_message.lua", "cl_player.lua", "cl_nightvision.lua", "cl_roundmanager.lua",
         "cl_particlemanager.lua", "cl_keymanager.lua", "cl_scoreboard.lua", "cl_scoreboard_hud.lua",
-        "sh_weapon_menu_protocol.lua", "sh_class_menu_protocol.lua", "sh_extra_menu_protocol.lua", "cl_extra_menu.lua", "cl_extra_menu_hud.lua", "cl_class_menu.lua", "cl_class_menu_hud.lua",
+        "sh_weapon_menu_protocol.lua", "sh_class_menu_protocol.lua", "sh_extra_menu_protocol.lua", "sh_map_vote_protocol.lua", "cl_map_vote.lua", "cl_map_vote_hud.lua", "cl_extra_menu.lua", "cl_extra_menu_hud.lua", "cl_class_menu.lua", "cl_class_menu_hud.lua",
         "cl_weapon_menu.lua", "cl_weapon_menu_hud.lua", "cl_main_menu.lua", "cl_main_menu_hud.lua",
         "cl_settings.lua", "cl_settings_hud.lua", "sh_admin_config.lua", "cl_admin_menu.lua", "cl_admin_menu_hud.lua",
         "cl_map_environment.lua", "cl_map_material_catalog.lua",
