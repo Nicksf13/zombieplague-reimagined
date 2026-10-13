@@ -71,6 +71,11 @@ test("editor discovers both realms and their ambient dependencies without runtim
         for (const [source, config] of [
             ["gamemode/interface/client/cl_hud.ts", "client"],
             ["gamemode/menus/client/cl_weapon_menu_hud.ts", "client"],
+            ["gamemode/menus/client/cl_class_menu.ts", "client"],
+            ["gamemode/menus/client/cl_class_menu_hud.ts", "client"],
+            ["gamemode/menus/shared/sh_class_menu_protocol.ts", "server"],
+            ["gamemode/menus/server/sv_class_menu.ts", "server"],
+            ["gamemode/menus/server/sv_class_menu_apply.ts", "server"],
             ["gamemode/menus/server/sv_weapon_menu.ts", "server"],
             ["gamemode/menus/shared/sh_admin_config.ts", "server"],
             ["gamemode/menus/server/sv_admin_settings.ts", "server"],

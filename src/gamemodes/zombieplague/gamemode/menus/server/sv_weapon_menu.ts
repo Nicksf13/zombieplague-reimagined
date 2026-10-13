@@ -63,6 +63,8 @@ class WeaponMenuService implements WeaponMenuServiceContract {
     OpenMissing(ply: ZPServerPlayer): void {
         if (!IsValid(ply) || ply.IsBot() || !ply.Alive() || !ply.IsHuman() || ply.IsSurvivor())
             return;
+        if (_G.ZPClassMenu?.NeedsChoice(ply, "human"))
+            return;
         const snapshot = this.Snapshot(ply);
         const missing = (["primary", "secondary", "melee"] as const).find(kind =>
             snapshot.Selected[kind] === "" && snapshot.Entries.some(entry => entry.Kind === kind));
@@ -167,6 +169,7 @@ hook.Add("PlayerDisconnected", "ZPWeaponMenuCleanup", ply => service.Disconnect(
 hook.Add("PlayerSpawn", "ZPWeaponMenuMissingChoices", ply => {
     timer.Simple(0, () => service.OpenMissing(ply));
 });
+hook.Add("ZPClassMenuConfirmed", "ZPWeaponMenuAfterClass", (ply: ZPServerPlayer) => service.OpenMissing(ply));
 Commands.AddCommand("weapons", "Open the weapon selection HUD.", ply => {
     net.Start("ZPWeaponMenuOpen");
     net.Send(ply);

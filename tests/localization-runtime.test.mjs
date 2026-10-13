@@ -4,6 +4,14 @@ import test from "node:test";
 import { run } from "./helpers/lua-runtime.mjs";
 import { books, locales, nativeLanguage } from "./helpers/native-localization.mjs";
 
+test("class selection labels resolve in all catalogs", () => {
+    for (const locale of locales)
+        for (const key of ["mainmenuclasses", "mainmenuclassesdescription", "classmenufirst", "classmenunext",
+            "classmenuempty", "classmenuinvalid", "classjump", "classdamage", "classcrouchspeed", "classscale",
+            "classfootsteps", "classfalldamage", "classabilitycost", "classabilityactivation", "classmenuexpand", "classmenucollapse"])
+            assert(books[locale]["zombieplague." + key]?.trim(), `${locale}: ${key}`);
+});
+
 test("weapon search, family filters and round preferences resolve in all catalogs", () => {
     const suffixes = ["search", "remember", "rememberhelp", "familyall", "familysmg", "familymachinegun",
         "familyrifle", "familysniper", "familyshotgun", "familypistol", "familyrevolver", "familymelee", "familyother"];

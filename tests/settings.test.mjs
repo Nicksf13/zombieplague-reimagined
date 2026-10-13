@@ -15,7 +15,7 @@ test("F4 settings option moves theme selection out of the main and weapon menus"
     ZPMainMenu:Open()
     local main=activeFrame()
     assert(#main.children==2, "Main menu must contain only close and option list controls")
-    main.children[2].children[2]:DoClick()
+    ZPMainMenu:Activate("settings")
     assert(main.removed and ZPSettings:GetState().Open and not ZPMainMenu:GetState().Open and requests==0)
     local settings=activeFrame()
     assert(settings.popup and settings.keyboard==false)

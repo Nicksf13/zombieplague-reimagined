@@ -54,6 +54,7 @@ declare namespace notification { function AddLegacy(text: string, kind: number, 
 /** @noSelf */
 declare namespace surface { function PlaySound(path: string): void; }
 interface GLuaPanel {
+    SetVisible(this: GLuaPanel, visible: boolean): void;
     SetSize(this: GLuaPanel, width: number, height: number): void;
     SetPos(this: GLuaPanel, x: number, y: number): void;
     SetLife(this: GLuaPanel, seconds: number): void;
