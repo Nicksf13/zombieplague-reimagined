@@ -5,8 +5,13 @@ interface ZPWeaponMenuState {
     readonly Snapshot?: ZPWeaponMenuSnapshot;
     readonly Pending: boolean;
     readonly Feedback: string;
+    readonly Search: string;
+    readonly Family: ZPWeaponFamilyFilter;
 }
 interface ZPWeaponMenuActions {
+    SetSearch(this: ZPWeaponMenuActions, text: string): void;
+    SetFamily(this: ZPWeaponMenuActions, family: ZPWeaponFamilyFilter): void;
+    SetRemember(this: ZPWeaponMenuActions, remember: boolean): void;
     SetCategory(this: ZPWeaponMenuActions, kind: ZPWeaponMenuCategory): void;
     Select(this: ZPWeaponMenuActions, id: string): void;
     Refresh(this: ZPWeaponMenuActions): void;
@@ -38,4 +43,22 @@ declare const KEY_F4: number, KEY_ESCAPE: number;
 declare namespace net {
     function WriteTable(value: object): void;
     function WriteUInt(value: number, bits: number): void;
+}
+type ZPWeaponSearchEntry = ZPTextEntry;
+interface ZPWeaponFamilyCombo extends ZPThemedComboBox {
+    Clear(this: ZPWeaponFamilyCombo): void;
+    AddChoice(this: ZPWeaponFamilyCombo, text: string, data: ZPWeaponFamilyFilter): number;
+    SetValue(this: ZPWeaponFamilyCombo, text: string): void;
+    SetSortItems(this: ZPWeaponFamilyCombo, enabled: boolean): void;
+    OnSelect?: (this: ZPWeaponFamilyCombo, index: number, text: string, data: ZPWeaponFamilyFilter) => void;
+}
+interface ZPWeaponRememberCheckbox extends GLuaPanel {
+    SetChecked(this: ZPWeaponRememberCheckbox, checked: boolean): void;
+    SetTextColor(this: ZPWeaponRememberCheckbox, color: GLuaColor): void;
+    OnChange?: (this: ZPWeaponRememberCheckbox, checked: boolean) => void;
+}
+/** @noSelf */
+declare namespace vgui {
+    function Create(name: "DComboBox", parent?: GLuaPanel): ZPWeaponFamilyCombo;
+    function Create(name: "DCheckBoxLabel", parent?: GLuaPanel): ZPWeaponRememberCheckbox;
 }

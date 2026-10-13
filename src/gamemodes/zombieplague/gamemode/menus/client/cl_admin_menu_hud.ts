@@ -83,6 +83,7 @@ export class AdminMenuHUD implements ZPAdminPresentation {
                     this.controls.push({ Index: index, Panel: button });
                 } else {
                     const input = vgui.Create("DTextEntry", content);
+                    ZPMenuControls.TextEntry(input, this.palette, this.square);
                     input.SetPos(0, y + 46); input.SetSize(rowWidth, 36);
                     input.SetText(state.Values[index] ?? entry.Default);
                     input.OnChange = () => actions.SetValue(index, input.GetValue());

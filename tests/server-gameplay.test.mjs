@@ -46,6 +46,27 @@ UnfreezeSounds,CountDownSound,ZombieWinSounds,HumanWinSounds,DrawSounds,ALLOWED_
 include("sh_roundmanager.lua"); include("sv_roundmanager.lua")
 `;
 
+test("unsaved loadouts are cleared before the next round spawn while remembered choices survive", () => run(setup + `
+    include("sv_player_weapons.lua")
+    local a=addPlayer("a",TEAM_HUMANS,true); local b=addPlayer("b",TEAM_HUMANS,true)
+    RoundManager.PlayersToPlay={a,b}
+    local weapon={WeaponID="test"}
+    a.PrimaryWeapon,a.SecondaryWeapon,a.MeleeWeapon=weapon,weapon,weapon
+    b.PrimaryWeapon,b.SecondaryWeapon,b.MeleeWeapon=weapon,weapon,weapon
+    a.RememberWeaponChoices=false
+    for _,name in ipairs({"SetNemesis","SetSurvivor","SetLight","ResetZombieAllowedWeapons"}) do meta[name]=function() end end
+    local spawns=0
+    meta.Spawn=function(self)
+        spawns=spawns+1
+        if self==a then assert(not self.PrimaryWeapon and not self.SecondaryWeapon and not self.MeleeWeapon)
+        else assert(self.PrimaryWeapon==weapon and self.SecondaryWeapon==weapon and self.MeleeWeapon==weapon) end
+    end
+    assert(RoundManager:Prepare() and spawns==2)
+    assert(a.RememberWeaponChoices==false)
+    a.PrimaryWeapon,a.SecondaryWeapon,a.MeleeWeapon=weapon,weapon,weapon
+    assert(RoundManager:Prepare() and spawns==4)
+`));
+
 test("round participation is idempotent, removes stale entries and replaces the departing last zombie", () => run(setup + `
     local z=addPlayer("z",TEAM_ZOMBIES,true)
     local a=addPlayer("a",TEAM_HUMANS,true); local b=addPlayer("b",TEAM_HUMANS,true)

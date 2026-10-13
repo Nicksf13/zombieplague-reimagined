@@ -2,6 +2,30 @@ import test from "node:test";
 import { run } from "./helpers/lua-runtime.mjs";
 import { serverSetup } from "./helpers/weapon-menu.mjs";
 
+test("remember preference is validated, rate limited and leaves current weapons intact", () => run(serverSetup + `
+    selectWeapon(1,"primary","weapon_ar2")
+    local weapon=ply:GetPrimaryWeapon()
+    now=now+0.3
+    assert(catalog(2).Snapshot.Remember==true)
+    local function remember(id,value,length,version)
+        now=now+0.3; uints={version or 1,id}; readBool=value
+        receivers.ZPWeaponMenuRemember(length or 40,ply)
+    end
+    remember(3,false)
+    assert(sent[2].Code=="preferences" and sent[2].Snapshot.Remember==false)
+    assert(ply.RememberWeaponChoices==false and ply:GetPrimaryWeapon()==weapon and ply.gives==1)
+    uints={1,4}; readBool=true; receivers.ZPWeaponMenuRemember(40,ply)
+    assert(sent[2].Code=="rate_limited" and ply.RememberWeaponChoices==false)
+    for _,length in ipairs({0,39,49,4096}) do
+        sent={}; remember(5,true,length); assert(#sent==0 and ply.RememberWeaponChoices==false)
+    end
+    for _,id in ipairs({0,-1,2147483648}) do
+        sent={}; remember(id,true); assert(#sent==0 and ply.RememberWeaponChoices==false)
+    end
+    sent={}; remember(6,true,40,2); assert(#sent==0 and ply.RememberWeaponChoices==false)
+    remember(7,true); assert(ply.RememberWeaponChoices and sent[2].Snapshot.Remember)
+`));
+
 test("weapon catalog contains available data, selected IDs and per-life delivery state", () => run(serverSetup + `
     local response=catalog(1)
     assert(response.Version==1 and response.RequestID==1 and response.Code=="catalog")

@@ -46,6 +46,11 @@ manager.Prepare = function (): boolean {
     game.CleanUpMap();
     this.SetRoundState(ROUND_STARTING_NEW_ROUND);
     for (const ply of this.GetPlayersToPlay()) {
+        if (ply.RememberWeaponChoices === false) {
+            ply.SetPrimaryWeapon(undefined);
+            ply.SetSecondaryWeapon(undefined);
+            ply.SetMeleeWeapon(undefined);
+        }
         ply.SetNemesis(false);
         ply.SetSurvivor(false);
         ply.SetLight(undefined);

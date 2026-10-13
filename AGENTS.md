@@ -69,6 +69,17 @@
   at runtime. Permissions and gameplay rules must be checked on the server.
 - Preserve assets and persisted data. The build must not clean `gamemodes/`.
 
+## UI consistency
+
+- Always style new or changed player-facing controls with the active theme palette
+  and geometry (Classic, HL2, CS 1.6, and addon palettes). This includes text inputs,
+  combo boxes, dropdown popups and options, placeholders, focus/hover indicators,
+  and disabled states. Do not leave default Derma styling inside themed menus.
+- Reuse `ZPMenuControls.TextEntry` and `ZPMenuControls.ComboBox` for native menu
+  inputs. Extend shared presentation helpers when needed instead of duplicating
+  styling between menus. Preserve native editing, caret/selection, keyboard focus,
+  option callbacks and popup cleanup while customizing appearance.
+
 ## Localization
 
 - Always translate new or changed player-facing text into every supported language

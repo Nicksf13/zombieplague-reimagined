@@ -16,6 +16,7 @@
 /zombieplague/gamemode/cl_main_menu_hud.lua
 /zombieplague/gamemode/cl_map_environment.lua
 /zombieplague/gamemode/cl_map_material_catalog.lua
+/zombieplague/gamemode/cl_menu_controls.lua
 /zombieplague/gamemode/cl_message.lua
 /zombieplague/gamemode/cl_nightvision.lua
 /zombieplague/gamemode/cl_particlemanager.lua

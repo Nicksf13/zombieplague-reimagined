@@ -4,6 +4,13 @@ import test from "node:test";
 import { run } from "./helpers/lua-runtime.mjs";
 import { books, locales, nativeLanguage } from "./helpers/native-localization.mjs";
 
+test("weapon search, family filters and round preferences resolve in all catalogs", () => {
+    const suffixes = ["search", "remember", "rememberhelp", "familyall", "familysmg", "familymachinegun",
+        "familyrifle", "familysniper", "familyshotgun", "familypistol", "familyrevolver", "familymelee", "familyother"];
+    for (const locale of locales)
+        for (const suffix of suffixes) assert(books[locale]["zombieplague.weaponmenu" + suffix]?.trim(), `${locale}: ${suffix}`);
+});
+
 test("admin navigation, environment labels, and restart confirmation resolve in every catalog", () => {
     const sources = ["shared/sh_admin_config", "client/cl_admin_menu", "client/cl_admin_menu_hud"]
         .map(name => readFileSync(new URL(`../src/gamemodes/zombieplague/gamemode/menus/${name}.ts`, import.meta.url), "utf8"))

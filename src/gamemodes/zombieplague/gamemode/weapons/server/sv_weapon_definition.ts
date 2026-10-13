@@ -1,9 +1,12 @@
 export class WeaponDefinition implements ZPRegisteredWeapon {
     PrettyName: string;
+    NamePhrase?: string;
+    Description?: string;
     WeaponID: string;
     WeaponType: ZPWeaponType = WEAPON_PRIMARY;
     DamageMultiplier: number = 1;
     Order: number = 100;
+    Family?: ZPWeaponFamily;
     ProjectileID?: string;
 
     constructor(options: ZPWeaponOptions) {

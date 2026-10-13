@@ -1,6 +1,7 @@
 export default new WeaponDefinition({
     PrettyName: "SMG1",
     WeaponID: "weapon_smg1",
+    Family: "smg",
     DamageMultiplier: 1,
     WeaponType: WEAPON_PRIMARY,
     GiveWeapon: function (this: ZPWeaponDefinition, ply: ZPServerPlayer): void {

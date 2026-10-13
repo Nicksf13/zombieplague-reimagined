@@ -72,6 +72,7 @@ include("sh_weapon_menu_protocol.lua")
 local createdFonts={}
 surface={CreateFont=function(name,data) createdFonts[name]=data end}
 include("cl_theme_manager.lua")
+include("cl_menu_controls.lua")
 include("cl_weapon_menu.lua")
 include("cl_main_menu.lua")
 include("cl_main_menu_hud.lua")
@@ -115,19 +116,41 @@ function panelMeta:IsHovered() return false end
 function panelMeta:IsEnabled() return self.enabled~=false end
 function panelMeta:SetEnabled(value) self.enabled=value end
 function panelMeta:SetTooltip(value) self.tooltip=value end
+function panelMeta:SetText(value) self.text=value end
+function panelMeta:GetValue() return self.text or "" end
+function panelMeta:GetText() return self.text or "" end
+function panelMeta:SetFont(value) self.font=value end
+function panelMeta:SetTextInset(x,y) self.inset={x,y} end
+function panelMeta:HasFocus() return self.focused==true end
+function panelMeta:GetPlaceholderText() return self.placeholder end
+function panelMeta:DrawTextEntryText(text,highlight,cursor) self.entryColors={text,highlight,cursor} end
+function panelMeta:IsMenuOpen() return self.menuOpen==true end
+function panelMeta:SetPlaceholderText(value) self.placeholder=value end
+function panelMeta:SetTextColor(value) self.textColor=value end
+function panelMeta:SetChecked(value) self.checked=value end
+function panelMeta:SetSortItems(value) self.sorted=value end
+function panelMeta:SetValue(value) self.value=value end
+function panelMeta:Clear() self.choices={} end
+function panelMeta:AddChoice(text,data)
+    self.choices=self.choices or {}; self.choices[#self.choices+1]={text,data}; return #self.choices
+end
 function panelMeta:SetKeyboardInputEnabled(enabled)
     self.keyboard=enabled
     for _,child in ipairs(self.children) do child:SetKeyboardInputEnabled(enabled) end
 end
 function panelMeta:MakePopup() self.popup=true; self.keyboard=true end
 function panelMeta:Add(kind) return vgui.Create(kind,self) end
-for _,method in ipairs({"SetText","SetColor","SetTitle","ShowCloseButton","SetDraggable","SetDeleteOnClose","Center"}) do
+for _,method in ipairs({"SetColor","SetTitle","ShowCloseButton","SetDraggable","SetDeleteOnClose","Center"}) do
     panelMeta[method]=function() end
 end
 vgui={Create=function(kind,parent)
     local panel=setmetatable({kind=kind,children={}}, {__index=panelMeta})
     panels[#panels+1]=panel
     if parent then parent.children[#parent.children+1]=panel end
+    if kind=="DComboBox" then
+        panel.DropButton=vgui.Create("DPanel",panel)
+        panel.DropButton:SetSize(15,15)
+    end
     return panel
 end}
 local function paintAll()
