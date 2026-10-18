@@ -25,6 +25,14 @@ GM.PlayerCanSeePlayersChat = function (_text, teamTalk, listener, talker): boole
 GM.PlayerSpawn = function (ply): void {
     // Always synchronize off, even if the server already considers it off, without toggle audio.
     ply.SetNightvision(false, true);
+    if (cvars.Bool("zp_bot_training", false) && !ply.IsBot()) {
+        ply.ZPVoluntarySpectator = true;
+        ply.SetTeam(TEAM_SPECTATOR);
+        ply.KillSilent();
+        ply.Spectate(OBS_MODE_ROAMING);
+        ply.FirstSpawn = true;
+        return;
+    }
     if (ply.FirstSpawn) {
         if (ply.Team() !== TEAM_SPECTATOR) {
             ply.UnSpectate();
@@ -102,6 +110,7 @@ GM.PlayerSetModel = function (ply): void {
     ply.SetupHands();
 };
 GM.PlayerCanPickupWeapon = function (ply, weapon): boolean {
+    if (weapon.GetClass() === "zp_bot_boost_tool") return ply.IsAdmin() && !ply.IsBot();
     return ply.IsZombie() ? ply.ZombieCanUseWeapon(weapon.GetClass()) : WeaponManager.PlayerCanPickupWeapon(ply, weapon.GetClass());
 };
 hook.Add("PlayerDeath", "ZPPlayerDeath", (ply, _weapon, killer) => {

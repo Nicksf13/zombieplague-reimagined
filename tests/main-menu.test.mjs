@@ -20,7 +20,7 @@ test("F4 opens the themed main menu and its weapons option opens the existing se
     draw.DrawText=originalDraw
     assert(first.popup and first.keyboard==false)
     local list=first.children[#first.children]
-    assert(list.kind=="DScrollPanel" and #list.children==4)
+    assert(list.kind=="DScrollPanel" and #list.children==5)
     list.children[1]:DoClick()
     assert(first.removed and not ZPMainMenu:GetState().Open and ZPWeaponMenu:GetState().Open and requests==1)
     -- F4 from a submenu returns to the main menu without making a new request.
@@ -84,12 +84,12 @@ test("main menu options expose detached data and recheck availability when click
         Action=function() calls=calls+1 end,IsVisible=function() return visible end})
     ZPMainMenu:Open()
     local state=ZPMainMenu:GetState()
-    assert(#state.Entries==5 and not state.Entries[5].Action)
-    state.Entries[5].Label="tampered"
-    assert(ZPMainMenu:GetState().Entries[5].Label=="Addon")
+    assert(#state.Entries==6 and not state.Entries[6].Action)
+    state.Entries[6].Label="tampered"
+    assert(ZPMainMenu:GetState().Entries[6].Label=="Addon")
     visible=false
     ZPMainMenu:Activate("addon"); assert(calls==0 and ZPMainMenu:GetState().Open)
-    hooks.Think.ZPMainMenuController(); assert(#ZPMainMenu:GetState().Entries==4)
+    hooks.Think.ZPMainMenuController(); assert(#ZPMainMenu:GetState().Entries==5)
     visible=true
     ZPMainMenu:Activate("addon"); assert(calls==1 and not ZPMainMenu:GetState().Open)
     ZPMainMenu:Activate("addon"); assert(calls==1)
@@ -111,4 +111,18 @@ test("addon themes without a main menu use the default presentation with their p
             Update=function() end,Destroy=function() destroyed=destroyed+1 end} end})
     ZPThemes:UseTheme("custom"); ZPMainMenu:Open(); assert(opened==1)
     ZPThemes:UseTheme("classic"); assert(destroyed==1 and ZPMainMenu:GetState().Open)
+`));
+
+test("F4 participation options follow the real team and recheck stale clicks", () => run(clientSetup + panelsSetup + `
+    include("cl_theme_hud.lua"); include("cl_weapon_menu_hud.lua")
+    local issued={}; RunConsoleCommand=function(name,...) assert(select("#",...)==0); issued[#issued+1]=name end
+    local function has(id) for _,entry in ipairs(ZPMainMenu:GetState().Entries) do if entry.ID==id then return true end end return false end
+    ZPMainMenu:Open(); assert(has("spectate") and not has("join"))
+    ZPMainMenu:Activate("spectate"); assert(issued[1]=="zp_spectate" and not ZPMainMenu:GetState().Open)
+    viewer.team=TEAM_SPECTATOR; ZPMainMenu:Open(); assert(has("join") and not has("spectate"))
+    ZPMainMenu:Activate("spectate"); assert(#issued==1 and ZPMainMenu:GetState().Open)
+    ZPMainMenu:Activate("join"); assert(issued[2]=="zp_join" and not ZPMainMenu:GetState().Open)
+    ZPMainMenu:Open(); viewer.team=TEAM_ZOMBIES; hooks.Think.ZPMainMenuController()
+    assert(has("spectate") and not has("join"))
+    ZPMainMenu:Activate("join"); assert(#issued==2 and ZPMainMenu:GetState().Open)
 `));

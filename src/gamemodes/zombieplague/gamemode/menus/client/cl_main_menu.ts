@@ -79,5 +79,11 @@ controller.RegisterOption({ ID: "classes", Label: "zombieplague.mainmenuclasses"
     Description: "zombieplague.mainmenuclassesdescription", Action: () => ZPClassMenu.Open() });
 controller.RegisterOption({ ID: "extras", Label: "zombieplague.mainmenuextras",
     Description: "zombieplague.mainmenuextrasdescription", Action: () => ZPExtraMenu.Open() });
+controller.RegisterOption({ ID: "spectate", Label: "zombieplague.mainmenuspectate",
+    Description: "zombieplague.mainmenuspectatedescription", Action: () => RunConsoleCommand("zp_spectate"),
+    IsVisible: () => IsValid(LocalPlayer()) && LocalPlayer().Team() !== TEAM_SPECTATOR });
+controller.RegisterOption({ ID: "join", Label: "zombieplague.mainmenujoin",
+    Description: "zombieplague.mainmenujoindescription", Action: () => RunConsoleCommand("zp_join"),
+    IsVisible: () => IsValid(LocalPlayer()) && LocalPlayer().Team() === TEAM_SPECTATOR });
 hook.Add("Think", "ZPMainMenuController", () => controller.Tick());
 concommand.Add("zp_menu", () => controller.Toggle());

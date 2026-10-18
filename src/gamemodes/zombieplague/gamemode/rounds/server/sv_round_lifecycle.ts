@@ -40,7 +40,7 @@ manager.WaitPlayers = function (): void {
 };
 manager.Prepare = function (): boolean {
     endFreezeTime(this);
-    if (this.CountPlayersToPlay() < cvars.Number("zp_min_players", 2))
+    if (this.CountPlayersToPlay() < (cvars.Bool("zp_bot_training", false) ? 2 : cvars.Number("zp_min_players", 2)))
         return false;
     hook.Call("ZPPrePreparingRound");
     game.CleanUpMap();
@@ -69,6 +69,12 @@ manager.UnfreezePlayer = function (ply): void {
     ply.Freeze(false);
 };
 manager.FreezeTime = function (): void {
+    if (cvars.Bool("zp_bot_training", false)) {
+        endFreezeTime(this);
+        // A positive next-tick delay avoids recursive round transitions and zero-length timers.
+        this.SetTimer(0.1, () => this.NewRound());
+        return;
+    }
     this.FreezeTimeActive = true;
     for (const ply of this.GetAlivePlayers())
         this.FreezePlayer(ply);
@@ -104,6 +110,12 @@ manager.TryNewRound = function (): void {
         hook.Call("ZPResetAbilityEvent" + ply.SteamID64(), GAMEMODE);
 };
 manager.NewRound = function (): void {
+    if (cvars.Bool("zp_bot_training", false)) {
+        const simple = this.GetRounds().SimpleRound;
+        if (simple && this.CountPlayersToPlayAlive() >= 2) this.StartRound(simple);
+        else this.WaitPlayers();
+        return;
+    }
     const candidates: ZPRoundDefinition[] = [];
     const players = this.CountPlayersToPlayAlive();
     let total = 0;
@@ -129,7 +141,7 @@ manager.NewRound = function (): void {
 };
 manager.RestartRound = function (): void {
     endFreezeTime(this);
-    this.SetTimer(cvars.Number("zp_newround_delay", 10), () => this.TryNewRound());
+    this.SetTimer(cvars.Bool("zp_bot_training", false) ? 0.1 : cvars.Number("zp_newround_delay", 10), () => this.TryNewRound());
     this.SetRoundState(ROUND_RESTARTING);
     hook.Call("ZPRestartRound");
 };
@@ -143,9 +155,9 @@ manager.EndRound = function (reason): void {
     const sound = SafeTableRandom(reason === ZOMBIES_WIN ? ZombieWinSounds : reason === HUMANS_WIN ? HumanWinSounds : DrawSounds);
     if (sound)
         BroadcastSound(sound);
-    if (this.RoundsLeft() > 0) {
+    if (cvars.Bool("zp_bot_training", false) || this.RoundsLeft() > 0) {
         this.SetRoundState(ROUND_ENDING);
-        this.SetTimer(cvars.Number("zp_newround_delay", 10), () => this.TryNewRound());
+        this.SetTimer(cvars.Bool("zp_bot_training", false) ? 0.1 : cvars.Number("zp_newround_delay", 10), () => this.TryNewRound());
     }
     else
         ZPVoteMap.StartVotemap(ALLOWED_PREFIX);

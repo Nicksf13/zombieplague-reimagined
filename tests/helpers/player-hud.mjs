@@ -14,6 +14,7 @@ local function hudPlayer(name)
         maxPower=100,mode=0,weapon=weapon,ammo={[0]=90,[1]=3},class="Soldado"}
     function ply:IsPlayer() return true end
     function ply:Alive() return self.alive end
+    function ply:Team() return self.team or TEAM_HUMANS end
     function ply:Name() return self.name end
     function ply:Health() return self.health end
     function ply:Armor() return self.armor end

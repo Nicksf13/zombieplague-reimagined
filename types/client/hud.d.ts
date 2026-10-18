@@ -41,7 +41,7 @@ declare namespace draw {
 /** @noSelf */
 declare namespace surface {
     function CreateFont(name: string, data: { font: string; size: number; weight: number;
-        antialias: boolean; additive: boolean; }): void;
+        antialias: boolean; additive: boolean; extended?: boolean; }): void;
     function SetFont(font: string): void;
     function GetTextSize(text: string | number): LuaMultiReturn<[number, number]>;
 }

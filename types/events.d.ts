@@ -75,6 +75,6 @@ declare namespace hook {
     function Add(name: "ZPZombieTakeDamage", id: string, action: (this: void, target: ZPServerPlayer, damage: GLuaDamageInfo) => void): void;
     function Add(name: "ZPZombieInflictedDamageOnPlayer" | "ZPHumanInflictedDamageOnPlayer", id: string, action: (this: void, attacker: ZPServerPlayer, target: ZPServerPlayer, damage: GLuaDamageInfo) => void): void;
     function Add(name: "PlayerDeath", id: string, action: (this: void, ply: ZPServerPlayer, weapon: GLuaEntity, killer: GLuaEntity) => void): void;
-    function Add(name: "ZPSuffocate" | "ZPCureEvent" | "PlayerBatteryOver", id: string, action: (this: void, ply: ZPServerPlayer) => void): void;
+    function Add(name: "ZPFirstZombieEvent" | "ZPSuffocate" | "ZPCureEvent" | "PlayerBatteryOver", id: string, action: (this: void, ply: ZPServerPlayer) => void): void;
     function Add(name: "SetupMove", id: string, action: (this: void, ply: ZPServerPlayer, move: GLuaMoveData) => void): void;
 }

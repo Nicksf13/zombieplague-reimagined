@@ -15,9 +15,17 @@ interface ZPThemedComboBox extends ZPMenuControlLabel {
     OnMenuOpened?: (this: ZPThemedComboBox, menu: ZPMenuControlPopup) => void;
 }
 interface ZPMenuControls {
+    ScrollPanel(this: void, panel: ZPMenuScrollPanel, palette: ZPThemePalette, square: boolean): void;
     TextEntry(this: void, entry: ZPTextEntry, palette: ZPThemePalette, square: boolean): void;
     ComboBox(this: void, combo: ZPThemedComboBox, palette: ZPThemePalette, square: boolean): void;
 }
+interface ZPMenuScrollBar extends GLuaPanel {
+    SetWide(this: ZPMenuScrollBar, width: number): void;
+    btnGrip: GLuaPanel; btnUp: GLuaPanel; btnDown: GLuaPanel;
+}
+interface ZPMenuScrollPanel extends GLuaPanel { GetVBar(this: ZPMenuScrollPanel): ZPMenuScrollBar; }
+/** @noSelf */
+declare namespace vgui { function Create(name: "DScrollPanel", parent?: GLuaPanel): ZPMenuScrollPanel; }
 interface ZPMenuComboBox<T> extends ZPThemedComboBox {
     Clear(this: ZPMenuComboBox<T>): void;
     AddChoice(this: ZPMenuComboBox<T>, text: string, data: T): number;

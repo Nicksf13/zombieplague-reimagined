@@ -4,6 +4,69 @@ import test from "node:test";
 import { run } from "./helpers/lua-runtime.mjs";
 import { books, locales, nativeLanguage } from "./helpers/native-localization.mjs";
 
+test("AI progress history, comparisons and all event labels resolve in every catalog", () => {
+    const keys = "title|help|bot|version|scenario|difficulty|role|period|export|exported|counts|summary|combat|interval|improvement|regression|inconclusive|rewardwarning|states|metric|select|empty|graphhelp|metrics".split("|");
+    for (const locale of locales) {
+        for (const key of keys) assert(books[locale]["zombieplague.botstats" + key]?.trim(), `${locale}: ${key}`);
+        assert.equal(books[locale]["zombieplague.botstatsstates"].split("|").length, 14);
+        assert.equal(books[locale]["zombieplague.botstatsmetrics"].split("|").length, 10);
+    }
+});
+
+test("adaptive bot commands and navigation notices resolve in every native catalog", () => {
+    for (const locale of locales)
+        for (const key of ["aibotusage", "aibotcreated", "aibotnavmissing"])
+            assert(books[locale]["zombieplague." + key]?.trim(), `${locale}: ${key}`);
+});
+
+test("automatic bot filling labels resolve in every native catalog", () => {
+    for (const locale of locales) for (const key of ["title", "help", "enabled", "target", "maximum", "status"])
+        assert(books[locale]["zombieplague.botfill" + key]?.trim(), `${locale}: missing botfill${key}`);
+});
+
+test("cooperative boost editing and outcome labels resolve in every catalog", () => {
+    for (const locale of locales) for (const suffix of ["title", "help", "base", "approach", "exit", "new", "save", "test", "remove", "close", "choose", "results", "capture", "ready", "invalid", "busy", "testing", "success", "failed", "mount", "previewinvalid"])
+        assert(books[locale]["zombieplague.botboost" + suffix]?.trim(), `${locale}: missing botboost${suffix}`);
+});
+
+test("SWEP editing actions and explicit error reasons exist in every catalog", () => {
+    const keys = "edit|selectmode|selecthint|editing|saved|complete|back|discard|confirmremove|live|measure|surface|range|distance|level|rise|reach|stale|capacity|storage|alive|tool|disabled|round|frozen|bots|retry|unsaved|incomplete|draft|actions|menuhint|equip".split("|");
+    for (const locale of locales) for (const key of keys)
+        assert(books[locale]["zombieplague.botboost" + key]?.trim(), `${locale}: missing botboost${key}`);
+});
+
+test("spectator participation controls and notifications resolve in every native catalog", () => {
+    for (const locale of locales) for (const key of ["mainmenuspectate", "mainmenuspectatedescription", "mainmenujoin", "mainmenujoindescription",
+        "participationspectating", "participationjoined", "participationqueued"])
+        assert(books[locale]["zombieplague." + key]?.trim(), `${locale}: missing ${key}`);
+});
+
+test("bot metrics labels and behavior names resolve in all native catalogs", () => {
+    const keys = ["add", "count", "page", "empty", "previous", "next", "identity", "scope", "decision", "route", "destination", "movement", "water", "stamina", "resources", "combat", "learning", "outcomes", "aggressive", "cooperative", "defensive", "cautious", "attack", "defend", "retreat", "group", "profile", "learned", "explore", "search", "mesh", "local", "none"];
+    for (const locale of locales) for (const key of keys)
+        assert(books[locale]["zombieplague.botmetrics" + key]?.trim(), `${locale}: missing botmetrics${key}`);
+});
+
+test("visual decision graph labels resolve in every native catalog", () => {
+    for (const locale of locales) for (const key of ["title", "legend", "inputs", "actions", "chosen", "threat", "distance", "allies", "held", "idle", "details"])
+        assert(books[locale]["zombieplague.botvisual" + key]?.trim(), `${locale}: missing botvisual${key}`);
+});
+
+test("locomotion controls and metrics resolve in every native catalog", () => {
+    for (const locale of locales) for (const key of ["title", "combat", "ground", "air", "water", "ladder", "jump", "space", "duck", "sprint", "stage", "passage", "result", "reward", "progress", "recovery", "resources", "preferences"])
+        assert(books[locale]["zombieplague.botmotion" + key]?.trim(), `${locale}: missing botmotion${key}`);
+});
+
+test("shelter and hunt states and outcomes resolve in every native catalog", () => {
+    for (const locale of locales) for (const key of ["title", "patrol", "shelter", "guard", "hunt", "inspect", "clue", "record", "outcomes", "hold"])
+        assert(books[locale]["zombieplague.botplace" + key]?.trim(), `${locale}: missing botplace${key}`);
+});
+test("navigation rejection reasons and descent phases resolve in every native catalog", () => {
+    for (const locale of locales) for (const key of ["connection", "metrics", "phaseroute", "phasealign", "phasecross", "phaseland",
+        "reasonready", "reasonmissing", "reasonconnection", "reasonheight", "reasonfall", "reasonlanding", "reasonobstacle", "reasonstalled", "reasonbudget", "reasonground", "reasonoccupied"])
+        assert(books[locale]["zombieplague.botnav" + key]?.trim(), `${locale}: missing botnav${key}`);
+});
+
 test("extra item shop labels resolve in every native catalog", () => {
     for (const locale of locales)
         for (const key of ["mainmenuextras", "mainmenuextrasdescription", "extramenubuy", "extramenuempty",
@@ -46,11 +109,31 @@ test("admin navigation, environment labels, and restart confirmation resolve in 
 test("main menu convar labels resolve in every native catalog", () => {
     const settings = readFileSync(new URL("../gamemodes/zombieplague/zombieplague.txt", import.meta.url), "utf8");
     const keys = [...settings.matchAll(/"text"\s+"#([^"]+)"/g)].map(match => match[1]);
-    assert.equal(keys.length, 17);
+    assert.equal(keys.length, 20);
     for (const locale of locales) {
         for (const key of keys) assert(books[locale][key]?.trim(), `${locale}: missing menu label ${key}`);
     }
     assert.equal(books["pt-BR"]["zombieplague.cvarminplayers"], "Mínimo de jogadores");
+});
+
+test("AI training is an opt-in multiplayer launch option with translated capacity help", () => {
+    const settings = readFileSync(new URL("../gamemodes/zombieplague/zombieplague.txt", import.meta.url), "utf8");
+    const entry = [...settings.matchAll(/\b\d+\s*\{([^{}]*)\}/g)].find(match => match[1].includes('"zp_bot_training"'))?.[1];
+    assert(entry);
+    assert.match(entry, /"type"\s+"CheckBox"/);
+    assert.match(entry, /"default"\s+"0"/);
+    assert(!entry.includes('"singleplayer"'));
+    for (const locale of locales) {
+        assert(books[locale]["zombieplague.cvarbottraining"]?.trim());
+        assert(books[locale]["zombieplague.cvarbottraininghelp"]?.includes("64"));
+    }
+    assert.equal(books["pt-BR"]["zombieplague.cvarbottraining"], "Treinar IA");
+    const count = [...settings.matchAll(/\b\d+\s*\{([^{}]*)\}/g)].find(match => match[1].includes('"zp_bot_training_count"'))?.[1];
+    assert(count);
+    assert.match(count, /"type"\s+"Numeric"/);
+    assert.match(count, /"default"\s+"2"/);
+    assert(!count.includes('"singleplayer"'));
+    for (const locale of locales) assert(books[locale]["zombieplague.cvarbottrainingcount"]?.trim());
 });
 
 test("night brightness controls stay together in the main menu text group, including singleplayer", () => {

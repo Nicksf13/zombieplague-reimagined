@@ -10,6 +10,7 @@ manager.AddDefaultRounds = function (this: ZPServerRoundManager): void {
             if (!first)
                 return;
             first.Infect();
+            hook.Call("ZPFirstZombieEvent", GAMEMODE, first);
             for (const ply of players) {
                 reward(ply);
                 SendNotifyMessage(ply, { Phrase: "zombieplague.roundsimple" }, 5, Color(0, 255, 0));

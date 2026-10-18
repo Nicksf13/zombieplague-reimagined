@@ -1,4 +1,12 @@
-type ZPAdminPage = "admin" | "settings" | "environment" | "bots";
+type ZPAdminPage = "admin" | "settings" | "environment" | "bots" | "botadd" | "population";
+interface ZPBotPopulationState {
+    readonly Snapshot?: ZPBotPopulationSnapshot;
+    readonly Enabled: boolean;
+    readonly Target: number;
+    readonly Pending: boolean;
+    readonly Dirty: boolean;
+    readonly Feedback: string;
+}
 interface ZPAdminState {
     readonly Page: ZPAdminPage;
     readonly Values: readonly string[];
@@ -9,9 +17,18 @@ interface ZPAdminState {
     readonly CanReload: boolean;
     readonly Feedback: string;
     readonly CanAddBot: boolean;
+    readonly BotCount: number;
+    readonly BotMetrics?: ZPBotMetricsSnapshot;
+    readonly BotMetricsLoading: boolean;
+    readonly BotPopulation: ZPBotPopulationState;
 }
 interface ZPAdminActions {
     AddBot(this: ZPAdminActions): void;
+    SetBotCount(this: ZPAdminActions, count: number): void;
+    BotPage(this: ZPAdminActions, direction: number): void;
+    ToggleBotPopulation(this: ZPAdminActions): void;
+    SetBotPopulationTarget(this: ZPAdminActions, target: number): void;
+    SaveBotPopulation(this: ZPAdminActions): void;
     Navigate(this: ZPAdminActions, page: ZPAdminPage): void;
     SetValue(this: ZPAdminActions, index: number, value: string): void;
     Save(this: ZPAdminActions): void;

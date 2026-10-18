@@ -46,6 +46,112 @@ UnfreezeSounds,CountDownSound,ZombieWinSounds,HumanWinSounds,DrawSounds,ALLOWED_
 include("sh_roundmanager.lua"); include("sv_roundmanager.lua")
 `;
 
+const participationSetup = setup + `
+concommand={Add=function(name,callback) commands[name]=callback end}
+OBS_MODE_ROAMING=6
+function meta:IsPlayer() return true end
+function meta:KillSilent() self.alive=false; self.kills=(self.kills or 0)+1 end
+function meta:Spectate(mode) self.observer=mode end
+function meta:SetNemesis(value) self.nemesis=value end
+function meta:SetSurvivor(value) self.survivor=value end
+function meta:SetNightvision(value) self.nightvision=value end
+function meta:SetLight(value) self.light=value end
+function meta:Flashlight(value) self.flashlight=value end
+function meta:StripWeapons() self.stripped=true end
+function meta:Spawn() self.alive=true; self.spawns=(self.spawns or 0)+1; self.observer=0 end
+local notices={}
+SendPopupMessage=function(ply,message) notices[#notices+1]=message.Phrase end
+include("sv_event_players.lua"); include("sv_player_participation.lua")
+local function request(name,ply,args) commands[name](ply,name,args or {}) end
+`;
+
+test("training locks real players to spectators and starts two bots despite the normal minimum", () => run(participationSetup + `
+    cvars.Bool=function(key,fallback) if key=="zp_bot_training" then return true end return fallback end
+    cvars.Number=function(key,fallback) if key=="zp_min_players" then return 8 end return fallback end
+    function meta:IsBot() return self.bot==true end
+    local host=addPlayer("observer",TEAM_HUMANS,true)
+    RoundManager:SetRoundState(ROUND_WAITING_PLAYERS)
+    RoundManager:AddPlayerToPlay(host)
+    GM:PlayerSpawn(host)
+    assert(host.ZPVoluntarySpectator and host:Team()==TEAM_SPECTATOR and not host:Alive() and #RoundManager.PlayersToPlay==0)
+    request("zp_join",host); RoundManager:AddPlayerToPlay(host)
+    assert(#RoundManager.PlayersToPlay==0 and host:Team()==TEAM_SPECTATOR)
+    local a,b=addPlayer("a",TEAM_HUMANS,true),addPlayer("b",TEAM_HUMANS,true); a.bot=true; b.bot=true
+    RoundManager:AddPlayerToPlay(a); RoundManager:AddPlayerToPlay(b)
+    assert(RoundManager:GetRoundState()==ROUND_RESTARTING and timers.ZombiePlagueTimer[1]==0.1)
+    meta.ResetZombieAllowedWeapons=function() end
+    assert(RoundManager:Prepare() and a.spawns==1 and b.spawns==1)
+    assert(not host.spawns and not host:Alive())
+`));
+
+test("training skips freezing and countdown, forces a normal duel, and loops beyond the map limit", () => run(setup + `
+    local training=true
+    meta.GiveAmmoPacks=function() end
+    cvars.Bool=function(key,fallback) if key=="zp_bot_training" then return training end return fallback end
+    RoundManager:AddDefaultRounds()
+    local a,b=addPlayer("a",TEAM_HUMANS,true),addPlayer("b",TEAM_HUMANS,true)
+    RoundManager.PlayersToPlay={a,b}
+    RoundManager:FreezeTime()
+    assert(not RoundManager.FreezeTimeActive and not a:IsFrozen() and not b:IsFrozen())
+    assert(timers.ZombiePlagueTimer[1]==0.1 and not timers.NoSoundInfectionDelayTimer)
+    timers.ZombiePlagueTimer[2]()
+    assert(RoundManager:GetCurrentRoundPlaying()==RoundManager.Rounds.SimpleRound)
+    assert(RoundManager:CountHumansAlive()==1 and RoundManager:CountZombiesAlive()==1)
+    assert(timers.ZombiePlagueTimer[1]==300)
+    RoundManager.RoundsLeft=function() return 0 end
+    RoundManager:EndRound(HUMANS_WIN)
+    assert(RoundManager:GetRoundState()==ROUND_ENDING and timers.ZombiePlagueTimer[1]==0.1)
+    training=false; RoundManager:RestartRound(); assert(timers.ZombiePlagueTimer[1]==10)
+    RoundManager:FreezeTime(); assert(RoundManager.FreezeTimeActive and a:IsFrozen() and b:IsFrozen())
+`));
+
+test("voluntary spectators leave participation, release freeze and remain out across automatic joins and round preparation", () => run(participationSetup + `
+    local ply=addPlayer("viewer",TEAM_HUMANS,true)
+    local human,zombie=addPlayer("h",TEAM_HUMANS,true),addPlayer("z",TEAM_ZOMBIES,true)
+    RoundManager.PlayersToPlay={ply,human,zombie}; RoundManager:SetRoundState(ROUND_PLAYING)
+    RoundManager.FreezeTimeActive=false; ply.frozen=true; ply.light={}; ply.nightvision=true; ply.flashlight=true
+    request("zp_spectate",ply)
+    assert(ply.ZPVoluntarySpectator and ply:Team()==TEAM_SPECTATOR and not ply:Alive() and not ply:IsFrozen())
+    assert(ply.observer==OBS_MODE_ROAMING and ply.stripped and not ply.light and not ply.nightvision and not ply.flashlight)
+    assert(not ply.nemesis and not ply.survivor and #RoundManager.PlayersToPlay==2)
+    assert(not PlayerCanSpawn(ply) and notices[1]=="zombieplague.participationspectating")
+    RoundManager:AddPlayerToPlay(ply); assert(#RoundManager.PlayersToPlay==2 and ply:Team()==TEAM_SPECTATOR)
+    meta.ResetZombieAllowedWeapons=function() end
+    assert(RoundManager:Prepare()); assert(not ply.spawns and not ply:Alive() and ply:Team()==TEAM_SPECTATOR)
+`));
+
+test("returning from spectator follows round respawn rules without duplicate lives or bypassing cooldown", () => run(participationSetup + `
+    local ply=addPlayer("viewer",TEAM_HUMANS,true)
+    local other=addPlayer("other",TEAM_HUMANS,true)
+    RoundManager.PlayersToPlay={ply,other}; RoundManager:SetRoundState(ROUND_PLAYING)
+    request("zp_spectate",ply); request("zp_join",ply)
+    assert(ply:Team()==TEAM_SPECTATOR, "rapid toggles cannot grant a new life")
+    now=45; request("zp_join",ply)
+    assert(ply:Team()==TEAM_HUMANS and not ply.ZPVoluntarySpectator and not ply.spawns and #RoundManager.PlayersToPlay==2)
+    assert(notices[#notices]=="zombieplague.participationqueued")
+    now=48; RoundManager:SetRoundState(ROUND_STARTING_NEW_ROUND)
+    request("zp_spectate",ply); now=51; request("zp_join",ply)
+    assert(ply:Alive() and ply.spawns==1 and notices[#notices]=="zombieplague.participationjoined")
+    now=54; request("zp_join",ply); assert(ply.spawns==1 and #RoundManager.PlayersToPlay==2)
+    request("zp_spectate",other,{"viewer"}); assert(other:Team()==TEAM_HUMANS)
+    request("zp_spectate",{invalid=true}); request("zp_spectate",{IsPlayer=function() return false end})
+    hooks.PlayerDisconnected.ZPParticipationCleanup(ply)
+`));
+
+test("spectating as the last zombie uses the existing replacement rules and respawn callbacks still decide return", () => run(participationSetup + `
+    local ply=addPlayer("viewer",TEAM_ZOMBIES,true)
+    local a,b=addPlayer("a",TEAM_HUMANS,true),addPlayer("b",TEAM_HUMANS,true)
+    RoundManager.PlayersToPlay={ply,a,b}; RoundManager:SetRoundState(ROUND_PLAYING)
+    request("zp_spectate",ply)
+    assert(RoundManager:CountZombiesAlive()==1 and RoundManager:CountHumansAlive()==1)
+    RoundManager:SetRespawn(true)
+    RoundManager.GetCurrentRoundPlaying=function() return {Respawn=true,RespawnFunction=function(target) assert(target==ply); return false end} end
+    now=45; request("zp_join",ply); assert(not ply.spawns and not PlayerCanSpawn(ply))
+    now=48; request("zp_spectate",ply)
+    RoundManager.GetCurrentRoundPlaying=function() return {Respawn=true,RespawnFunction=function() return true end} end
+    now=51; request("zp_join",ply); assert(ply.spawns==1 and ply:Alive())
+`));
+
 test("unsaved loadouts are cleared before the next round spawn while remembered choices survive", () => run(setup + `
     include("sv_player_weapons.lua")
     local a=addPlayer("a",TEAM_HUMANS,true); local b=addPlayer("b",TEAM_HUMANS,true)
