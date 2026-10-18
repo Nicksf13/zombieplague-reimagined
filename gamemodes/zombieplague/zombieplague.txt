@@ -156,6 +156,28 @@
 			"singleplayer" "1"
 			"replicate"	"0"
 		}
-		
+		18
+		{
+			"name"      "zp_bot_training"
+			"text"      "#zombieplague.cvarbottraining"
+			"help"      "#zombieplague.cvarbottraininghelp"
+			"type"      "CheckBox"
+			"default"   "0"
+		}
+		19
+		{
+			"name"      "zp_bot_training_count"
+			"text"      "#zombieplague.cvarbottrainingcount"
+			"help"      "#zombieplague.cvarbottraininghelp"
+			"type"      "Numeric"
+			"default"   "2"
+		}
+		20
+		{
+			"name"      "zp_freeze_time_delay"
+			"text"      "#zombieplague.cvarfreezetime"
+			"type"      "Numeric"
+			"default"   "10"
+		}
     }
 }

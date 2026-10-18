@@ -70,6 +70,8 @@ util.TableToJSON=function() return "{}" end
 include("cl_data.lua")
 include("sh_weapon_menu_protocol.lua")
 local createdFonts={}
+include("sh_bot_motion_protocol.lua")
+include("sh_bot_place_protocol.lua")
 surface={CreateFont=function(name,data) createdFonts[name]=data end}
 include("cl_theme_manager.lua")
 include("cl_menu_controls.lua")
@@ -107,6 +109,16 @@ draw={RoundedBox=function() end,DrawText=function(text) assert(type(text)=="stri
 local panelMeta={}
 function panelMeta:SetSize(w,h) self.w,self.h=w,h end
 function panelMeta:SetPos(x,y) self.x,self.y=x,y end
+function panelMeta:SetWide(width) self.w=width end
+function panelMeta:GetVBar()
+    if not self.scrollbar then
+        local bar=vgui.Create("DVScrollBar",self); bar:SetSize(12,self.h or 100)
+        bar.btnGrip=vgui.Create("DButton",bar); bar.btnUp=vgui.Create("DButton",bar); bar.btnDown=vgui.Create("DButton",bar)
+        bar.btnGrip:SetSize(12,32); bar.btnUp:SetSize(12,12); bar.btnDown:SetSize(12,12)
+        self.scrollbar=bar
+    end
+    return self.scrollbar
+end
 function panelMeta:GetSize() return self.w,self.h end
 function panelMeta:Remove()
     self.removed=true
@@ -131,7 +143,7 @@ function panelMeta:SetTextColor(value) self.textColor=value end
 function panelMeta:SetWrap(value) self.wrap=value end
 function panelMeta:SetChecked(value) self.checked=value end
 function panelMeta:SetSortItems(value) self.sorted=value end
-function panelMeta:SetValue(value) self.value=value end
+function panelMeta:SetValue(value) self.value=value; self.text=value end
 function panelMeta:Clear() self.choices={} end
 function panelMeta:AddChoice(text,data)
     self.choices=self.choices or {}; self.choices[#self.choices+1]={text,data}; return #self.choices

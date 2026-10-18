@@ -5,5 +5,5 @@ declare namespace string {
     function lower(text: string): string;
     function sub(text: string, start: number, end?: number): string;
 }
-declare function pcall<A extends unknown[]>(this: void, action: (this: void, ...args: A) => string,
+declare function pcall<A extends unknown[]>(this: void, action: (this: void, ...args: A) => unknown,
     ...args: A): LuaMultiReturn<[boolean, unknown]>;

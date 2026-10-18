@@ -6,6 +6,8 @@ interface ZPAbility {
     UseAction(this: ZPAbility, ply: ZPServerPlayer): void;
 }
 interface ZPClassDefinition {
+    /** Legacy registrations may supply the stable ID only as their registry key. */
+    ID?: string;
     Name: string;
     Description: string;
     MaxHealth: number;

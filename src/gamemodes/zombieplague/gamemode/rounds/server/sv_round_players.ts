@@ -2,11 +2,16 @@ export {};
 const manager = RoundManager as ZPServerRoundManager;
 manager.AddPlayerToPlay = function (this: ZPServerRoundManager, entry): void {
     const ply = entry as ZPServerPlayer;
-    if (this.PlayersToPlay.includes(ply))
+    if (cvars.Bool("zp_bot_training", false) && !ply.IsBot()) {
+        ply.ZPVoluntarySpectator = true;
+        ply.SetTeam(TEAM_SPECTATOR);
+        return;
+    }
+    if (ply.ZPVoluntarySpectator || this.PlayersToPlay.includes(ply))
         return;
     this.PlayersToPlay.push(ply);
     ply.SetTeam(TEAM_HUMANS);
-    if (this.GetRoundState() === ROUND_WAITING_PLAYERS && this.CountPlayersToPlay() >= cvars.Number("zp_min_players", 2))
+    if (this.GetRoundState() === ROUND_WAITING_PLAYERS && this.CountPlayersToPlay() >= (cvars.Bool("zp_bot_training", false) ? 2 : cvars.Number("zp_min_players", 2)))
         this.RestartRound();
 };
 manager.RemovePlayerToPlay = function (this: ZPServerRoundManager, entry): void {

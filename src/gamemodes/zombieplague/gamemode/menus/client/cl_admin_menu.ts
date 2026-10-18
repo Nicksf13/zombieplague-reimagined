@@ -1,6 +1,11 @@
+const { BotMetricsClient } = include("cl_bot_metrics.lua") as typeof import("../../bots/client/cl_bot_metrics");
+const { BotPopulationClient } = include("cl_bot_population.lua") as typeof import("../../bots/client/cl_bot_population");
 export class AdminMenuController implements ZPAdminController {
+    private diagnostics = new BotMetricsClient(() => this.Update());
+    private population = new BotPopulationClient(() => this.Update());
     private opened = false;
     private page: ZPAdminPage = "admin";
+    private botCount = 1;
     private presentation: ZPAdminPresentation | undefined;
     private confirmation: GLuaPanel | undefined;
     private values: string[] = ZPAdminConfig.Entries.map(entry => entry.Default);
@@ -13,14 +18,14 @@ export class AdminMenuController implements ZPAdminController {
     private pending: { ID: number; Deadline: number; } | undefined;
 
     GetState(): ZPAdminState {
-        return { Page: this.page, Values: [...this.values], Pending: this.pending !== undefined,
+        return { ...this.diagnostics.State(), BotPopulation: this.population.State(), Page: this.page, Values: [...this.values], Pending: this.pending !== undefined,
             Ready: this.revision > 0, Dirty: this.revision > 0 && ZPAdminConfig.Entries.some((entry, index) => {
                 const value = this.values[index] ?? "", normalized = ZPAdminConfig.Normalize(entry, value);
                 const saved = this.saved[index];
                 return entry.Kind === "exposure" && normalized !== undefined && saved !== undefined ?
                     Number(normalized) !== Number(saved) : (normalized ?? value) !== saved;
             }),
-            ReloadRequired: this.reloadRequired, CanReload: this.token > 0, Feedback: this.feedback,
+            ReloadRequired: this.reloadRequired, CanReload: this.token > 0, Feedback: this.feedback, BotCount: this.botCount,
             CanAddBot: this.Allowed() && GetGlobalBool("ZPTestBotsEnabled", false) && LocalPlayer().IsSuperAdmin() && !game.SinglePlayer() };
     }
     private Update(): void { if (this.opened) this.presentation?.Update(this.GetState()); }
@@ -37,6 +42,8 @@ export class AdminMenuController implements ZPAdminController {
         if (!this.Allowed()) return;
         ZPMainMenu.Close(); ZPSettings.Close(); ZPWeaponMenu.Close();
         this.opened = true;
+        this.diagnostics.Stop();
+        this.population.Stop();
         this.page = "admin";
         this.Rebuild();
     }
@@ -50,22 +57,40 @@ export class AdminMenuController implements ZPAdminController {
     }
     Navigate(page: ZPAdminPage): void {
         if (!this.opened || !this.Allowed()) return;
+        if (page === "population" && !this.GetState().CanAddBot) return;
         this.page = page;
+        this.diagnostics.Stop();
+        this.population.Stop();
         this.Rebuild();
         if (page === "environment") this.Refresh();
+        if (page === "botadd") this.diagnostics.Start();
+        if (page === "population") this.population.Start();
     }
     Back(): void {
-        if (this.page === "environment") this.Navigate("settings");
+        if (this.page === "population") this.Navigate("botadd");
+        else if (this.page === "botadd") this.Navigate("bots");
+        else if (this.page === "environment") this.Navigate("settings");
         else if (this.page === "settings" || this.page === "bots") this.Navigate("admin");
         else { this.Close(); ZPMainMenu.Open(); }
     }
-    AddBot(): void {
-        if (!this.opened || this.page !== "bots" || !this.GetState().CanAddBot) return;
-        // Reuse the server command's permission, slot and argument validation.
-        RunConsoleCommand("zp_addbot", "1");
+    SetBotCount(count: number): void {
+        if (!this.opened || this.page !== "botadd" || !this.GetState().CanAddBot || typeof count !== "number" || count !== count || count < 1 || count > 16 || count % 1 !== 0) return;
+        this.botCount = count; this.Update();
     }
+    AddBot(): void {
+        if (!this.opened || this.page !== "botadd" || !this.GetState().CanAddBot) return;
+        // Reuse the server command's permission, slot and argument validation.
+        RunConsoleCommand("zp_addaibot", tostring(this.botCount));
+    }
+    BotPage(direction: number): void { if (this.opened && this.page === "botadd") this.diagnostics.Page(direction); }
+    ToggleBotPopulation(): void { if (this.opened && this.page === "population") this.population.SetEnabled(!this.population.State().Enabled); }
+    SetBotPopulationTarget(target: number): void { if (this.opened && this.page === "population") this.population.SetTarget(target); }
+    SaveBotPopulation(): void { if (this.opened && this.page === "population") this.population.Save(); }
+    ReceivePopulation(length: number): void { this.population.Receive(length); }
     Close(): void {
         this.opened = false;
+        this.diagnostics.Stop();
+        this.population.Stop();
         this.CloseConfirmation();
         this.presentation?.Destroy(); this.presentation = undefined;
         // Replies to a closed menu are ignored and never reopen it.
@@ -142,6 +167,8 @@ export class AdminMenuController implements ZPAdminController {
     Tick(): void {
         if (!this.opened) return;
         if (!this.Allowed() || input.IsKeyDown(KEY_ESCAPE)) { this.Close(); return; }
+        if (this.page === "botadd") this.diagnostics.Tick();
+        if (this.page === "population") this.population.Tick();
         if (this.pending && CurTime() > this.pending.Deadline) {
             this.pending = undefined;
             this.token = 0;
@@ -157,6 +184,7 @@ ZPMainMenu.RegisterOption({ ID: "admin", Label: "zombieplague.admintitle",
         const player = LocalPlayer(); return IsValid(player) && player.IsAdmin();
     }, Action: () => controller.Open() });
 net.Receive("ZPAdminSettingsReply", length => controller.Receive(length));
+net.Receive("ZPBotPopulationReply", length => controller.ReceivePopulation(length));
 hook.Add("Think", "ZPAdminMenu", () => controller.Tick());
 hook.Add("OnReloaded", "ZPAdminMenu", () => controller.Close());
 hook.Add("ShutDown", "ZPAdminMenu", () => controller.Close());

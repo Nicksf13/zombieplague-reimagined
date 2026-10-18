@@ -10,6 +10,17 @@ function background(this: void, panel: GLuaPanel, palette: ZPThemePalette, squar
 
 // Keep native editing, selection and menu lifetime. Only presentation is replaced.
 _G.ZPMenuControls = {
+    ScrollPanel(this: void, panel, palette, square): void {
+        const bar = panel.GetVBar(); bar.SetWide(12);
+        bar.Paint = (width, height) => { draw.RoundedBox(square ? 0 : 3, 0, 0, width, height, palette.Surface); };
+        bar.btnGrip.Paint = (width, height) => { draw.RoundedBox(square ? 0 : 3, 1, 0, width - 2, height,
+            !bar.IsEnabled() ? palette.Panel : bar.btnGrip.IsHovered() ? palette.Accent : palette.Muted); };
+        for (const [button, glyph] of [[bar.btnUp, "▲"], [bar.btnDown, "▼"]] as const) button.Paint = (width, height) => {
+            draw.RoundedBox(square ? 0 : 3, 0, 0, width, height, palette.Panel);
+            draw.DrawText(glyph, "DermaDefault", Math.max(0, (width - 10) / 2), Math.max(0, (height - 14) / 2),
+                !bar.IsEnabled() ? palette.Muted : button.IsHovered() ? palette.Accent : palette.Text, TEXT_ALIGN_LEFT);
+        };
+    },
     TextEntry(this: void, entry, palette, square): void {
         entry.SetFont("DermaDefault");
         entry.SetTextInset(8, 0);

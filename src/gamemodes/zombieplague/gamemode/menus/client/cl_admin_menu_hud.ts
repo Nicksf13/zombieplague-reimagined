@@ -1,4 +1,12 @@
+import type { BotMetricsView as MetricsViewType } from "../../bots/client/cl_bot_metrics_hud";
+import type { BotPopulationHUD as PopulationViewType } from "../../bots/client/cl_bot_population_hud";
+const { BotMetricsView } = include("cl_bot_metrics_hud.lua") as typeof import("../../bots/client/cl_bot_metrics_hud");
+const { BotPopulationHUD } = include("cl_bot_population_hud.lua") as typeof import("../../bots/client/cl_bot_population_hud");
 export class AdminMenuHUD implements ZPAdminPresentation {
+    private metrics: MetricsViewType | undefined;
+    private populationView: PopulationViewType | undefined;
+    private populationButton: GLuaPanel | undefined;
+    private addAI: GLuaPanel | undefined;
     private frame: GLuaPanel | undefined;
     private state: ZPAdminState | undefined;
     private controls: { Index: number; Panel: GLuaPanel; Input?: ZPAdminTextEntry; }[] = [];
@@ -6,7 +14,7 @@ export class AdminMenuHUD implements ZPAdminPresentation {
     private refresh: GLuaPanel | undefined;
     private reload: GLuaPanel | undefined;
     private feedback: GLuaPanel | undefined;
-    private addBot: GLuaPanel | undefined;
+    private botCount: ZPMenuComboBox<number> | undefined;
     constructor(private palette: ZPThemePalette, private square: boolean) {}
 
     private Label(parent: GLuaPanel, key: string, y: number, width: number, height: number): GLuaPanel {
@@ -49,6 +57,8 @@ export class AdminMenuHUD implements ZPAdminPresentation {
         };
         const title = this.Label(frame, state.Page === "admin" ? "zombieplague.admintitle" :
             state.Page === "settings" ? "zombieplague.adminmapsettings" :
+            state.Page === "population" ? "zombieplague.botfilltitle" :
+            state.Page === "botadd" ? "zombieplague.botmetricsadd" :
             state.Page === "bots" ? "zombieplague.adminbots" : "zombieplague.adminenvironment", 20, width - 100, 66);
         title.SetPos(24, 16); title.SetFont("Trebuchet24");
         this.Button(frame, "X", width - 62, 22, 38, () => actions.Close(), true);
@@ -62,9 +72,25 @@ export class AdminMenuHUD implements ZPAdminPresentation {
         else if (state.Page === "settings")
             this.Button(content, "zombieplague.adminenvironment", 0, 0, rowWidth, () => actions.Navigate("environment"));
         else if (state.Page === "bots") {
-            this.Label(content, "zombieplague.adminbotshelp", 0, rowWidth, 90);
-            this.addBot = this.Button(content, "zombieplague.adminaddbot", 0, 102, rowWidth, () => actions.AddBot());
+            this.Button(content, "zombieplague.botmetricsadd", 0, 0, rowWidth, () => actions.Navigate("botadd"));
+            this.Button(content, "zombieplague.botboostequip", 0, 48, rowWidth, () => { actions.Close(); ZPBotBoostEditor.Open(); });
+            this.Button(content, "zombieplague.botstatstitle", 0, 96, rowWidth, () => { actions.Close(); RunConsoleCommand("zp_bot_statistics"); });
         }
+        else if (state.Page === "botadd") {
+            this.Label(content, "zombieplague.adminbotshelp", 0, rowWidth, 90);
+            const quantity = content.Add("DPanel"); quantity.SetPos(0, 102); quantity.SetSize(rowWidth, 36); quantity.Paint = () => {};
+            this.Label(quantity, "zombieplague.botmetricscount", 0, rowWidth - 92, 36);
+            const count = vgui.Create<number>("DComboBox", quantity); this.botCount = count;
+            ZPMenuControls.ComboBox(count, this.palette, this.square);
+            count.SetPos(rowWidth - 80, 0); count.SetSize(80, 36); count.SetSortItems(false);
+            for (let value = 1; value <= 16; value++) count.AddChoice(tostring(value), value);
+            count.SetValue(tostring(state.BotCount));
+            count.OnSelect = (_index, _text, value) => actions.SetBotCount(value);
+            this.addAI = this.Button(content, "zombieplague.botmetricsadd", 0, 150, rowWidth, () => actions.AddBot());
+            this.metrics = new BotMetricsView(content, rowWidth, this.palette, this.square, actions, 246);
+            this.populationButton = this.Button(content, "zombieplague.botfilltitle", 0, 198, rowWidth, () => actions.Navigate("population"));
+        }
+        else if (state.Page === "population") this.populationView = new BotPopulationHUD(content, rowWidth, this.palette, this.square, actions);
         else {
             this.feedback = this.Label(content, "", 0, rowWidth, 48);
             this.Label(content, "zombieplague.adminhelp", 48, rowWidth, 60);
@@ -103,7 +129,12 @@ export class AdminMenuHUD implements ZPAdminPresentation {
     }
     Update(state: ZPAdminState): void {
         this.state = state;
-        this.addBot?.SetEnabled(state.CanAddBot);
+        this.botCount?.SetEnabled(state.CanAddBot);
+        if (this.botCount && this.botCount.GetText() !== tostring(state.BotCount)) this.botCount.SetValue(tostring(state.BotCount));
+        this.addAI?.SetEnabled(state.CanAddBot);
+        this.metrics?.Update(state);
+        this.populationButton?.SetEnabled(state.CanAddBot);
+        this.populationView?.Update(state);
         for (const control of this.controls) {
             control.Panel.SetEnabled(state.Ready && !state.Pending);
             const value = state.Values[control.Index];
@@ -144,9 +175,11 @@ export class AdminMenuHUD implements ZPAdminPresentation {
         return dialog;
     }
     Destroy(): void {
+        this.metrics?.Destroy(); this.metrics = undefined; this.addAI = undefined;
+        this.populationView = undefined; this.populationButton = undefined;
         this.frame?.Remove(); this.frame = undefined;
         this.controls = []; this.state = undefined;
-        this.addBot = undefined;
+        this.botCount = undefined;
         this.save = undefined; this.refresh = undefined; this.reload = undefined; this.feedback = undefined;
     }
 }

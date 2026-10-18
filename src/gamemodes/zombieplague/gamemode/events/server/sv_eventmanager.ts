@@ -20,6 +20,8 @@ ConvarManager.CreateConVar("zp_last_human_reward_mode", 1, 8, "cvar used to set 
 ConvarManager.CreateConVar("zp_last_human_reward_health", 25, 8, "cvar used to set last human health reward");
 ConvarManager.CreateConVar("zp_last_zombie_reward_mode", 1, 8, "cvar used to set last zombie reward");
 ConvarManager.CreateConVar("zp_last_zombie_reward_health", 250, 8, "cvar used to set last zombie health reward");
+ConvarManager.CreateConVar("zp_first_zombie_reward_mode", 1, 8, "First zombie health reward (0 - Disabled, 1 - Per alive human, 2 - Fixed)");
+ConvarManager.CreateConVar("zp_first_zombie_reward_health", 250, 8, "Health added to the first zombie, per alive human in mode 1 or once in mode 2");
 ConvarManager.CreateConVar("zp_health_should_regen", 1, 8, "cvar used to set if zombies will regen health.");
 ConvarManager.CreateConVar("zp_health_regen_time_delay", 20, 8, "cvar used to set the delay time after last damage to regen zombie's health.");
 ConvarManager.CreateConVar("zp_health_regen", 10, 8, "cvar used to set how much health zombies will regen.");

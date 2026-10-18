@@ -47,3 +47,7 @@ include("sh_class_menu_protocol.lua");
 include("sh_extra_menu_protocol.lua");
 include("sh_map_vote_protocol.lua");
 include("sh_admin_config.lua");
+include("sh_bot_metrics_protocol.lua");
+include("sh_bot_motion_protocol.lua");
+include("sh_bot_place_protocol.lua");
+include("sh_bot_boost_protocol.lua");

@@ -75,6 +75,7 @@ interface ZPGrenade extends GLuaEntity {
 }
 interface ZPWeaponAmmo { ClipSize: number; DefaultClip: number; Automatic: boolean; Ammo: string; }
 interface ZPScriptedWeapon extends GLuaEntity {
+    CallOnClient(this: ZPScriptedWeapon, method: string): void;
     PrintName: string; Author: string; Purpose?: string; Instructions?: string; Base: string; Category?: string;
     Slot: number; SlotPos: number; Weight: number; Spawnable: boolean; AdminOnly: boolean;
     ViewModel: string; WorldModel: string; ViewModelFOV: number; UseHands: boolean;
@@ -105,6 +106,9 @@ interface ZPScriptedWeapon extends GLuaEntity {
 }
 declare const ENT: ZPGrenade, SWEP: ZPScriptedWeapon;
 declare const SERVER: boolean, CLIENT: boolean;
+declare function IsFirstTimePredicted(this: void): boolean;
+/** @noSelf */
+declare namespace hook { function Run(name: "ZPBotBoostToolAction", operation: number): void; }
 declare const EXPLODE_ON_HIT_MODE: 0, ARM_ON_HIT_MODE: 1, TIME_MODE: 2;
 interface ZPGlobals { EXPLODE_ON_HIT_MODE: 0; ARM_ON_HIT_MODE: 1; TIME_MODE: 2; }
 declare const SOLID_VPHYSICS: number, MOVETYPE_VPHYSICS: number, MASK_SHOT_HULL: number,
@@ -116,8 +120,8 @@ declare function VectorRand(this: void, min?: number, max?: number): GLuaVector;
 declare function Angle(this: void, p: number, y: number, r: number): GLuaAngle;
 /** @noSelf */
 declare namespace ents { function Create(name: "zp_antidote_grenade" | "zp_infection_grenade"): ZPGrenade; }
-interface GLuaTraceOptions { start: GLuaVector; endpos: GLuaVector; filter: GLuaEntity; mask: number; mins?: GLuaVector; maxs?: GLuaVector; }
-interface GLuaTrace { Entity: GLuaEntity; Hit: boolean; HitPos: GLuaVector; }
+interface GLuaTraceOptions { start: GLuaVector; endpos: GLuaVector; filter: GLuaEntity | GLuaEntity[]; mask: number; mins?: GLuaVector; maxs?: GLuaVector; }
+interface GLuaTrace { Entity: GLuaEntity; Hit: boolean; HitSky?: boolean; HitPos: GLuaVector; HitNormal?: GLuaVector; }
 /** @noSelf */
 declare namespace util { function TraceLine(options: GLuaTraceOptions): GLuaTrace; function TraceHull(options: GLuaTraceOptions): GLuaTrace; }
 /** @noSelf */

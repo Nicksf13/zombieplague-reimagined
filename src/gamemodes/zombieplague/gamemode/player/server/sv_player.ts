@@ -6,6 +6,7 @@ include("sv_player_resources.lua");
 include("sv_player_weapons.lua");
 include("sv_player_state.lua");
 include("sv_player_infection.lua");
+include("sv_player_spawns.lua");
 net.Receive("SendVoice", (_length, ply) => ply.SetTalking(net.ReadBool()));
 util.AddNetworkString("SendAmmoPacks");
 util.AddNetworkString("SendBatteryCharge");

@@ -1,4 +1,5 @@
 interface ZPServerPlayer {
+    ZPVoluntarySpectator?: boolean;
     ZombieClass?: ZPClassDefinition | undefined;
     NextZombieClass?: ZPClassDefinition | undefined;
     HumanClass?: ZPClassDefinition | undefined;

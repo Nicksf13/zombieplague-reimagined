@@ -99,6 +99,13 @@ hook.Add("PlayerBatteryOver", "ZPBatteryOver", ply => {
     if (ply.NightvisionIsOn())
         ply.SetNightvision(false);
 });
+hook.Add("ZPFirstZombieEvent", "FirstZombieHealth", ply => {
+    const mode = cvars.Number("zp_first_zombie_reward_mode", 1);
+    if (mode !== 1 && mode !== 2)
+        return;
+    const humans = mode === 1 ? rounds.CountHumansAlive() : 1;
+    ply.SetHealth(ply.Health() + humans * cvars.Number("zp_first_zombie_reward_health", 250));
+});
 for (const [event, id, teamName] of [["ZPLastHumanEvent", "LastHumanHealth", "human"], ["ZPLastZombieEvent", "LastZombieHealth", "zombie"]] as const) {
     hook.Add(event, id, () => {
         const mode = cvars.Number("zp_last_" + teamName + "_reward_mode", 0);

@@ -30,6 +30,7 @@ local uints,strings={},{}
 net.ReadUInt=function() return table.remove(uints,1) end
 net.ReadString=function() return table.remove(strings,1) end
 include("sh_admin_config.lua")
+include("sh_bot_metrics_protocol.lua")
 include("cl_admin_menu.lua"); include("cl_admin_menu_hud.lua")
 include("cl_theme_hud.lua"); include("cl_weapon_menu_hud.lua")
 local function replyAdmin(code,values,reload,token,id)
@@ -52,9 +53,9 @@ end
 `;
 
 test("admin navigation is visible only to admins and loads authoritative values", () => run(setup + `
-    assert(#ZPMainMenu:GetState().Entries==5)
+    assert(#ZPMainMenu:GetState().Entries==6)
     viewer.admin=false
-    assert(#ZPMainMenu:GetState().Entries==4)
+    assert(#ZPMainMenu:GetState().Entries==5)
     ZPAdminMenu:Open(); assert(not activeFrame() and requests==0)
     viewer.admin=true; openEnvironment()
     local state=ZPAdminMenu:GetState()
@@ -67,34 +68,75 @@ test("admin navigation is visible only to admins and loads authoritative values"
     paintAll()
 `));
 
-test("bots page adds one bot through the authorized server command in every theme", () => run(setup + `
+test("bots page offers only AI creation with a bounded quantity in every theme", () => run(setup + `
     for _,theme in ipairs({"classic","hl2","cs16"}) do
         ZPThemes:UseTheme(theme)
         ZPAdminMenu:Open()
         activeFrame().children[3].children[2]:DoClick()
-        assert(ZPAdminMenu:GetState().Page=="bots" and requests==0)
+        assert(ZPAdminMenu:GetState().Page=="bots")
+        activeFrame().children[3].children[1]:DoClick()
+        assert(ZPAdminMenu:GetState().Page=="botadd")
         local content=activeFrame().children[3]
         assert(content.children[1].text=="zombieplague.adminbotshelp")
-        content.children[2]:DoClick()
-        assert(botCommands[#botCommands][1]=="zp_addbot" and botCommands[#botCommands][2]=="1")
+        local quantity=content.children[2].children[2]
+        assert(quantity.kind=="DComboBox" and #quantity.choices==16 and quantity.text=="1")
+        content.children[3]:DoClick()
+        assert(botCommands[#botCommands][1]=="zp_addaibot" and botCommands[#botCommands][2]=="1")
         paintAll()
-        ZPAdminMenu:Back(); assert(ZPAdminMenu:GetState().Page=="admin")
+        ZPAdminMenu:Back(); assert(ZPAdminMenu:GetState().Page=="bots")
     end
     assert(#botCommands==3)
     ZPAdminMenu:AddBot(); assert(#botCommands==3)
-    ZPAdminMenu:Navigate("bots")
+    ZPAdminMenu:Navigate("botadd")
     for _,reason in ipairs({"permission","singleplayer","disabled"}) do
         viewer.superadmin=reason~="permission"
         singleplayer=reason=="singleplayer"; botsEnabled=reason~="disabled"
         ZPAdminMenu:Rebuild()
         assert(not ZPAdminMenu:GetState().CanAddBot)
-        local button=activeFrame().children[3].children[2]
-        assert(not button:IsEnabled())
+        local content=activeFrame().children[3]; local button=content.children[3]
+        assert(not button:IsEnabled() and not content.children[2].children[2]:IsEnabled())
         button:DoClick(); ZPAdminMenu:AddBot(); assert(#botCommands==3)
     end
     viewer.superadmin=true; singleplayer=false; botsEnabled=true
     viewer.admin=false; ZPAdminMenu:AddBot(); assert(#botCommands==3)
     viewer.admin=true; ZPAdminMenu:Close(); ZPAdminMenu:AddBot(); assert(#botCommands==3)
+`));
+
+test("AI bot quantity validates integers, survives rebuild and reopening, and cannot change without permission", () => run(setup + `
+    ZPAdminMenu:Open(); ZPAdminMenu:Navigate("botadd")
+    local content=activeFrame().children[3]; local quantity=content.children[2].children[2]
+    assert(content.children[2].kind=="DPanel" and quantity.sorted==false)
+    for i=1,16 do assert(quantity.choices[i][1]==tostring(i) and quantity.choices[i][2]==i) end
+    quantity:OnSelect(6,"6",6)
+    assert(ZPAdminMenu:GetState().BotCount==6 and quantity.text=="6")
+    content.children[3]:DoClick(); assert(botCommands[1][1]=="zp_addaibot" and botCommands[1][2]=="6")
+    for _,invalid in ipairs({0,-1,1.5,17,0/0,math.huge,"3",{}}) do ZPAdminMenu:SetBotCount(invalid); assert(ZPAdminMenu:GetState().BotCount==6) end
+    ZPAdminMenu:Rebuild(); assert(activeFrame().children[3].children[2].children[2].text=="6")
+    ZPAdminMenu:Close(); ZPAdminMenu:SetBotCount(2)
+    ZPAdminMenu:Open(); ZPAdminMenu:Navigate("botadd"); assert(ZPAdminMenu:GetState().BotCount==6)
+    ZPAdminMenu:SetBotCount(16); ZPAdminMenu:AddBot(); assert(botCommands[2][2]=="16")
+    viewer.superadmin=false; ZPAdminMenu:SetBotCount(2); ZPAdminMenu:AddBot()
+    assert(ZPAdminMenu:GetState().BotCount==16 and #botCommands==2)
+`));
+
+test("Bots groups creation, boost editing and history without starting diagnostics on the hub", () => run(setup + `
+    for _,theme in ipairs({"classic","hl2","cs16"}) do
+        ZPThemes:UseTheme(theme); ZPAdminMenu:Open()
+        assert(#activeFrame().children[3].children==2)
+        local before=requests
+        ZPAdminMenu:Navigate("bots"); assert(requests==before)
+        local choices=activeFrame().children[3].children
+        assert(#choices==3)
+        choices[1]:DoClick(); assert(ZPAdminMenu:GetState().Page=="botadd")
+        ZPAdminMenu:Back(); assert(ZPAdminMenu:GetState().Page=="bots")
+        choices=activeFrame().children[3].children
+        choices[3]:DoClick(); assert(botCommands[#botCommands][1]=="zp_bot_statistics")
+        ZPAdminMenu:Open(); ZPAdminMenu:Navigate("bots")
+        local equipped=0; ZPBotBoostEditor={Open=function() equipped=equipped+1 end}
+        activeFrame().children[3].children[2]:DoClick(); assert(equipped==1 and not activeFrame())
+        ZPAdminMenu:Open(); ZPAdminMenu:Navigate("bots"); ZPAdminMenu:Back()
+        assert(ZPAdminMenu:GetState().Page=="admin")
+    end
 `));
 
 test("form edits wait for save, validate bounds, and stay disabled until acknowledgment", () => run(setup + `
