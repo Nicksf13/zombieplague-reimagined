@@ -1,4 +1,4 @@
-type ZPAdminPage = "admin" | "settings" | "environment" | "bots" | "botadd" | "population";
+type ZPAdminPage = "admin" | "settings" | "environment" | "cvars" | "bots" | "botadd" | "population";
 interface ZPBotPopulationState {
     readonly Snapshot?: ZPBotPopulationSnapshot;
     readonly Enabled: boolean;
@@ -8,6 +8,7 @@ interface ZPBotPopulationState {
     readonly Feedback: string;
 }
 interface ZPAdminState {
+    readonly Cvars: ZPServerCvarClientState;
     readonly Page: ZPAdminPage;
     readonly Values: readonly string[];
     readonly Pending: boolean;
@@ -22,7 +23,7 @@ interface ZPAdminState {
     readonly BotMetricsLoading: boolean;
     readonly BotPopulation: ZPBotPopulationState;
 }
-interface ZPAdminActions {
+interface ZPAdminActions extends ZPServerCvarActions {
     AddBot(this: ZPAdminActions): void;
     SetBotCount(this: ZPAdminActions, count: number): void;
     BotPage(this: ZPAdminActions, direction: number): void;

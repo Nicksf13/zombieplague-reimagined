@@ -1,10 +1,13 @@
 import type { BotMetricsView as MetricsViewType } from "../../bots/client/cl_bot_metrics_hud";
 import type { BotPopulationHUD as PopulationViewType } from "../../bots/client/cl_bot_population_hud";
+import type { ServerCvarsHUD as CvarsViewType } from "./cl_server_cvars_hud";
 const { BotMetricsView } = include("cl_bot_metrics_hud.lua") as typeof import("../../bots/client/cl_bot_metrics_hud");
 const { BotPopulationHUD } = include("cl_bot_population_hud.lua") as typeof import("../../bots/client/cl_bot_population_hud");
+const { ServerCvarsHUD } = include("cl_server_cvars_hud.lua") as typeof import("./cl_server_cvars_hud");
 export class AdminMenuHUD implements ZPAdminPresentation {
     private metrics: MetricsViewType | undefined;
     private populationView: PopulationViewType | undefined;
+    private cvarsView: CvarsViewType | undefined;
     private populationButton: GLuaPanel | undefined;
     private addAI: GLuaPanel | undefined;
     private frame: GLuaPanel | undefined;
@@ -57,6 +60,7 @@ export class AdminMenuHUD implements ZPAdminPresentation {
         };
         const title = this.Label(frame, state.Page === "admin" ? "zombieplague.admintitle" :
             state.Page === "settings" ? "zombieplague.adminmapsettings" :
+            state.Page === "cvars" ? ZPServerCvars.Categories[state.Cvars.Category]?.Label ?? "zombieplague.adminmapsettings" :
             state.Page === "population" ? "zombieplague.botfilltitle" :
             state.Page === "botadd" ? "zombieplague.botmetricsadd" :
             state.Page === "bots" ? "zombieplague.adminbots" : "zombieplague.adminenvironment", 20, width - 100, 66);
@@ -69,8 +73,11 @@ export class AdminMenuHUD implements ZPAdminPresentation {
             this.Button(content, "zombieplague.adminmapsettings", 0, 0, rowWidth, () => actions.Navigate("settings"));
             this.Button(content, "zombieplague.adminbots", 0, 48, rowWidth, () => actions.Navigate("bots"));
         }
-        else if (state.Page === "settings")
-            this.Button(content, "zombieplague.adminenvironment", 0, 0, rowWidth, () => actions.Navigate("environment"));
+        else if (state.Page === "settings") {
+            ZPMenuControls.ScrollPanel(content, this.palette, this.square);
+            ZPServerCvars.Categories.forEach((category, index) =>
+                this.Button(content, category.Label, 0, index * 48, rowWidth, () => actions.OpenCvars(index)));
+        }
         else if (state.Page === "bots") {
             this.Button(content, "zombieplague.botmetricsadd", 0, 0, rowWidth, () => actions.Navigate("botadd"));
             this.Button(content, "zombieplague.botboostequip", 0, 48, rowWidth, () => { actions.Close(); ZPBotBoostEditor.Open(); });
@@ -91,12 +98,24 @@ export class AdminMenuHUD implements ZPAdminPresentation {
             this.populationButton = this.Button(content, "zombieplague.botfilltitle", 0, 198, rowWidth, () => actions.Navigate("population"));
         }
         else if (state.Page === "population") this.populationView = new BotPopulationHUD(content, rowWidth, this.palette, this.square, actions);
+        else if (state.Page === "cvars") {
+            this.cvarsView = new ServerCvarsHUD(content, rowWidth, state.Cvars, this.palette, this.square, actions);
+            const category = ZPServerCvars.Categories[state.Cvars.Category];
+            if (category && ZPServerCvars.ForCategory(category.ID).some(entry => entry.Apply === "map"))
+                this.reload = this.Button(frame, "zombieplague.adminreload", 24, height - 100, width - 48, () => actions.ConfirmReload());
+            const actionWidth = (width - 174) / 2;
+            this.refresh = this.Button(frame, "zombieplague.adminrefresh", 150, height - 52, actionWidth, () => actions.RefreshCvars());
+            this.refresh.SetTooltip(language.GetPhrase("zombieplague.adminrefreshhelp"));
+            this.save = this.Button(frame, "zombieplague.adminsave", 162 + actionWidth, height - 52, actionWidth - 12, () => actions.SaveCvars());
+        }
         else {
+            ZPMenuControls.ScrollPanel(content, this.palette, this.square);
             this.feedback = this.Label(content, "", 0, rowWidth, 48);
             this.Label(content, "zombieplague.adminhelp", 48, rowWidth, 60);
             ZPAdminConfig.Entries.forEach((entry, index) => {
                 const y = 120 + index * 106;
-                this.Label(content, entry.Label, y, rowWidth, 44);
+                this.Label(content, entry.Label, y, rowWidth, 44).SetText(language.GetPhrase(entry.Label) + " (" + entry.Name + ")");
+                this.Label(content, entry.RequiresReload ? "zombieplague.scapplymap" : "zombieplague.scapplylive", y + 84, rowWidth, 20);
                 if (entry.Kind === "toggle") {
                     const button = this.Button(content, "", 0, y + 46, rowWidth, () =>
                         actions.SetValue(index, this.state?.Values[index] === "1" ? "0" : "1"));
@@ -135,15 +154,17 @@ export class AdminMenuHUD implements ZPAdminPresentation {
         this.metrics?.Update(state);
         this.populationButton?.SetEnabled(state.CanAddBot);
         this.populationView?.Update(state);
+        this.cvarsView?.Update(state.Cvars);
         for (const control of this.controls) {
             control.Panel.SetEnabled(state.Ready && !state.Pending);
             const value = state.Values[control.Index];
             if (control.Input && value !== undefined && control.Input.GetValue() !== value)
                 control.Input.SetText(value);
         }
-        this.save?.SetEnabled(state.Ready && state.Dirty && !state.Pending);
-        this.refresh?.SetEnabled(!state.Pending);
-        this.reload?.SetEnabled(state.Ready && state.CanReload && state.ReloadRequired && !state.Dirty && !state.Pending);
+        const form = state.Page === "cvars" ? state.Cvars : state;
+        this.save?.SetEnabled(form.Ready && form.Dirty && !form.Pending && (state.Page !== "cvars" || state.Cvars.CanEdit));
+        this.refresh?.SetEnabled(!form.Pending);
+        this.reload?.SetEnabled(form.Ready && form.CanReload && form.ReloadRequired && !form.Dirty && !form.Pending && (state.Page !== "cvars" || state.Cvars.CanEdit));
         const feedback = state.Feedback.length > 0 ? language.GetPhrase(state.Feedback) : "";
         this.feedback?.SetText(feedback + (state.ReloadRequired ? "\n" + language.GetPhrase("zombieplague.adminreloadpending") : ""));
     }
@@ -177,6 +198,7 @@ export class AdminMenuHUD implements ZPAdminPresentation {
     Destroy(): void {
         this.metrics?.Destroy(); this.metrics = undefined; this.addAI = undefined;
         this.populationView = undefined; this.populationButton = undefined;
+        this.cvarsView = undefined;
         this.frame?.Remove(); this.frame = undefined;
         this.controls = []; this.state = undefined;
         this.botCount = undefined;

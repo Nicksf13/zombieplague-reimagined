@@ -15,7 +15,7 @@ RunConsoleCommand=function(name,count) botCommands[#botCommands+1]={name,count} 
 local strokes,strokeColor={},{}
 surface.SetDrawColor=function(r,g,b,a) strokeColor={r,g,b,a} end
 surface.DrawLine=function(x1,y1,x2,y2) strokes[#strokes+1]={x1,y1,x2,y2,color=strokeColor} end
-include("sh_admin_config.lua"); include("sh_bot_metrics_protocol.lua")
+include("sh_admin_config.lua"); include("sh_server_cvars.lua"); include("sh_bot_metrics_protocol.lua")
 include("cl_admin_menu.lua"); include("cl_admin_menu_hud.lua")
 include("cl_theme_hud.lua"); include("cl_weapon_menu_hud.lua")
 local function activeFrame()

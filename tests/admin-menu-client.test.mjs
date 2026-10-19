@@ -29,7 +29,7 @@ end
 local uints,strings={},{}
 net.ReadUInt=function() return table.remove(uints,1) end
 net.ReadString=function() return table.remove(strings,1) end
-include("sh_admin_config.lua")
+include("sh_admin_config.lua"); include("sh_server_cvars.lua")
 include("sh_bot_metrics_protocol.lua")
 include("cl_admin_menu.lua"); include("cl_admin_menu_hud.lua")
 include("cl_theme_hud.lua"); include("cl_weapon_menu_hud.lua")
