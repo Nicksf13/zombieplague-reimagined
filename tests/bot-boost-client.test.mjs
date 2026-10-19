@@ -338,7 +338,7 @@ test("weapon actions stay themed and focused through polling while closing or pe
 
 test("F4 only equips the tool for normal admins and its menu uses addon palettes without opening Derma", () => run(setup + `
     GetGlobalBool=function() return true end; game={SinglePlayer=function() return false end}
-    include("sh_admin_config.lua"); include("sh_bot_metrics_protocol.lua"); include("cl_admin_menu.lua"); include("cl_admin_menu_hud.lua")
+    include("sh_admin_config.lua"); include("sh_server_cvars.lua"); include("sh_bot_metrics_protocol.lua"); include("cl_admin_menu.lua"); include("cl_admin_menu_hud.lua")
     local original=ZPThemes:GetTheme()
     local palette={Accent=Color(10,200,180),Surface=Color(20,25,30),Panel=Color(35,40,45),Text=Color(240,235,230),Muted=Color(120,125,130)}
     ZPThemes:RegisterTheme("boost-addon",{Name="Boost test",Palette=palette,CreateWeaponMenu=original.CreateWeaponMenu,PaintPlayerHUD=original.PaintPlayerHUD})

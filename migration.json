@@ -368,7 +368,12 @@
     "gamemodes/zombieplague/gamemode/cl_bot_statistics",
     "gamemodes/zombieplague/gamemode/cl_bot_statistics_hud",
     "gamemodes/zombieplague/gamemode/cl_bot_statistics_graph",
-    "gamemodes/zombieplague/gamemode/sv_bot_statistics_timeline"
+    "gamemodes/zombieplague/gamemode/sv_bot_statistics_timeline",
+    "gamemodes/zombieplague/gamemode/sh_server_cvar_catalog",
+    "gamemodes/zombieplague/gamemode/sh_server_cvars",
+    "gamemodes/zombieplague/gamemode/sv_server_cvars",
+    "gamemodes/zombieplague/gamemode/cl_server_cvars",
+    "gamemodes/zombieplague/gamemode/cl_server_cvars_hud"
   ],
   "sourcePaths": {
     "gamemodes/zombieplague/gamemode/sv_bot_experience_trace": "gamemodes/zombieplague/gamemode/bots/server/sv_bot_experience_trace",
@@ -736,6 +741,11 @@
     "gamemodes/zombieplague/gamemode/cl_bot_statistics": "gamemodes/zombieplague/gamemode/bots/client/cl_bot_statistics",
     "gamemodes/zombieplague/gamemode/cl_bot_statistics_hud": "gamemodes/zombieplague/gamemode/bots/client/cl_bot_statistics_hud",
     "gamemodes/zombieplague/gamemode/cl_bot_statistics_graph": "gamemodes/zombieplague/gamemode/bots/client/cl_bot_statistics_graph",
-    "gamemodes/zombieplague/gamemode/sv_bot_statistics_timeline": "gamemodes/zombieplague/gamemode/bots/server/sv_bot_statistics_timeline"
+    "gamemodes/zombieplague/gamemode/sv_bot_statistics_timeline": "gamemodes/zombieplague/gamemode/bots/server/sv_bot_statistics_timeline",
+    "gamemodes/zombieplague/gamemode/sh_server_cvar_catalog": "gamemodes/zombieplague/gamemode/menus/shared/sh_server_cvar_catalog",
+    "gamemodes/zombieplague/gamemode/sh_server_cvars": "gamemodes/zombieplague/gamemode/menus/shared/sh_server_cvars",
+    "gamemodes/zombieplague/gamemode/sv_server_cvars": "gamemodes/zombieplague/gamemode/menus/server/sv_server_cvars",
+    "gamemodes/zombieplague/gamemode/cl_server_cvars": "gamemodes/zombieplague/gamemode/menus/client/cl_server_cvars",
+    "gamemodes/zombieplague/gamemode/cl_server_cvars_hud": "gamemodes/zombieplague/gamemode/menus/client/cl_server_cvars_hud"
   }
 }
