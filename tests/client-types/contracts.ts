@@ -1,4 +1,5 @@
 declare const clientPlayer: ZPClientPlayer;
+clientPlayer.InvalidateBoneCache();
 clientPlayer.SetZombieClass("Fast Zombie");
 net.Receive("Example", (length: number) => {});
 ZPThemes.UseTheme("hl2");

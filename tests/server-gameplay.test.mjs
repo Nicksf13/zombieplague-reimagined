@@ -258,6 +258,10 @@ test("respawning during freeze stays frozen and custom actions resume after unfr
     assert(not ply:IsFrozen())
     receivers.RequestAbility(0,ply); receivers.RequestNightvision(0,ply)
     assert(activations==1 and ply.nightvision)
+    ply.ZPDanceUntil=100
+    receivers.RequestAbility(0,ply); assert(activations==1, "dancing blocks class abilities")
+    ply.ZPDanceUntil=nil
+    receivers.RequestAbility(0,ply); assert(activations==2)
 `));
 
 test("default special-round callbacks retain their own definition after all rounds register", () => run(setup + `
@@ -272,6 +276,7 @@ test("default special-round callbacks retain their own definition after all roun
 
 test("map vote lifecycle runs extension with the right manager and the new vote protocol", () => run(setup + `
     concommand={Add=function() end}
+    player.GetBots=function() return {} end
     string.StartWith=function(text,prefix) return text:sub(1,#prefix)==prefix end
     table.RemoveByValue=function(values,value) for i=#values,1,-1 do if values[i]==value then table.remove(values,i) end end end
     file.Find=function() return {"zm_current.bsp","zm_other.bsp","de_no.bsp"},{} end

@@ -4,6 +4,25 @@ import test from "node:test";
 import { run } from "./helpers/lua-runtime.mjs";
 import { books, locales, nativeLanguage } from "./helpers/native-localization.mjs";
 
+test("keyboard settings labels and capture instructions resolve in all catalogs", () => {
+    for (const locale of locales)
+        for (const key of ["settingskeys", "settingskeyshelp", "settingskeypress", "settingskeysreset"])
+            assert(books[locale]["zombieplague." + key]?.trim(), `${locale}: missing ${key}`);
+});
+
+test("dance action and unsupported-model notice resolve in all catalogs", () => {
+    for (const locale of locales)
+        for (const key of ["keybindingdance", "danceunavailable"])
+            assert(books[locale]["zombieplague." + key]?.trim(), `${locale}: missing ${key}`);
+});
+
+test("emote wheel instructions and all sixteen labels resolve in every catalog", () => {
+    const names = "dance|robot|muscle|cheer|laugh|wave|salute|zombie|agree|disagree|becon|bow|forward|group|halt|pers".split("|");
+    for (const locale of locales)
+        for (const suffix of ["help", "pages", ...names])
+            assert(books[locale]["zombieplague.emote" + suffix]?.trim(), `${locale}: missing emote${suffix}`);
+});
+
 test("stamina HUD label resolves in every native catalog", () => {
     for (const locale of locales)
         assert(books[locale]["zombieplague.hudstamina"]?.trim(), `${locale}: missing hudstamina`);

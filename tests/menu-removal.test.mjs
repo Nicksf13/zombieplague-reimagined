@@ -28,7 +28,7 @@ test("client initialization and saved F4 bindings cannot install the old menu ho
     local realInclude = include
     include = function(path)
         loaded[path] = true
-        if path == "cl_data.lua" or path == "cl_keymanager.lua" or path == "cl_init.lua" then
+        if path == "cl_data.lua" or path == "cl_keymanager.lua" or path == "cl_key_input.lua" or path == "cl_init.lua" then
             return realInclude(path)
         end
     end

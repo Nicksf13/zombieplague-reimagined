@@ -4,6 +4,9 @@ export class SettingsHUD implements ZPSettingsPresentation {
     private content: GLuaPanel | undefined;
     private state: ZPSettingsState | undefined;
     private signature: string = "";
+    private bindingButtons: Record<string, GLuaPanel> = {};
+    private focusedBinding = "";
+    private captureLayer: GLuaPanel | undefined;
     constructor(private palette: ZPThemePalette, private square: boolean) {}
 
     private Text(key: string, font: string, x: number, y: number, color: GLuaColor = this.palette.Text): void {
@@ -52,6 +55,24 @@ export class SettingsHUD implements ZPSettingsPresentation {
     private UpdateContent(state: ZPSettingsState, actions: ZPSettingsActions): void {
         this.state = state;
         this.actions = actions;
+        this.frame?.SetKeyboardInputEnabled(state.Capturing !== "");
+        if (this.focusedBinding !== state.Capturing) {
+            this.focusedBinding = state.Capturing;
+            this.captureLayer?.Remove();
+            this.captureLayer = undefined;
+            if (state.Capturing !== "" && this.frame) {
+                // Consume the assignment click before another control can react to it.
+                const layer = vgui.Create("DPanel", this.frame);
+                this.captureLayer = layer;
+                const [width, height] = this.frame.GetSize();
+                layer.SetPos(0, 0); layer.SetSize(width, height); layer.SetZPos(1000);
+                layer.SetMouseInputEnabled(true); layer.SetKeyboardInputEnabled(true);
+                layer.Paint = () => {};
+                layer.OnKeyCodePressed = key => actions.CaptureKey(key);
+                layer.OnMousePressed = button => actions.CaptureKey(button);
+                layer.RequestFocus();
+            }
+        }
         const signature = state.Themes.map(theme => theme.ID + ":" + theme.Name).join("|");
         if (this.content && signature === this.signature)
             return;
@@ -62,6 +83,7 @@ export class SettingsHUD implements ZPSettingsPresentation {
             return;
         const [width, height] = frame.GetSize();
         const content = vgui.Create("DScrollPanel", frame);
+        ZPMenuControls.ScrollPanel(content, this.palette, this.square);
         this.content = content;
         content.SetPos(24, 96);
         content.SetSize(width - 48, height - 148);
@@ -71,7 +93,35 @@ export class SettingsHUD implements ZPSettingsPresentation {
         appearance.Paint = () => this.Text("zombieplague.settingsappearance", "ZPMenuOptionTitle", 0, 0, this.palette.Accent);
         state.Themes.forEach((theme, index) => this.Button(content, theme.Name, 0, 34 + index * 42, rowWidth, 36,
             () => actions.UseTheme(theme.ID), () => this.state?.Theme === theme.ID));
-        const gameplayY = 44 + state.Themes.length * 42;
+        const keysY = 44 + state.Themes.length * 42;
+        const keys = content.Add("DPanel");
+        keys.SetPos(0, keysY); keys.SetSize(rowWidth, 132);
+        keys.Paint = () => this.Text("zombieplague.settingskeys", "ZPMenuOptionTitle", 0, 0, this.palette.Accent);
+        const hint = vgui.Create("DLabel", keys);
+        hint.SetPos(0, 28); hint.SetSize(rowWidth, 100); hint.SetWrap(true); hint.SetColor(this.palette.Muted);
+        hint.SetText(language.GetPhrase("zombieplague.settingskeyshelp"));
+        this.bindingButtons = {};
+        state.Bindings.forEach((binding, index) => {
+            const button = this.Button(content, "", 0, keysY + 132 + index * 64, rowWidth, 56,
+                () => actions.BeginBinding(binding.ID), () => this.state?.Capturing === binding.ID);
+            this.bindingButtons[binding.ID] = button;
+            button.OnKeyCodePressed = key => actions.CaptureKey(key);
+            button.Paint = (w, h) => {
+                const capturing = this.state?.Capturing === binding.ID;
+                const current = this.state?.Bindings.find(entry => entry.ID === binding.ID);
+                draw.RoundedBox(this.square ? 0 : 4, 0, 0, w, h,
+                    capturing || button.IsHovered() ? this.palette.Accent : this.palette.Panel);
+                const color = capturing || button.IsHovered() ? Color(12, 18, 22) : this.palette.Text;
+                this.Text(binding.Label, "ZPMenuOptionTitle", 12, 6, color);
+                const key = current?.Key ?? KEY_NONE;
+                const caption = capturing ? language.GetPhrase("zombieplague.settingskeypress") :
+                    key === KEY_NONE ? language.GetPhrase("zombieplague.settingsdisabled") : (input.GetKeyName(key) ?? "").toUpperCase();
+                draw.DrawText(caption, "DermaDefault", 12, 32, color, TEXT_ALIGN_LEFT);
+            };
+        });
+        const resetY = keysY + 132 + state.Bindings.length * 64;
+        this.Button(content, "zombieplague.settingskeysreset", 0, resetY, rowWidth, 36, () => actions.ResetBindings());
+        const gameplayY = resetY + 50;
         const gameplay = content.Add("DPanel");
         gameplay.SetPos(0, gameplayY); gameplay.SetSize(rowWidth, 30);
         gameplay.Paint = () => this.Text("zombieplague.settingsgameplay", "ZPMenuOptionTitle", 0, 0, this.palette.Accent);
@@ -92,6 +142,8 @@ export class SettingsHUD implements ZPSettingsPresentation {
         this.frame = undefined;
         this.content = undefined;
         this.actions = undefined;
+        this.bindingButtons = {}; this.focusedBinding = "";
+        this.captureLayer = undefined;
     }
 }
 _G.ZPCreateSettingsHUD = (palette, square) => new SettingsHUD(palette, square);

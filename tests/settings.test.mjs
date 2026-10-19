@@ -20,7 +20,7 @@ test("F4 settings option moves theme selection out of the main and weapon menus"
     local settings=activeFrame()
     assert(settings.popup and settings.keyboard==false)
     local content=settings.children[3]
-    content.children[3]:DoClick() -- HL2 theme
+    content.children[4]:DoClick() -- HL2 theme, after the themed scrollbar
     assert(settings.removed and ZPSettings:GetState().Open and ZPSettings:GetState().Theme=="hl2" and requests==0)
     paintAll()
     activeFrame().children[2]:DoClick() -- Back

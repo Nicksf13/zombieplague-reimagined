@@ -27,11 +27,16 @@
 /zombieplague/gamemode/cl_bot_statistics_hud.lua
 /zombieplague/gamemode/cl_class_menu.lua
 /zombieplague/gamemode/cl_class_menu_hud.lua
+/zombieplague/gamemode/cl_dance.lua
+/zombieplague/gamemode/cl_dance_camera.lua
 /zombieplague/gamemode/cl_data.lua
+/zombieplague/gamemode/cl_emote_wheel.lua
+/zombieplague/gamemode/cl_emote_wheel_hud.lua
 /zombieplague/gamemode/cl_extra_menu.lua
 /zombieplague/gamemode/cl_extra_menu_hud.lua
 /zombieplague/gamemode/cl_hud.lua
 /zombieplague/gamemode/cl_init.lua
+/zombieplague/gamemode/cl_key_input.lua
 /zombieplague/gamemode/cl_keymanager.lua
 /zombieplague/gamemode/cl_main_menu.lua
 /zombieplague/gamemode/cl_main_menu_hud.lua
@@ -107,6 +112,8 @@
 /zombieplague/gamemode/sh_bot_place_protocol.lua
 /zombieplague/gamemode/sh_bot_statistics_analysis.lua
 /zombieplague/gamemode/sh_class_menu_protocol.lua
+/zombieplague/gamemode/sh_dance.lua
+/zombieplague/gamemode/sh_emotes.lua
 /zombieplague/gamemode/sh_extra_menu_protocol.lua
 /zombieplague/gamemode/sh_map_vote_protocol.lua
 /zombieplague/gamemode/sh_player.lua
@@ -177,6 +184,7 @@
 /zombieplague/gamemode/sv_commands.lua
 /zombieplague/gamemode/sv_config.lua
 /zombieplague/gamemode/sv_convar.lua
+/zombieplague/gamemode/sv_dance.lua
 /zombieplague/gamemode/sv_event_combat.lua
 /zombieplague/gamemode/sv_event_players.lua
 /zombieplague/gamemode/sv_event_ticks.lua

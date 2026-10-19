@@ -45,7 +45,9 @@ export const clientSetup = `
 local now=10
 function CurTime() return now end
 KEY_ESCAPE=70
-input={IsKeyDown=function() return false end}
+KEY_NONE,KEY_F3,KEY_F4,KEY_T,KEY_LAST,KEY_BACKQUOTE=0,94,95,30,106,57
+input={IsKeyDown=function() return false end,GetKeyName=function(key) return "key"..key end,
+    TranslateAlias=function() return nil end}
 local consoleCommands={}
 concommand={Add=function(name,callback) consoleCommands[name]=callback end}
 local clientPreferences={}
@@ -83,8 +85,10 @@ include("cl_settings_hud.lua")
 local viewer={alive=true,human=true}
 function viewer:Alive() return self.alive end
 function viewer:IsHuman() return self.human end
+function viewer:IsTyping() return false end
 function viewer:Team() return self.team or TEAM_HUMANS end
 function LocalPlayer() return viewer end
+include("cl_keymanager.lua")
 local snapshot={Entries={{ID="weapon_ar2",Name="AR2",Kind="primary",Order=100},
     {ID="weapon_pistol",Name="Pistol",Kind="secondary",Order=100}},
     Selected={primary="",secondary="",melee=""},
@@ -113,6 +117,7 @@ function panelMeta:SetWide(width) self.w=width end
 function panelMeta:GetVBar()
     if not self.scrollbar then
         local bar=vgui.Create("DVScrollBar",self); bar:SetSize(12,self.h or 100)
+        bar:SetPos((self.w or 12)-12,0)
         bar.btnGrip=vgui.Create("DButton",bar); bar.btnUp=vgui.Create("DButton",bar); bar.btnDown=vgui.Create("DButton",bar)
         bar.btnGrip:SetSize(12,32); bar.btnUp:SetSize(12,12); bar.btnDown:SetSize(12,12)
         self.scrollbar=bar
@@ -122,6 +127,7 @@ end
 function panelMeta:GetSize() return self.w,self.h end
 function panelMeta:Remove()
     self.removed=true
+    if vgui.focus==self then vgui.focus=nil end
     for _,child in ipairs(self.children) do child:Remove() end
 end
 function panelMeta:IsHovered() return false end
@@ -150,11 +156,13 @@ function panelMeta:AddChoice(text,data)
 end
 function panelMeta:SetKeyboardInputEnabled(enabled)
     self.keyboard=enabled
+    if not enabled and vgui.focus==self then vgui.focus=nil end
     for _,child in ipairs(self.children) do child:SetKeyboardInputEnabled(enabled) end
 end
+function panelMeta:RequestFocus() vgui.focus=self end
 function panelMeta:MakePopup() self.popup=true; self.keyboard=true end
 function panelMeta:Add(kind) return vgui.Create(kind,self) end
-for _,method in ipairs({"SetColor","SetTitle","ShowCloseButton","SetDraggable","SetDeleteOnClose","Center"}) do
+for _,method in ipairs({"SetColor","SetTitle","ShowCloseButton","SetDraggable","SetDeleteOnClose","Center","SetMouseInputEnabled","SetZPos"}) do
     panelMeta[method]=function() end
 end
 vgui={Create=function(kind,parent)
@@ -167,6 +175,7 @@ vgui={Create=function(kind,parent)
     end
     return panel
 end}
+vgui.GetKeyboardFocus=function() return vgui.focus end
 local function paintAll()
     for _,panel in ipairs(panels) do
         if not panel.removed and panel.visible~=false and panel.Paint then panel:Paint(panel.w,panel.h) end
