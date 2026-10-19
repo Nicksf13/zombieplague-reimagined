@@ -59,12 +59,18 @@ hook.Add("HalfSecondTickManager", "ZPBreathManager", () => {
     }
 });
 hook.Add("ZPSuffocate", "ZPBreathDamage", ply => {
-    const damage = DamageInfo();
-    damage.SetDamage(cvars.Number("zp_breath_damage", 5));
-    damage.SetDamageType(DMG_DROWNRECOVER);
-    ply.TakeDamageInfo(damage);
-    ply.ScreenFade(SCREENFADE.IN, Color(255, 255, 255, 20), 0.3, 0);
-    const sounds = ply.WaterLevel() > 2 ? (ply.IsHuman() ? HumanDrownSounds : ZombieDrownSounds) : (ply.IsHuman() ? HumanSuffocateSound : ZombieSuffocateSound);
+    if (!ply.Alive() || ply.GetBreath() > 0)
+        return;
+    const underwater = ply.WaterLevel() > 2;
+    // Exhaustion on land is only audible; drowning requires the head to be submerged.
+    if (underwater) {
+        const damage = DamageInfo();
+        damage.SetDamage(cvars.Number("zp_breath_damage", 5));
+        damage.SetDamageType(DMG_DROWN);
+        ply.TakeDamageInfo(damage);
+        ply.ScreenFade(SCREENFADE.IN, Color(255, 255, 255, 20), 0.3, 0);
+    }
+    const sounds = underwater ? (ply.IsHuman() ? HumanDrownSounds : ZombieDrownSounds) : (ply.IsHuman() ? HumanSuffocateSound : ZombieSuffocateSound);
     ply.ZPEmitSound(SafeTableRandom(sounds), 1);
 });
 hook.Add("TickManager", "GravityManager", () => {

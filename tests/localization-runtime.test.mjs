@@ -4,6 +4,11 @@ import test from "node:test";
 import { run } from "./helpers/lua-runtime.mjs";
 import { books, locales, nativeLanguage } from "./helpers/native-localization.mjs";
 
+test("stamina HUD label resolves in every native catalog", () => {
+    for (const locale of locales)
+        assert(books[locale]["zombieplague.hudstamina"]?.trim(), `${locale}: missing hudstamina`);
+});
+
 test("AI progress history, comparisons and all event labels resolve in every catalog", () => {
     const keys = "title|help|bot|version|scenario|difficulty|role|period|export|exported|counts|summary|combat|interval|improvement|regression|inconclusive|rewardwarning|states|metric|select|empty|graphhelp|metrics".split("|");
     for (const locale of locales) {

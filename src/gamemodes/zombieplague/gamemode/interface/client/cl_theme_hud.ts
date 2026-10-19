@@ -29,7 +29,8 @@ export class PlayerHUDRenderer implements ZPPlayerHUDRenderer {
     }
 
     private Details(state: ZPPlayerHUDState, palette: ZPThemePalette, y: number, margin: number): void {
-        const entries = state.Entries.filter(entry => entry.ID !== "HUDHealth" && entry.ID !== "HUDArmor" && entry.ID !== "HUDAP");
+        // Oxygen and sprinting share breath; the segmented stamina card owns its display.
+        const entries = state.Entries.filter(entry => entry.ID !== "HUDHealth" && entry.ID !== "HUDArmor" && entry.ID !== "HUDAP" && entry.ID !== "HUDOxygenLevel");
         // Wrap by measured words so addon text and translated class names remain readable.
         const maxWidth = Math.min(520, state.Width - (state.Width < 900 ? 172 : 206) - margin * 2 - 32);
         const lines: string[] = [];
@@ -57,6 +58,22 @@ export class PlayerHUDRenderer implements ZPPlayerHUDRenderer {
         });
     }
 
+    private Stamina(fraction: number, x: number, y: number, width: number,
+        palette: ZPThemePalette, style: "classic" | "hl2" | "cs16"): void {
+        const radius = style === "cs16" ? 0 : style === "hl2" ? 8 : 5;
+        draw.RoundedBox(radius, x, y, width, 64, palette.Surface);
+        if (style === "classic")
+            draw.RoundedBox(0, x, y, width, 2, palette.Accent);
+        this.Text(language.GetPhrase("zombieplague.hudstamina"), "DermaDefault", x + 10, y + 7,
+            style === "classic" ? palette.Muted : palette.Accent);
+        const segmentWidth = (width - 20 - 9 * 3) / 10;
+        const filled = Math.ceil(Math.max(0, Math.min(1, fraction)) * 10);
+        const inactive = Color(palette.Muted.r, palette.Muted.g, palette.Muted.b, 45);
+        for (let index = 0; index < 10; index++)
+            draw.RoundedBox(0, x + 10 + index * (segmentWidth + 3), y + 34, segmentWidth, 16,
+                index < filled ? palette.Accent : inactive);
+    }
+
     private Paint(state: ZPPlayerHUDState, palette: ZPThemePalette, style: "classic" | "hl2" | "cs16"): void {
         const margin = state.Width < 800 ? 12 : 24;
         const y = state.Height - margin - 64;
@@ -69,9 +86,13 @@ export class PlayerHUDRenderer implements ZPPlayerHUDRenderer {
         if (armor)
             this.Card(armor.Label, armor.Value, margin + cell + 8, y, cell, palette, style);
         if (packs) {
-            const top = compact || margin + (cell + 8) * 3 > timerX;
-            this.Card(packs.Label, packs.Value, top ? state.Width - margin - cell : margin + (cell + 8) * 2,
-                top ? margin : y, cell, palette, style);
+            // Reserve the stamina slot so ammo packs stay still when the bar hides.
+            const top = compact || margin + (cell + 8) * 4 > timerX;
+            const packsX = top ? state.Width - margin - cell : margin + (cell + 8) * 2;
+            const packsY = top ? margin : y;
+            this.Card(packs.Label, packs.Value, packsX, packsY, cell, palette, style);
+            if (state.Stamina !== undefined)
+                this.Stamina(state.Stamina, packsX + (top ? -1 : 1) * (cell + 8), packsY, cell, palette, style);
         }
         this.Card(language.GetPhrase("zombieplague.hudtimer"), state.Timer, timerX, y, timerWidth, palette, style);
         if (state.Ammo) {

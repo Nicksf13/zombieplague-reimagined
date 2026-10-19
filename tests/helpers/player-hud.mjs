@@ -20,7 +20,7 @@ local function hudPlayer(name)
     function ply:Armor() return self.armor end
     function ply:GetZPClass() return self.class end
     function ply:GetBreath() return self.breath end
-    function ply:GetMaxBreath() return 100 end
+    function ply:GetMaxBreath() return self.maxBreath or 100 end
     function ply:GetBattery() return self.battery end
     function ply:GetMaxBatteryCharge() return 100 end
     function ply:GetAbilityPower() return self.power end
