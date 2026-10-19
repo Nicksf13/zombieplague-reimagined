@@ -19,6 +19,8 @@ interface ZPPlayerHUDAmmo {
     readonly Secondary?: ZPPlayerHUDAmmoChannel;
 }
 interface ZPPlayerHUDState {
+    /** Shared sprint/oxygen breath in [0, 1]; absent when hidden after full recovery. */
+    readonly Stamina?: number;
     readonly Width: number;
     readonly Height: number;
     readonly Timer: string;

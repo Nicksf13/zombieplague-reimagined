@@ -68,10 +68,6 @@ PLAYER.TakeBreath = function (this: ZPServerPlayer, Breath: number): void {
 PLAYER.SetBreath = function (this: ZPServerPlayer, Breath: number): void {
     if ((Breath <= 0)) {
         Breath = 0;
-        let DmgInfo = DamageInfo();
-        DmgInfo.SetDamage(cvars.Number("zp_breath_damage", 5));
-        DmgInfo.SetDamageType(DMG_DROWNRECOVER);
-        this.TakeDamageInfo(DmgInfo);
     }
     else if ((Breath > this.GetMaxBreath())) {
         Breath = this.GetMaxBreath();
@@ -81,6 +77,8 @@ PLAYER.SetBreath = function (this: ZPServerPlayer, Breath: number): void {
     net.WriteString(PlayerManager.GetPlayerID(this));
     net.WriteFloat(Breath);
     net.Broadcast();
+    if (Breath === 0)
+        hook.Call("ZPSuffocate", GAMEMODE, this);
 };
 PLAYER.GetBreath = function (this: ZPServerPlayer): number {
     return (this.Breath ?? 100);

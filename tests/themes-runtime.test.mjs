@@ -5,6 +5,73 @@ import { playerHUDSetup } from "./helpers/player-hud.mjs";
 
 const setup = clientSetup + panelsSetup + playerHUDSetup;
 
+test("stamina hides at full spawn, waits three seconds after recovery and resets for new subjects", () => run(setup + `
+    local now=0
+    CurTime=function() return now end
+    viewer.breath=100
+    assert(ZPPlayerHUD:GetState().Stamina==nil)
+    viewer.breath=99; assert(ZPPlayerHUD:GetState().Stamina==0.99)
+    now=50; viewer.breath=100; assert(ZPPlayerHUD:GetState().Stamina==1)
+    now=52.99; assert(ZPPlayerHUD:GetState().Stamina==1)
+    now=53; assert(ZPPlayerHUD:GetState().Stamina==nil)
+    viewer.breath=80; assert(ZPPlayerHUD:GetState().Stamina==0.8)
+    viewer.breath=100; assert(ZPPlayerHUD:GetState().Stamina==1)
+    now=54; viewer.breath=90; assert(ZPPlayerHUD:GetState().Stamina==0.9)
+    now=60; viewer.breath=100; assert(ZPPlayerHUD:GetState().Stamina==1)
+    now=62.99; assert(ZPPlayerHUD:GetState().Stamina==1)
+    now=63; assert(ZPPlayerHUD:GetState().Stamina==nil)
+    viewer.breath=50; ZPPlayerHUD:GetState()
+    viewer.alive=false; viewer.target=hudPlayer("Full target"); viewer.target.breath=100
+    assert(ZPPlayerHUD:GetState().Stamina==nil)
+    viewer.alive=true; viewer.breath=100
+    assert(ZPPlayerHUD:GetState().Stamina==nil)
+`));
+
+test("stamina follows authoritative breath, clamps limits and follows the observed player", () => run(setup + `
+    assert(ZPPlayerHUD:GetState().Stamina==0.8)
+    viewer.breath=0; assert(ZPPlayerHUD:GetState().Stamina==0)
+    viewer.breath=25; viewer.maxBreath=50; assert(ZPPlayerHUD:GetState().Stamina==0.5)
+    viewer.breath=100; assert(ZPPlayerHUD:GetState().Stamina==1)
+    viewer.breath=-10; assert(ZPPlayerHUD:GetState().Stamina==0)
+    viewer.maxBreath=0; assert(ZPPlayerHUD:GetState().Stamina==0)
+    viewer.alive=false; viewer.target=hudPlayer("Observed"); viewer.target.breath=30
+    assert(ZPPlayerHUD:GetState().Stamina==0.3)
+    viewer.mode=OBS_MODE_ROAMING; assert(ZPPlayerHUD:GetState().Stamina==nil)
+    viewer.mode=0; viewer.target=nil; assert(ZPPlayerHUD:GetState().Stamina==nil)
+`));
+
+test("stamina draws ten themed segments adjacent to ammo packs at all HUD resolutions", () => run(setup + `
+    local texts,segments={},{}
+    draw.DrawText=function(text,_,x,y) texts[text]={x,y} end
+    draw.RoundedBox=function(_,x,y,w,h,color)
+        if h==16 then segments[#segments+1]={x=x,y=y,color=color} end
+        assert(x>=0 and y>=0 and x+w<=ScrW() and y+h<=ScrH())
+    end
+    for _,width in ipairs({640,800,900,1024,1280,1920}) do
+        screenWidth=width
+        for _,id in ipairs({"classic","hl2","cs16"}) do
+            ZPThemes:UseTheme(id)
+            local palette=ZPThemes:GetTheme().Palette
+            for _,breath in ipairs({0,25,80,100}) do
+                viewer.breath=breath; texts={}; segments={}
+                hooks.HUDPaint.HUDZombiePlague()
+                assert(#segments==10)
+                for text in pairs(texts) do
+                    assert(not text:find("zombieplague.classoxygenlevel",1,true), "duplicate breath percentage")
+                end
+                local filled=0
+                for _,segment in ipairs(segments) do
+                    if segment.color==palette.Accent then filled=filled+1 end
+                end
+                assert(filled==math.ceil(breath/10))
+                local packs,stamina=texts["zombieplague.ap"],texts["zombieplague.hudstamina"]
+                local cell=width<900 and 104 or 132
+                assert(packs[2]==stamina[2] and math.abs(packs[1]-stamina[1])==cell+8)
+            end
+        end
+    end
+`));
+
 test("three complete themes switch from console, menu and API without resending pending selections", () => run(setup + `
     local themes=ZPThemes:GetThemes()
     assert(#themes==3 and themes[1].ID=="classic" and themes[2].ID=="hl2" and themes[3].ID=="cs16")
