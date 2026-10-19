@@ -27,6 +27,8 @@ GetGlobalInt("SpecialRound", false);
 team.GetPlayers(TEAM_HUMANS, testPlayer);
 
 declare const serverPlayer: ZPServerPlayer;
+// @ts-expect-error Bone-cache invalidation is a client rendering API.
+serverPlayer.InvalidateBoneCache();
 declare const serverRoundManager: ZPServerRoundManager;
 const status: ZPServerStatus = serverRoundManager.GetServerStatus(serverPlayer);
 net.WriteTable(status);

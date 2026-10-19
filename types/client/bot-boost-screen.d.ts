@@ -20,6 +20,4 @@ declare namespace render {
 declare namespace hook {
     function Add(name: "PostDrawViewModel", id: string,
         callback: (this: void, vm: GLuaEntity, ply: ZPClientPlayer, weapon: GLuaEntity, flags: number) => void): void;
-    function Add(name: "PlayerBindPress", id: string,
-        callback: (this: void, ply: ZPClientPlayer, bind: string, pressed: boolean) => boolean | undefined): void;
 }

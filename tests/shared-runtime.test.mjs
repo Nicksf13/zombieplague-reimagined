@@ -258,7 +258,7 @@ const serverSetup = `
         "sv_player.lua", "sv_localization.lua", "sv_message.lua", "sv_classmanager.lua",
         "sv_roundmanager.lua", "sv_eventmanager.lua", "sv_player_participation.lua", "sv_infectionmanager.lua",
         "sv_weaponmanager.lua", "sv_weapon_menu.lua", "sv_class_menu_apply.lua", "sv_class_menu.lua", "sv_extraitems.lua", "sv_extra_menu.lua", "sv_particlemanager.lua",
-        "sv_votemap.lua", "sv_map_nominations.lua", "sv_mapmanager.lua", "sv_map_environment.lua", "sv_admin_settings.lua", "sv_bank.lua", "sv_bots.lua", "sv_server_cvars.lua"
+        "sv_votemap.lua", "sv_map_nominations.lua", "sv_mapmanager.lua", "sv_map_environment.lua", "sv_admin_settings.lua", "sv_bank.lua", "sv_bots.lua", "sv_server_cvars.lua", "sv_dance.lua"
     }
     for _, name in ipairs(expectedServerIncludes) do
         legacyIncludes[name] = function() assert(BOT_MODE == true) end
@@ -361,8 +361,8 @@ test("server init preserves include order, client downloads and network registra
     local expectedClientFiles = {
         "shared.lua", "sh_bank.lua", "sh_roundmanager.lua", "sh_player.lua", "sh_playermanager.lua",
         "cl_hud.lua", "cl_theme_manager.lua", "cl_menu_controls.lua", "cl_theme_hud.lua", "cl_player_hud.lua",
-        "cl_data.lua", "cl_message.lua", "cl_player.lua", "cl_nightvision.lua", "cl_roundmanager.lua",
-        "cl_particlemanager.lua", "cl_keymanager.lua", "cl_scoreboard.lua", "cl_scoreboard_hud.lua",
+        "cl_data.lua", "cl_message.lua", "cl_player.lua", "sh_dance.lua", "cl_dance.lua", "cl_dance_camera.lua", "sh_emotes.lua", "cl_emote_wheel.lua", "cl_emote_wheel_hud.lua", "cl_nightvision.lua", "cl_roundmanager.lua",
+        "cl_particlemanager.lua", "cl_keymanager.lua", "cl_key_input.lua", "cl_scoreboard.lua", "cl_scoreboard_hud.lua",
         "sh_weapon_menu_protocol.lua", "sh_class_menu_protocol.lua", "sh_extra_menu_protocol.lua", "sh_map_vote_protocol.lua", "cl_map_vote.lua", "cl_map_vote_hud.lua", "cl_extra_menu.lua", "cl_extra_menu_hud.lua", "cl_class_menu.lua", "cl_class_menu_hud.lua",
         "cl_weapon_menu.lua", "cl_weapon_menu_hud.lua", "cl_main_menu.lua", "cl_main_menu_hud.lua",
         "cl_settings.lua", "cl_settings_hud.lua", "sh_admin_config.lua", "sh_server_cvars.lua", "sh_server_cvar_catalog.lua", "cl_server_cvars.lua", "cl_server_cvars_hud.lua", "cl_admin_menu.lua", "cl_admin_menu_hud.lua",

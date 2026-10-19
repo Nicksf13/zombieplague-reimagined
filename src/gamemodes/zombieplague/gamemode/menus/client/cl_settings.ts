@@ -3,6 +3,8 @@ export class SettingsController implements ZPSettingsController {
     private presentation: ZPSettingsPresentation | undefined;
     private alwaysRun = CreateClientConVar("zp_always_run", "0", true, false, "Always hold the sprint input while alive.");
     private staminaMode: boolean | undefined;
+    private capturing = "";
+    private ignoreEscape = false;
 
     private SyncStaminaMode(): boolean {
         const staminaMode = cvars.Bool("zp_realistic_mode", false) || cvars.Bool("zp_run_should_drain", false);
@@ -17,7 +19,7 @@ export class SettingsController implements ZPSettingsController {
     GetState(): ZPSettingsState {
         this.SyncStaminaMode();
         return { Open: this.opened, Theme: ZPThemes.GetActiveID(), Themes: ZPThemes.GetThemes(),
-            AlwaysRun: this.alwaysRun.GetBool() };
+            AlwaysRun: this.alwaysRun.GetBool(), Bindings: KeyManager.GetBindings(), Capturing: this.capturing };
     }
 
     Open(): void {
@@ -34,6 +36,7 @@ export class SettingsController implements ZPSettingsController {
     Rebuild(): void {
         if (!this.opened)
             return;
+        this.CancelBinding();
         this.presentation?.Destroy();
         this.presentation = undefined;
         const theme = ZPThemes.GetTheme();
@@ -52,7 +55,26 @@ export class SettingsController implements ZPSettingsController {
         this.alwaysRun.SetBool(enabled);
         this.presentation?.Update(this.GetState());
     }
+    private CancelBinding(): void { this.capturing = ""; KeyManager.Capturing = false; }
+    BeginBinding(id: string): void {
+        if (!this.opened || !KeyManager.GetBindings().some(binding => binding.ID === id)) return;
+        this.capturing = id; KeyManager.Capturing = true;
+        this.presentation?.Update(this.GetState());
+    }
+    CaptureKey(key: number): void {
+        if (!this.opened || this.capturing === "") return;
+        if (key !== KEY_ESCAPE && !KeyManager.SetBinding(this.capturing, key)) return;
+        this.ignoreEscape = key === KEY_ESCAPE;
+        this.CancelBinding();
+        this.presentation?.Update(this.GetState());
+    }
+    ResetBindings(): void {
+        if (!this.opened) return;
+        this.CancelBinding(); KeyManager.ResetBindings();
+        this.presentation?.Update(this.GetState());
+    }
     Close(): void {
+        this.CancelBinding();
         this.opened = false;
         this.presentation?.Destroy();
         this.presentation = undefined;
@@ -63,7 +85,8 @@ export class SettingsController implements ZPSettingsController {
         this.SyncStaminaMode();
         if (!this.opened)
             return;
-        if (input.IsKeyDown(KEY_ESCAPE))
+        if (!input.IsKeyDown(KEY_ESCAPE)) this.ignoreEscape = false;
+        if (input.IsKeyDown(KEY_ESCAPE) && this.capturing === "" && !this.ignoreEscape)
             this.Close();
         else
             this.presentation?.Update(this.GetState());

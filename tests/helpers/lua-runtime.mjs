@@ -22,6 +22,11 @@ function include(path)
     return assert(load(sources[key], "@" .. key))()
 end
 function SysTime() return 1.25 end
+KEY_LAST,KEY_BACKQUOTE=106,57
+KEY_G=17
+MOUSE_LEFT,MOUSE_RIGHT,MOUSE_MIDDLE,MOUSE_4,MOUSE_5=107,108,109,110,111
+gui={IsGameUIVisible=function() return false end,IsConsoleVisible=function() return false end}
+vgui={GetKeyboardFocus=function() return nil end}
 function AddCSLuaFile() end
 function RunConsoleCommand() end
 function IsValid(value) return value ~= nil and value ~= false end

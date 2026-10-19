@@ -38,6 +38,22 @@ export class VoteMapManager implements ZPVoteMapManager {
         rounds.SetRoundState(ROUND_VOTEMAP);
         rounds.SetTimer(20, () => this.EndVotemap());
         this.SendSnapshot();
+        this.ScheduleBotVotes();
+    }
+    private ScheduleBotVotes(): void {
+        const bots = player.GetBots(), sequence = this.sequence;
+        bots.forEach((bot, index) => {
+            // Spread votes across the open ballot so clients can display each update.
+            timer.Simple(2 + 15 * (index + 1) / (bots.length + 1), () => {
+                if (!this.Voting || CurTime() >= this.deadline || sequence !== this.sequence || !IsValid(bot)) return;
+                const map = this.order[math.random(1, this.order.length) - 1];
+                if (map) this.RecordVote(bot, { Version: 1, ID: sequence, Map: map });
+            });
+        });
+    }
+    private VoterID(ply: ZPServerPlayer): string {
+        // Bots share SteamID64; entity indices distinguish their ballots.
+        return ply.IsBot() ? "bot:" + ply.EntIndex() : ply.SteamID64();
     }
     SendSnapshot(ply?: ZPServerPlayer): void {
         const entries = this.order.map(map => ({ Map: map, Votes: this.MapsToVote[map] ?? 0, Extend: map === game.GetMap() }));
@@ -50,9 +66,13 @@ export class VoteMapManager implements ZPVoteMapManager {
         }
     }
     Vote(ply: ZPServerPlayer, request: ZPMapVoteRequest): void {
-        if (!this.Voting || CurTime() >= this.deadline || request.ID !== this.sequence || !IsValid(ply) || ply.IsBot() ||
+        if (!IsValid(ply) || ply.IsBot()) return;
+        this.RecordVote(ply, request);
+    }
+    private RecordVote(ply: ZPServerPlayer, request: ZPMapVoteRequest): void {
+        if (!this.Voting || CurTime() >= this.deadline || request.ID !== this.sequence || !IsValid(ply) ||
             this.MapsToVote[request.Map] === undefined) return;
-        const id = ply.SteamID64(), previous = this.choices[id];
+        const id = this.VoterID(ply), previous = this.choices[id];
         if (CurTime() < (this.nextVote[id] ?? 0) || previous === request.Map) return;
         this.nextVote[id] = CurTime() + 0.25;
         if (previous) this.MapsToVote[previous] = Math.max(0, (this.MapsToVote[previous] ?? 0) - 1);
@@ -61,7 +81,7 @@ export class VoteMapManager implements ZPVoteMapManager {
         this.SendSnapshot();
     }
     Remove(ply: ZPServerPlayer): void {
-        const id = ply.SteamID64(), previous = this.choices[id];
+        const id = this.VoterID(ply), previous = this.choices[id];
         delete this.choices[id]; delete this.Voters[id]; delete this.nextVote[id];
         if (this.Voting && previous) {
             this.MapsToVote[previous] = Math.max(0, (this.MapsToVote[previous] ?? 0) - 1);

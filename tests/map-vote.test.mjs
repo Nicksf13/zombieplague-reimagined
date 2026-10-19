@@ -22,6 +22,14 @@ function RoundManager:SetTimer(seconds,callback) self.seconds,self.callback=seco
 function RoundManager:AddExtraRounds(count) self.extensions=self.extensions+count end
 function RoundManager:TryNewRound() self.restarted=true end
 player={GetAll=function() return players end}
+player.GetBots=function()
+    local bots={}
+    for _,ply in ipairs(players) do if ply:IsBot() then bots[#bots+1]=ply end end
+    return bots
+end
+local botTimers={}
+timer.Simple=function(delay,callback) botTimers[#botTimers+1]={delay=delay,callback=callback} end
+function IsValid(value) return type(value)=="table" and not value.disconnected end
 local events={}
 net.Send=function(ply) events[#events+1]={ply=ply,snapshot=sent[2]} end
 concommand={Add=function(name,action) commands[name]=action end}
@@ -31,7 +39,8 @@ function SendConsoleMessage(_,text) console=text end
 local changed
 function RunConsoleCommand(command,map) changed={command,map} end
 local function newPlayer(id,bot)
-    local ply={SteamID64=function() return id end,IsBot=function() return bot==true end}
+    local index=#players+1
+    local ply={SteamID64=function() return id end,IsBot=function() return bot==true end,EntIndex=function() return index end}
     players[#players+1]=ply
     return ply
 end
@@ -56,6 +65,41 @@ test("eight eligible maps plus extension prioritize nominations without duplicat
     end
     assert(seen.zm_current)
     local count=#events; ZPVoteMap:StartVotemap(ALLOWED_PREFIX); assert(#events==count)
+`));
+
+test("bots vote independently over time, broadcast live totals and remove only their own ballot", () => run(server + `
+    local bot1,bot2=newPlayer("0",true),newPlayer("0",true)
+    ZPVoteMap:StartVotemap(ALLOWED_PREFIX)
+    assert(#botTimers==2 and botTimers[1].delay>2 and botTimers[2].delay>botTimers[1].delay and botTimers[2].delay<20)
+    local first=events[1].snapshot.Entries[1].Map
+    math.random=function() return 1 end
+    for i,scheduled in ipairs(botTimers) do
+        now=10+scheduled.delay; local count=#events
+        scheduled.callback()
+        assert(ZPVoteMap.MapsToVote[first]==i and #events==count+2)
+        assert(events[#events].snapshot.Entries[1].Votes==i and events[#events].snapshot.Selected=="")
+    end
+    vote(a,first); assert(ZPVoteMap.MapsToVote[first]==3)
+    hooks.PlayerDisconnected.ZPMapVoteDisconnect(bot1)
+    assert(ZPVoteMap.MapsToVote[first]==2)
+    hooks.PlayerDisconnected.ZPMapVoteDisconnect(bot2)
+    assert(ZPVoteMap.MapsToVote[first]==1)
+`));
+
+test("bot callbacks ignore disconnected players, closed ballots, expired deadlines and previous sessions", () => run(server + `
+    local bot=newPlayer("0",true)
+    ZPVoteMap:StartVotemap(ALLOWED_PREFIX)
+    local old=botTimers[1].callback
+    local count=#events
+    bot.disconnected=true; old(); assert(#events==count)
+    bot.disconnected=false
+    now=30; old(); assert(#events==count)
+    ZPVoteMap:EndVotemap()
+    count=#events; old(); assert(#events==count)
+    RoundManager.state=ROUND_PLAYING; now=40
+    ZPVoteMap:StartVotemap(ALLOWED_PREFIX)
+    count=#events; old(); assert(#events==count)
+    botTimers[2].callback(); assert(#events==count+2)
 `));
 
 test("nomination commands validate installed maps, replace per-player choices and lock during the vote", () => run(server + `
