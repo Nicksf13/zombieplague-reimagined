@@ -1,4 +1,4 @@
-type ZPServerCvarGroup = "environment" | "rounds" | "combat" | "movement" | "battery" | "zombies" | "special" | "ammopacks" | "points" | "communication" | "bots" | "statistics";
+type ZPServerCvarGroup = "environment" | "rounds" | "combat" | "movement" | "battery" | "zombies" | "special" | "ammopacks" | "points" | "communication" | "bots" | "statistics" | "radar";
 interface ZPServerCvarCategory { readonly ID: ZPServerCvarGroup; readonly Label: string; readonly SuperAdmin?: boolean; }
 interface ZPServerCvarOption { readonly Value: string; readonly Label: string; }
 type ZPServerCvarApply = "live" | "event" | "spawn" | "phase" | "vote" | "map" | "unused" | "mixed";

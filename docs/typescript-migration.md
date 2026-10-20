@@ -1,8 +1,9 @@
 # Desenvolvimento em TypeScript
 
-A conversão dos fontes para TypeScript está concluída. Após a remoção do menu
-antigo, a adoção da localização nativa, os construtores de conteúdo, os temas de HUD/menu/placar e o controle de ambiente dos mapas, o projeto gera 272 arquivos Lua, incluindo
-módulos extraídos para separar responsabilidades. A validação no Garry's Mod está pendente.
+The gamemode source migration to TypeScript is complete. Runtime Lua files are
+generated from the source mappings in `migration.json`; use the manifest or build
+output for the current file count. Generated code and local simulations do not
+replace validation inside Garry's Mod.
 
 Edite os `.ts` em `src/`. O GMod executa exclusivamente os `.lua` gerados em
 `gamemodes/`, nos caminhos existentes. A analogia com `.class` ajuda a distinguir
@@ -54,6 +55,9 @@ correspondem à cópia antiga do Workshop. Confira qual versão está montada an
 de alterar os fontes ou copiar arquivos isolados.
 
 ## Organização
+
+The [radar guide](radar.md) documents activation modes, both extra-item shops,
+server-authoritative detection, and in-game overview generation.
 
 A raiz de `src/gamemodes/zombieplague/gamemode/` contém somente os pontos de
 entrada `init.ts`, `cl_init.ts` e `shared.ts`. Os demais fontes estão agrupados

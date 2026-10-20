@@ -120,11 +120,13 @@ export class MapLightingController implements MapLightingContract {
     }
 
     // Nightvision supplies local projected light; it must not restore daytime.
-    ApplyMaterials(): void { this.SetMaterialScale(this.scale); }
+    ApplyMaterials(): void {
+        this.SetMaterialScale(hook.Call("ZPRadarCaptureLighting", GAMEMODE) === true ? 1 : this.scale);
+    }
     Restore(): void { this.EndModels(); this.SetMaterialScale(1); }
 
     BeginModels(drawingDepth: boolean): void {
-        if (drawingDepth || this.scale >= 1)
+        if (drawingDepth || this.scale >= 1 || hook.Call("ZPRadarCaptureLighting", GAMEMODE) === true)
             return;
         // Replace baked model lighting, without tinting the model's texture or
         // multiplying its projected-flashlight pass. Never leak into HUD/menus.

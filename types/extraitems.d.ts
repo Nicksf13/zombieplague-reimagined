@@ -1,4 +1,6 @@
 interface ZPRegisteredExtraItem extends ZPExtraItem {
+    /** Keep dynamic registrations discoverable when their feature is currently disabled. */
+    RegisterWhenDisabled?: boolean;
     ID: string;
     Name: string;
     Price: number;

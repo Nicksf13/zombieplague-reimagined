@@ -1,0 +1,39 @@
+{
+  "Material": "zombieplague/radar/zm_street.png",
+  "X": -1584,
+  "Y": 1686,
+  "Scale": 3.515625,
+  "Size": 1024,
+  "Layers": [
+    {
+      "Material": "zombieplague/radar/zm_street_level_1.png",
+      "MinZ": -1000000,
+      "MaxZ": -169.3862429988328
+    },
+    {
+      "Material": "zombieplague/radar/zm_street_level_2.png",
+      "MinZ": -169.3862429988328,
+      "MaxZ": -68.75614064861345
+    },
+    {
+      "Material": "zombieplague/radar/zm_street_level_3.png",
+      "MinZ": -68.75614064861345,
+      "MaxZ": 67.04733760896892
+    },
+    {
+      "Material": "zombieplague/radar/zm_street_level_4.png",
+      "MinZ": 67.04733760896892,
+      "MaxZ": 159.46958255584235
+    },
+    {
+      "Material": "zombieplague/radar/zm_street_level_5.png",
+      "MinZ": 159.46958255584235,
+      "MaxZ": 412.02852091475614
+    },
+    {
+      "Material": "zombieplague/radar/zm_street_level_6.png",
+      "MinZ": 412.02852091475614,
+      "MaxZ": 1000000
+    }
+  ]
+}

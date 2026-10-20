@@ -36,6 +36,7 @@ SWEP.UpdateNextIdle = function (): void {
 SWEP.PrimaryAttack = function (right): void {
     if (!IsValid(this.Owner))
         return;
+    if (SERVER && this.Owner.IsPlayer()) hook.Call("ZPRadarMelee", GAMEMODE, this.Owner);
     this.Owner.SetAnimation(PLAYER_ATTACK1);
     const anim = this.GetCombo() >= 2 ? "fists_uppercut" : right ? "fists_right" : "fists_left", vm = this.Owner.GetViewModel();
     vm.SendViewModelMatchingSequence(vm.LookupSequence(anim));

@@ -12,6 +12,8 @@ clientPlayer.SetZombieClass({ Name: "Fast Zombie" });
 clientPlayer.GiveAmmoPacks(10);
 // @ts-expect-error Client code cannot send packets to another player.
 net.Send(clientPlayer);
+// @ts-expect-error util.IsInWorld is server-only; client authoring uses collision traces.
+util.IsInWorld(Vector(0, 0, 0));
 // @ts-expect-error Per-player HUD position configuration was removed.
 HudManager.GetConfig("Status", "XPos");
 // @ts-expect-error HUD renderers cannot change the collected weapon ammo.

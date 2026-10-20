@@ -5,6 +5,7 @@ export class ExtraItemDefinition implements ZPRegisteredExtraItem {
     OnBuy: ZPRegisteredExtraItem["OnBuy"];
     Type?: 0 | 1;
     Order: number = 100;
+    RegisterWhenDisabled?: boolean;
     BuySounds?: string[];
     RemoveFunction?: (this: void) => void;
 

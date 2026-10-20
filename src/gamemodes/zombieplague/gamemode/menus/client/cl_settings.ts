@@ -19,7 +19,8 @@ export class SettingsController implements ZPSettingsController {
     GetState(): ZPSettingsState {
         this.SyncStaminaMode();
         return { Open: this.opened, Theme: ZPThemes.GetActiveID(), Themes: ZPThemes.GetThemes(),
-            AlwaysRun: this.alwaysRun.GetBool(), Bindings: KeyManager.GetBindings(), Capturing: this.capturing };
+            AlwaysRun: this.alwaysRun.GetBool(), RadarVisible: _G.ZPRadar?.IsVisible() ?? true,
+            Bindings: KeyManager.GetBindings(), Capturing: this.capturing };
     }
 
     Open(): void {
@@ -48,6 +49,10 @@ export class SettingsController implements ZPSettingsController {
     }
 
     UseTheme(id: string): void { if (this.opened) ZPThemes.UseTheme(id); }
+    SetRadarVisible(enabled: boolean): void {
+        _G.ZPRadar?.SetVisible(enabled);
+        this.presentation?.Update(this.GetState());
+    }
     SetAlwaysRun(enabled: boolean): void {
         const staminaMode = this.SyncStaminaMode();
         if (enabled && !this.alwaysRun.GetBool() && staminaMode)

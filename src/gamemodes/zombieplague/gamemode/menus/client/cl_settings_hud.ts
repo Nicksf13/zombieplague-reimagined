@@ -134,6 +134,14 @@ export class SettingsHUD implements ZPSettingsPresentation {
                 "Trebuchet18", w - 112, 13, this.palette.Accent);
             this.Text("zombieplague.settingsalwaysrunhelp", "DermaDefault", 12, 48, this.palette.Muted);
         };
+        const radar = this.Button(content, "", 0, gameplayY + 122, rowWidth, 42,
+            () => actions.SetRadarVisible(!(this.state?.RadarVisible ?? true)));
+        radar.Paint = (w, h) => {
+            draw.RoundedBox(this.square ? 0 : 4, 0, 0, w, h, radar.IsHovered() ? this.palette.Surface : this.palette.Panel);
+            this.Text("zombieplague.radarshow", "ZPMenuOptionTitle", 12, 10);
+            this.Text(this.state?.RadarVisible ? "zombieplague.settingsenabled" : "zombieplague.settingsdisabled",
+                "Trebuchet18", w - 112, 13, this.palette.Accent);
+        };
     }
 
     Update(state: ZPSettingsState): void { if (this.actions) this.UpdateContent(state, this.actions); }
