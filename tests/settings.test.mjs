@@ -41,7 +41,7 @@ test("always run is an archived local preference shared by reopened settings con
     ZPSettings:Open()
     local first=activeFrame()
     local content=first.children[3]
-    content.children[#content.children]:DoClick()
+    content.children[#content.children-1]:DoClick()
     assert(ZPSettings:GetState().AlwaysRun and requests==0)
     local count=#panels
     hooks.Think.ZPSettingsController(); assert(#panels==count)
@@ -60,6 +60,18 @@ test("always run is an archived local preference shared by reopened settings con
     hooks.Think.ZPSettingsController()
     assert(not ZPSettings:GetState().Open)
     for _,panel in ipairs(panels) do assert(panel.removed) end
+`));
+
+test("personal radar visibility is available from gameplay settings", () => run(setup + `
+    local visible=true
+    ZPRadar={IsVisible=function() return visible end,SetVisible=function(_,value) visible=value end}
+    ZPSettings:Open()
+    local content=activeFrame().children[3]
+    assert(ZPSettings:GetState().RadarVisible)
+    content.children[#content.children]:DoClick()
+    assert(not visible and not ZPSettings:GetState().RadarVisible)
+    content.children[#content.children]:DoClick()
+    assert(visible and ZPSettings:GetState().RadarVisible)
 `));
 
 test("always run adds only sprint while alive, preserving manual input when disabled", () => run(setup + `
@@ -101,7 +113,7 @@ test("stamina modes disable saved always run and warn only on explicit activatio
         assert(not ZPSettings:GetState().AlwaysRun and #notices==count)
         ZPSettings:Open()
         local content=activeFrame().children[3]
-        content.children[#content.children]:DoClick()
+        content.children[#content.children-1]:DoClick()
         assert(ZPSettings:GetState().AlwaysRun and #notices==count+1)
         assert(notices[#notices]=="zombieplague.settingsalwaysrunstaminawarning")
         hooks.CreateMove.ZPAlwaysRun(command)

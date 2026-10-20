@@ -7,9 +7,11 @@ let ActivationAction = function (this: void, ply: ZPServerPlayer) {
     ply.SetupHands();
     ply.SetAuxGravity(AuxClass.Gravity);
     ply.Give(ZOMBIE_KNIFE);
+    hook.Run("ZPCamouflageChanged", ply, true);
 };
 
 let ResetAction = function (this: void, ply: ZPServerPlayer) {
+    hook.Run("ZPCamouflageChanged", ply, false);
     let ZPClass = ply.GetHumanClass();
     ply.SetHealth(ZPClass.MaxHealth);
     ply.SetWalkSpeed(ZPClass.Speed);

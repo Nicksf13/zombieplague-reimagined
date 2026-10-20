@@ -17,8 +17,12 @@ local receivers, commands, registered, timers, sent, hooks = {}, {}, {}, {}, {},
 TEAM_HUMANS, TEAM_ZOMBIES, TEAM_SPECTATOR = 3, 2, 1002
 ZOMBIE_KNIFE, BOT_MODE, ROUND_PLAYING = "zp_weapon_fists", true, 2
 function include(path)
-    local key = sources[path] and path or "zombieplague/gamemode/" .. path
-    assert(sources[key], "Missing include " .. path)
+    -- GMod resolves relative includes against the calling Lua file, not the gamemode root.
+    -- https://wiki.facepunch.com/gmod/Global.include
+    local caller = debug.getinfo(2,"S").source
+    local directory = caller:match("^@(.*/)[^/]+$") or "zombieplague/gamemode/"
+    local key = sources[path] and path or directory .. path
+    assert(sources[key], "Missing include " .. key)
     return assert(load(sources[key], "@" .. key))()
 end
 function SysTime() return 1.25 end
@@ -54,7 +58,11 @@ Commands = { AddCommand = function(self, aliases, description, action)
     for _,name in ipairs(aliases) do commands[name]=action end
 end }
 ConvarManager = { CreateConVar = function() end }
-cvars = { Number = function(_, default) return default end, Bool = function(_, default) return default end }
+cvars = { Number = function(_, default) return default end, Bool = function(_, default) return default end,
+    AddChangeCallback = function() end }
+ZPRadar = {Available=function() return false end,CanBuy=function() return false end,
+    IsVisible=function() return true end,SetVisible=function() end}
+ZPDecoy = {CanBuy=function() return false end,Give=function() end}
 net = {
     Receive=function(name, callback) receivers[name]=callback end,
     Start=function(name) sent={name} end, WriteString=function(value) sent[#sent+1]=value end,
@@ -66,6 +74,9 @@ net = {
 util = {AddNetworkString=function(name) registered[name]=true end}
 hook = {
     Add=function(name,id,callback) hooks[name]=hooks[name] or {}; hooks[name][id]=callback end,
+    Call=function(name,gm,...) for _,callback in pairs(hooks[name] or {}) do
+        local value=callback(...); if value~=nil then return value end
+    end end,
     Remove=function(name,id) if hooks[name] then hooks[name][id]=nil end end,
     Run=function(name,...) for _,callback in pairs(hooks[name] or {}) do callback(...) end end
 }

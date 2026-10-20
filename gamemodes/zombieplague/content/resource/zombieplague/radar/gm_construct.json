@@ -1,0 +1,169 @@
+{
+  "Material": "zombieplague/radar/gm_construct.png",
+  "X": -6984,
+  "Y": 6624,
+  "Scale": 10.25,
+  "Size": 1024,
+  "Layers": [
+    {
+      "Material": "zombieplague/radar/gm_construct_level_1.png",
+      "MinZ": -1000000,
+      "MaxZ": -455.7493058489529
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_2.png",
+      "MinZ": -455.7493058489529,
+      "MaxZ": -327.74930584895293
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_3.png",
+      "MinZ": -327.74930584895293,
+      "MaxZ": -201.0409129820461
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_4.png",
+      "MinZ": -201.0409129820461,
+      "MaxZ": -120.94857212546704
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_5.png",
+      "MinZ": -120.94857212546704,
+      "MaxZ": -63.65720686777165
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_6.png",
+      "MinZ": -63.65720686777165,
+      "MaxZ": 14.30296678759328
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_7.png",
+      "MinZ": 14.30296678759328,
+      "MaxZ": 94.44105690552385
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_8.png",
+      "MinZ": 94.44105690552385,
+      "MaxZ": 192.59872749663992
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_9.png",
+      "MinZ": 192.59872749663992,
+      "MaxZ": 330.86448693343345
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_10.png",
+      "MinZ": 330.86448693343345,
+      "MaxZ": 467.0661938878686
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_11.png",
+      "MinZ": 467.0661938878686,
+      "MaxZ": 592.8550341149903
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_12.png",
+      "MinZ": 592.8550341149903,
+      "MaxZ": 713.274279216097
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_13.png",
+      "MinZ": 713.274279216097,
+      "MaxZ": 841.2742792160975
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_14.png",
+      "MinZ": 841.2742792160975,
+      "MaxZ": 976.8550688174392
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_15.png",
+      "MinZ": 976.8550688174392,
+      "MaxZ": 1088.405724968325
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_16.png",
+      "MinZ": 1088.405724968325,
+      "MaxZ": 1212.555559159901
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_17.png",
+      "MinZ": 1212.555559159901,
+      "MaxZ": 1356.8851687398314
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_18.png",
+      "MinZ": 1356.8851687398314,
+      "MaxZ": 1488.6584451568797
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_19.png",
+      "MinZ": 1488.6584451568797,
+      "MaxZ": 1616.7013247371365
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_20.png",
+      "MinZ": 1616.7013247371365,
+      "MaxZ": 1737.1797405244524
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_21.png",
+      "MinZ": 1737.1797405244524,
+      "MaxZ": 1865.1797405244524
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_22.png",
+      "MinZ": 1865.1797405244524,
+      "MaxZ": 2000.701324737136
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_23.png",
+      "MinZ": 2000.701324737136,
+      "MaxZ": 2128.7012893581277
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_24.png",
+      "MinZ": 2128.7012893581277,
+      "MaxZ": 2249.179703589545
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_25.png",
+      "MinZ": 2249.179703589545,
+      "MaxZ": 2373.6884183221623
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_26.png",
+      "MinZ": 2373.6884183221623,
+      "MaxZ": 2468.8749667221764
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_27.png",
+      "MinZ": 2468.8749667221764,
+      "MaxZ": 2528.2496330168688
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_28.png",
+      "MinZ": 2528.2496330168688,
+      "MaxZ": 2592.2496330168683
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_29.png",
+      "MinZ": 2592.2496330168683,
+      "MaxZ": 2656.2496330168688
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_30.png",
+      "MinZ": 2656.2496330168688,
+      "MaxZ": 2766.8837793583307
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_31.png",
+      "MinZ": 2766.8837793583307,
+      "MaxZ": 2910.665396341461
+    },
+    {
+      "Material": "zombieplague/radar/gm_construct_level_32.png",
+      "MinZ": 2910.665396341461,
+      "MaxZ": 1000000
+    }
+  ]
+}

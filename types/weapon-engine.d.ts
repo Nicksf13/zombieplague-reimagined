@@ -64,7 +64,10 @@ type ZPGrenadeMode = 0 | 1 | 2;
 interface ZPGrenade extends GLuaEntity {
     Type: string; Base: string; PrintName: string; Author: string; Category: string;
     Mode: ZPGrenadeMode; ExplosionDelay: number; Armed?: boolean; Timer?: string; FirstThink?: boolean;
-    BaseClass: { Initialize: (this: void, entity: ZPGrenade) => void };
+    BaseClass: {
+        Initialize: (this: void, entity: ZPGrenade) => void;
+        PhysicsCollide: (this: void, entity: ZPGrenade, data: unknown, physics: GLuaPhysics) => void;
+    };
     Initialize(this: ZPGrenade): void;
     PhysicsCollide(this: ZPGrenade, data: unknown, physics: GLuaPhysics): void;
     SetMode(this: ZPGrenade, mode: ZPGrenadeMode): void;

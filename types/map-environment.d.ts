@@ -52,5 +52,5 @@ declare namespace hook {
         callback: (this: void, entity: GLuaEntity, input: string, activator: GLuaEntity,
             caller: GLuaEntity, value: string | number | boolean | undefined) => true | undefined): void;
     function Add(name: "ZPPlayerEnvironmentReady", id: string,
-        callback: (this: void, player: ZPPlayer) => void): void;
+        callback: (this: void, player: ZPServerPlayer) => void): void;
 }

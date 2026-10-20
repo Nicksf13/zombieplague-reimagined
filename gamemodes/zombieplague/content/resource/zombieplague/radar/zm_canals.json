@@ -1,0 +1,49 @@
+{
+  "Material": "zombieplague/radar/zm_canals.png",
+  "X": -790,
+  "Y": 2102,
+  "Scale": 4.32421875,
+  "Size": 1024,
+  "Layers": [
+    {
+      "Material": "zombieplague/radar/zm_canals_level_1.png",
+      "MinZ": -1000000,
+      "MaxZ": 29.34881624059039
+    },
+    {
+      "Material": "zombieplague/radar/zm_canals_level_2.png",
+      "MinZ": 29.34881624059039,
+      "MaxZ": 94.99725567826978
+    },
+    {
+      "Material": "zombieplague/radar/zm_canals_level_3.png",
+      "MinZ": 94.99725567826978,
+      "MaxZ": 193.95605067251043
+    },
+    {
+      "Material": "zombieplague/radar/zm_canals_level_4.png",
+      "MinZ": 193.95605067251043,
+      "MaxZ": 288.2803675748859
+    },
+    {
+      "Material": "zombieplague/radar/zm_canals_level_5.png",
+      "MinZ": 288.2803675748859,
+      "MaxZ": 355.6220650994171
+    },
+    {
+      "Material": "zombieplague/radar/zm_canals_level_6.png",
+      "MinZ": 355.6220650994171,
+      "MaxZ": 420.50668987201766
+    },
+    {
+      "Material": "zombieplague/radar/zm_canals_level_7.png",
+      "MinZ": 420.50668987201766,
+      "MaxZ": 480.83701023930973
+    },
+    {
+      "Material": "zombieplague/radar/zm_canals_level_8.png",
+      "MinZ": 480.83701023930973,
+      "MaxZ": 1000000
+    }
+  ]
+}

@@ -91,6 +91,17 @@ test(`${shader} static buildings follow darkness and restore at noon without tin
     assert(materials.model.values["$color2"].x==1 and materials.sky.values["$color2"].x==1)
 `));
 
+test("radar authoring temporarily restores world colors and avoids dark model passes", () => run(setup + `
+    receive("b",0,false);assert(materials.wall.values["$color2"].x==0)
+    hook.Add("ZPRadarCaptureLighting","test",function() return true end)
+    apply();near(materials.wall.values["$color2"].x,0.8)
+    hooks.PreDrawOpaqueRenderables.ZPMapEnvironment(false);assert(not suppressed)
+    hook.Remove("ZPRadarCaptureLighting","test")
+    apply();assert(materials.wall.values["$color2"].x==0)
+    hooks.PreDrawOpaqueRenderables.ZPMapEnvironment(false);assert(suppressed)
+    hooks.PostDrawOpaqueRenderables.ZPMapEnvironment();assert(not suppressed)
+`));
+
 test("map material darkness scopes changes to supported world shaders and keeps original tints", () => run(setup + `
     apply(); assert(writes==0 and scans==0)
     receive("b",1,true)

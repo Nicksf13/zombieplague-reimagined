@@ -5,7 +5,8 @@ import { run } from "./helpers/lua-runtime.mjs";
 
 test("all supported weapon packs load explicit families, including scoped and fictional variants", () => {
     const root = new URL("../src/gamemodes/zombieplague/gamemode/weapons/server/", import.meta.url);
-    const registrations = readdirSync(root, { recursive: true }).filter(path => /[/\\]/.test(path) && path.endsWith(".ts"));
+    const registrations = readdirSync(root, { recursive: true }).filter(path => /[/\\]/.test(path) &&
+        path.endsWith(".ts") && !/(?:^|[/\\])sv_/.test(path));
     const ids = registrations.map(path => {
         const source = readFileSync(new URL(path.replaceAll("\\", "/"), root), "utf8");
         assert.match(source, /Family: "[a-z]+"/);

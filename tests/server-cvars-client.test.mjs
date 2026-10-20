@@ -52,7 +52,7 @@ test("server settings navigate all categories and label controls with friendly a
     ZPAdminMenu:Open(); ZPAdminMenu:Navigate("settings")
     local buttons={}
     for _,child in ipairs(frame().children[3].children) do if child.kind=="DButton" then buttons[#buttons+1]=child end end
-    assert(#buttons==12)
+    assert(#buttons==13)
     buttons[4]:DoClick(); assert(ZPAdminMenu:GetState().Page=="cvars" and requests==1)
     replyCvars()
     local labels=live("DLabel"); local found=false
@@ -63,6 +63,18 @@ test("server settings navigate all categories and label controls with friendly a
     ZPAdminMenu:Back(); assert(ZPAdminMenu:GetState().Page=="settings")
     ZPAdminMenu:OpenCvars(0); assert(ZPAdminMenu:GetState().Page=="environment")
     assert(sent[1]=="ZPAdminSettingsRequest")
+`));
+
+test("radar activation exposes all three modes through themed native controls", () => run(setup + `
+    for _,theme in ipairs({"classic","hl2","cs16"}) do
+        ZPThemes:UseTheme(theme); now=now+1; open("radar"); replyCvars()
+        local combos=live("DComboBox")
+        assert(#combos==1 and #combos[1].choices==3)
+        assert(combos[1].Paint and combos[1].OnMenuOpened,"Radar activation must use themed combo helpers")
+        ZPAdminMenu:SetCvar(field("radar","zp_radar_mode"),"1")
+        assert(ZPAdminMenu:GetState().Cvars.Dirty)
+        ZPAdminMenu:Close()
+    end
 `));
 
 test("cached settings expose a themed reload confirmation after save and cancel sends nothing", () => run(setup + `

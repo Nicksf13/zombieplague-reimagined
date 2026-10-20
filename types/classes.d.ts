@@ -137,3 +137,9 @@ declare namespace timer {
     function Destroy(name: string): void;
 }
 interface ZPGlobals { ClassManager: ZPServerClassManager; ZPClass: ZPClassDefinition; }
+/** @noSelf */
+declare namespace hook {
+    function Run(name: "ZPCamouflageChanged", player: ZPServerPlayer, active: boolean): void;
+    function Add(name: "ZPCamouflageChanged", id: string,
+        callback: (this: void, player: ZPServerPlayer, active: boolean) => void): void;
+}

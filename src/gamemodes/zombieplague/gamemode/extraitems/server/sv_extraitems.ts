@@ -18,7 +18,7 @@ export class ExtraItemsManager implements ZPServerExtraItemsManager {
             const loaded = include(path);
             const exported = typeof loaded === "object" && loaded !== null && "default" in loaded ? loaded.default : loaded;
             const item = exported instanceof ExtraItemDefinition ? exported : ExtraItem;
-            if (item.ShouldBeEnabled()) {
+            if (item.ShouldBeEnabled() || (isRegistered(item) && item.RegisterWhenDisabled)) {
                 if (isRegistered(item))
                     this.AddExtraItem(item, item.Type);
                 else

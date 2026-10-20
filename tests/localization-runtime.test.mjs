@@ -4,6 +4,36 @@ import test from "node:test";
 import { run } from "./helpers/lua-runtime.mjs";
 import { books, locales, nativeLanguage } from "./helpers/native-localization.mjs";
 
+test("decoy item and weapon instructions are translated in every native catalog", () => {
+    for (const locale of locales) for (const key of ["extraitemdecoyname", "decoyinstructions"]) {
+        const phrase = books[locale]["zombieplague." + key];
+        assert(phrase?.trim(), `${locale}: missing ${key}`);
+        assert.deepEqual(phrase.match(/%[sdif]/g) ?? [], [], `${locale}: ${key}`);
+    }
+});
+
+test("the allied radar toggle is translated without format parameters in every catalog", () => {
+    for (const locale of locales) {
+        const phrase = books[locale]["zombieplague.radarallies"];
+        assert(phrase?.trim(), `${locale}: missing allied radar label`);
+        assert.deepEqual(phrase.match(/%[sdif]/g) ?? [], [], locale);
+    }
+});
+
+test("radar authoring notices are translated in every catalog", () => {
+    for (const locale of locales)
+        for (const key of ["radarcapturepermission", "radarcapturestarted", "radarcapturesaved", "radarcapturefailed", "radarcapturecancelled"])
+            assert(books[locale]["zombieplague." + key]?.trim(), `${locale}: missing ${key}`);
+});
+
+test("radar floor labels resolve with the same two numeric parameters in every catalog", () => {
+    for (const locale of locales) {
+        const phrase = books[locale]["zombieplague.radarlevel"];
+        assert(phrase?.trim(), `${locale}: missing radar floor label`);
+        assert.deepEqual(phrase.match(/%[sdif]/g), ["%d", "%d"], locale);
+    }
+});
+
 test("keyboard settings labels and capture instructions resolve in all catalogs", () => {
     for (const locale of locales)
         for (const key of ["settingskeys", "settingskeyshelp", "settingskeypress", "settingskeysreset"])

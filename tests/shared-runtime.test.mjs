@@ -7,7 +7,7 @@ import fengari from "fengari";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const { lua, lauxlib, lualib, to_luastring } = fengari;
-const names = ["init", "shared", "sh_roundmanager", "sh_player", "sh_bank", "sh_playermanager", "sh_weapon_menu_protocol", "sh_class_menu_protocol", "sh_extra_menu_protocol", "sh_map_vote_protocol", "sh_admin_config", "sh_server_cvars", "sh_server_cvar_catalog", "sh_bot_metrics_protocol", "sh_bot_motion_protocol", "sh_bot_place_protocol", "sh_bot_boost_protocol", "sh_bot_boost_rules"];
+const names = ["init", "shared", "sh_roundmanager", "sh_player", "sh_bank", "sh_playermanager", "sh_weapon_menu_protocol", "sh_class_menu_protocol", "sh_extra_menu_protocol", "sh_map_vote_protocol", "sh_admin_config", "sh_server_cvars", "sh_server_cvar_catalog", "sh_radar_rules", "sh_bot_metrics_protocol", "sh_bot_motion_protocol", "sh_bot_place_protocol", "sh_bot_boost_protocol", "sh_bot_boost_rules"];
 const files = Object.fromEntries(await Promise.all(names.map(async name => [
     `${name}.lua`, await readFile(path.join(root, "gamemodes/zombieplague/gamemode", `${name}.lua`), "utf8"),
 ])));
@@ -150,7 +150,7 @@ for (const server of [true, false]) {
         assert(GM.Name == "Zombie Plague (For GMOD)")
         assert(TEAM_HUMANS == 3 and TEAM_ZOMBIES == 2)
         assert(ROUND_WAITING_PLAYERS == 0 and ROUND_CHANGING_MAP == 6)
-        assert(table.concat(includeOrder, ",") == "shared.lua,sh_roundmanager.lua,sh_player.lua,sh_bank.lua,sh_playermanager.lua,sh_weapon_menu_protocol.lua,sh_class_menu_protocol.lua,sh_extra_menu_protocol.lua,sh_map_vote_protocol.lua,sh_admin_config.lua,sh_server_cvars.lua,sh_server_cvar_catalog.lua,sh_bot_metrics_protocol.lua,sh_bot_motion_protocol.lua,sh_bot_place_protocol.lua,sh_bot_boost_protocol.lua,sh_bot_boost_rules.lua")
+        assert(table.concat(includeOrder, ",") == "shared.lua,sh_roundmanager.lua,sh_player.lua,sh_bank.lua,sh_playermanager.lua,sh_weapon_menu_protocol.lua,sh_class_menu_protocol.lua,sh_extra_menu_protocol.lua,sh_map_vote_protocol.lua,sh_admin_config.lua,sh_server_cvars.lua,sh_server_cvar_catalog.lua,sh_radar_rules.lua,sh_bot_metrics_protocol.lua,sh_bot_motion_protocol.lua,sh_bot_place_protocol.lua,sh_bot_boost_protocol.lua,sh_bot_boost_rules.lua")
         assert(PLAYER == nil, "Player metatable alias leaked into globals")
         assert(#ZombieKnifeSound == 2 and NIGHTVISION_COLOR.g == 255)
         assert(convars.zp_givetake_ammopacks_allowed.value == "1")
@@ -258,7 +258,7 @@ const serverSetup = `
         "sv_player.lua", "sv_localization.lua", "sv_message.lua", "sv_classmanager.lua",
         "sv_roundmanager.lua", "sv_eventmanager.lua", "sv_player_participation.lua", "sv_infectionmanager.lua",
         "sv_weaponmanager.lua", "sv_weapon_menu.lua", "sv_class_menu_apply.lua", "sv_class_menu.lua", "sv_extraitems.lua", "sv_extra_menu.lua", "sv_particlemanager.lua",
-        "sv_votemap.lua", "sv_map_nominations.lua", "sv_mapmanager.lua", "sv_map_environment.lua", "sv_admin_settings.lua", "sv_bank.lua", "sv_bots.lua", "sv_server_cvars.lua", "sv_dance.lua"
+        "sv_votemap.lua", "sv_map_nominations.lua", "sv_mapmanager.lua", "sv_map_environment.lua", "sv_radar.lua", "sv_decoy.lua", "sv_admin_settings.lua", "sv_bank.lua", "sv_bots.lua", "sv_server_cvars.lua", "sv_dance.lua"
     }
     for _, name in ipairs(expectedServerIncludes) do
         legacyIncludes[name] = function() assert(BOT_MODE == true) end
@@ -355,7 +355,7 @@ const runServer = scenario => runLua(scenario, true, { entry: "init.lua", setup:
 
 test("server init preserves include order, client downloads and network registration", () => runServer(`
     assert(BOT_MODE == true)
-    local expectedIncludes = {"init.lua", "shared.lua", "sh_roundmanager.lua", "sh_player.lua", "sh_bank.lua", "sh_playermanager.lua", "sh_weapon_menu_protocol.lua", "sh_class_menu_protocol.lua", "sh_extra_menu_protocol.lua", "sh_map_vote_protocol.lua", "sh_admin_config.lua", "sh_server_cvars.lua", "sh_server_cvar_catalog.lua", "sh_bot_metrics_protocol.lua", "sh_bot_motion_protocol.lua", "sh_bot_place_protocol.lua", "sh_bot_boost_protocol.lua", "sh_bot_boost_rules.lua"}
+    local expectedIncludes = {"init.lua", "shared.lua", "sh_roundmanager.lua", "sh_player.lua", "sh_bank.lua", "sh_playermanager.lua", "sh_weapon_menu_protocol.lua", "sh_class_menu_protocol.lua", "sh_extra_menu_protocol.lua", "sh_map_vote_protocol.lua", "sh_admin_config.lua", "sh_server_cvars.lua", "sh_server_cvar_catalog.lua", "sh_radar_rules.lua", "sh_bot_metrics_protocol.lua", "sh_bot_motion_protocol.lua", "sh_bot_place_protocol.lua", "sh_bot_boost_protocol.lua", "sh_bot_boost_rules.lua"}
     for _, name in ipairs(expectedServerIncludes) do expectedIncludes[#expectedIncludes + 1] = name end
     assert(table.concat(includeOrder, ",") == table.concat(expectedIncludes, ","))
     local expectedClientFiles = {
@@ -369,6 +369,8 @@ test("server init preserves include order, client downloads and network registra
         "sh_bot_metrics_protocol.lua", "sh_bot_statistics_analysis.lua", "cl_bot_statistics.lua", "cl_bot_statistics_hud.lua", "cl_bot_statistics_graph.lua", "sh_bot_motion_protocol.lua", "sh_bot_place_protocol.lua", "sh_bot_boost_protocol.lua", "sh_bot_boost_rules.lua", "cl_bot_boost.lua", "cl_bot_boost_hud.lua", "cl_bot_boost_markers.lua", "cl_bot_boost_preview.lua", "cl_bot_boost_presentation.lua", "cl_bot_boost_screen.lua", "cl_bot_metrics.lua", "cl_bot_population.lua", "cl_bot_population_hud.lua", "cl_bot_metrics_hud.lua",
         "cl_bot_metrics_card.lua", "cl_bot_decision_graph.lua", "cl_bot_motion_hud.lua",
         "cl_map_environment.lua", "cl_map_material_catalog.lua",
+        "sh_radar_rules.lua", "cl_radar.lua", "cl_radar_hud.lua",
+        "cl_radar_capture.lua", "cl_radar_capture_analysis.lua", "cl_radar_capture_plan.lua", "cl_radar_capture_floors.lua", "cl_radar_capture_skybox.lua", "cl_radar_capture_render.lua",
     }
     assert(table.concat(clientFiles, ",") == table.concat(expectedClientFiles, ","))
     assert(table.concat(networkStrings, ",") == "RequestServerStatus,SendServerStatus")

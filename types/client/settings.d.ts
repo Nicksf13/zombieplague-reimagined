@@ -3,12 +3,14 @@ interface ZPSettingsState {
     readonly Theme: string;
     readonly Themes: readonly { readonly ID: string; readonly Name: string; }[];
     readonly AlwaysRun: boolean;
+    readonly RadarVisible: boolean;
     readonly Bindings: readonly ZPKeyBinding[];
     readonly Capturing: string;
 }
 interface ZPSettingsActions {
     UseTheme(this: ZPSettingsActions, id: string): void;
     SetAlwaysRun(this: ZPSettingsActions, enabled: boolean): void;
+    SetRadarVisible(this: ZPSettingsActions, enabled: boolean): void;
     BeginBinding(this: ZPSettingsActions, id: string): void;
     CaptureKey(this: ZPSettingsActions, key: number): void;
     ResetBindings(this: ZPSettingsActions): void;

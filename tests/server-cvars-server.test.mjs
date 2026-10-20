@@ -61,6 +61,25 @@ local function confirm(group,revision,token,player,length)
 end
 `;
 
+test("administrators can change radar activation without reload and invalid modes cannot be saved", () => run(setup + `
+    ply.superadmin=false
+    assert(request("radar",{{"zp_radar_mode","1"}})[5]==1)
+    assert(convars.zp_radar_mode.value=="1" and #writes==1)
+    local revision=request("radar")[6]
+    assert(request("radar",{{"zp_radar_mode","3"}},revision)[5]==2)
+    assert(convars.zp_radar_mode.value=="1" and #writes==1)
+`));
+
+test("administrators can toggle allied radar contacts live using the audited settings menu", () => run(setup + `
+    ply.superadmin=false
+    assert(convars.zp_radar_allies.value=="1")
+    assert(request("radar",{{"zp_radar_allies","0"}})[5]==1)
+    assert(convars.zp_radar_allies.value=="0" and #writes==1 and #reloads==0)
+    local revision=request("radar")[6]
+    assert(request("radar",{{"zp_radar_allies","2"}},revision)[5]==2)
+    assert(convars.zp_radar_allies.value=="0" and #writes==1)
+`));
+
 test("server cvar RPC authenticates before reads and restricts bot configuration to superadmins", () => run(setup + `
     ply.admin=false; request("movement"); request("movement",{{"zp_run_should_drain","1"}})
     assert(reads==0 and #writes==0 and #sent==0)

@@ -9,12 +9,12 @@ const inventory = await serverCvarInventory();
 const luaString = value => JSON.stringify(value.replaceAll("\\", "/"));
 
 test("server settings cover every actual server cvar and preserve its registered default", () => {
-    assert.equal(inventory.length, 104);
-    assert.equal(inventory.filter(row => row.Managed).length, 97);
+    assert.equal(inventory.length, 114);
+    assert.equal(inventory.filter(row => row.Managed).length, 107);
     const expected = inventory.map(row => `[${luaString(row.Name)}]=${luaString(row.Default)}`).join(",");
     run(setup + `
         local expected={${expected}}; local seen,categories={},{}
-        assert(#ZPServerCvars.Categories==12 and #ZPServerCvars.Entries==104)
+        assert(#ZPServerCvars.Categories==13 and #ZPServerCvars.Entries==114)
         for _,category in ipairs(ZPServerCvars.Categories) do
             assert(not categories[category.ID] and #ZPServerCvars.ForCategory(category.ID)>0)
             categories[category.ID]=true
