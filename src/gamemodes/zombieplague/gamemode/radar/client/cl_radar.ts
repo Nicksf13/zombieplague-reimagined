@@ -44,7 +44,8 @@ class RadarClient implements ZPRadarClient {
             ply.GetMoveType() === MOVETYPE_LADDER || ply.GetMoveType() === MOVETYPE_NOCLIP))
             this.layer = ZPRadarRules.Layer(overview, position.z, this.layer);
         const image = this.layer === undefined ? material : this.layerMaterials[this.layer] ?? material;
-        paintRadar(overview, image, state, position, ply.EyeAngles().y, theme.Palette, ZPThemes.GetActiveID(), this.layer);
+        paintRadar(overview, image, state, position, ply.EyeAngles().y, theme.Palette, ZPThemes.GetActiveID(), this.layer,
+            ply.IsNemesis() === true ? "nemesis" : ply.IsSurvivor() === true ? "survivor" : false);
     }
 }
 const radar = new RadarClient();

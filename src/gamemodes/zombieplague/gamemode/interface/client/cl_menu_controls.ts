@@ -10,6 +10,22 @@ function background(this: void, panel: GLuaPanel, palette: ZPThemePalette, squar
 
 // Keep native editing, selection and menu lifetime. Only presentation is replaced.
 _G.ZPMenuControls = {
+    Menu(this: void, menu, palette, radius): void {
+        menu.Paint = (width, height) => {
+            draw.RoundedBox(radius, 0, 0, width, height, palette.Muted);
+            draw.RoundedBox(radius, 1, 1, width - 2, height - 2, palette.Surface);
+        };
+    },
+    MenuOption(this: void, option, palette, selected): void {
+        option.SetFont("DermaDefault"); option.SetTextInset(12, 0);
+        option.Paint = (width, height) => {
+            const hovered = option.IsEnabled() && option.IsHovered();
+            draw.RoundedBox(0, 1, 0, width - 2, height, hovered ? palette.Accent : palette.Surface);
+            if (!hovered && selected?.()) draw.RoundedBox(0, 1, 0, 3, height, palette.Accent);
+            option.SetTextColor(!option.IsEnabled() ? palette.Muted : hovered ? Color(12, 18, 22) : palette.Text);
+            return false;
+        };
+    },
     ScrollPanel(this: void, panel, palette, square): void {
         const bar = panel.GetVBar(); bar.SetWide(12);
         bar.Paint = (width, height) => { draw.RoundedBox(square ? 0 : 3, 0, 0, width, height, palette.Surface); };
@@ -49,22 +65,9 @@ _G.ZPMenuControls = {
                 !combo.IsEnabled() ? palette.Muted : combo.IsMenuOpen() ? palette.Accent : palette.Text, TEXT_ALIGN_LEFT);
         };
         combo.OnMenuOpened = menu => {
-            menu.Paint = (width, height) => {
-                draw.RoundedBox(square ? 0 : 4, 0, 0, width, height, palette.Muted);
-                draw.RoundedBox(square ? 0 : 4, 1, 1, width - 2, height - 2, palette.Surface);
-            };
-            for (const option of menu.GetCanvas().GetChildren()) {
-                option.SetFont("DermaDefault");
-                option.SetTextInset(12, 0);
-                option.Paint = (width, height) => {
-                    const hovered = option.IsEnabled() && option.IsHovered();
-                    draw.RoundedBox(0, 1, 0, width - 2, height, hovered ? palette.Accent : palette.Surface);
-                    if (!hovered && option.GetText() === combo.GetText())
-                        draw.RoundedBox(0, 1, 0, 3, height, palette.Accent);
-                    option.SetTextColor(!option.IsEnabled() ? palette.Muted : hovered ? Color(12, 18, 22) : palette.Text);
-                    return false;
-                };
-            }
+            ZPMenuControls.Menu(menu, palette, square ? 0 : 4);
+            for (const option of menu.GetCanvas().GetChildren())
+                ZPMenuControls.MenuOption(option, palette, () => option.GetText() === combo.GetText());
         };
     },
 };

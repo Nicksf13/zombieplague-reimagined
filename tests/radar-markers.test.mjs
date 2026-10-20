@@ -4,16 +4,23 @@ import { run } from "./helpers/lua-runtime.mjs";
 const setup = `
 include("sh_radar_rules.lua")
 HUMANS_COLOR=Color(71,141,255); ZOMBIES_COLOR=Color(255,56,56)
+NEMESIS_COLOR=Color(255,0,0)
 CurTime=function() return 10 end
 ScrW=function() return 1000 end; ScrH=function() return 1000 end
 local shapes,ink={},nil
-draw={NoTexture=function() end,DrawText=function() end,RoundedBox=function(radius,x,y,width,height,color)
+draw={NoTexture=function() end,DrawText=function(text,font,x,y,color)
+    if text=="S" or text=="N" then shapes[#shapes+1]={Kind="letter",Text=text,Color=color,x=x,y=y} end
+end,RoundedBox=function(radius,x,y,width,height,color)
     if width==8 and height==8 then shapes[#shapes+1]={Kind="dot",Color=color} end
 end}
-surface={SetMaterial=function() end,DrawTexturedRect=function() end,
+surface={SetMaterial=function() end,DrawTexturedRect=function() end,SetFont=function() end,GetTextSize=function() return 8,16 end,
     SetDrawColor=function(r,g,b,a) ink={r=r,g=g,b=b,a=a} end,
     DrawPoly=function(points) shapes[#shapes+1]={Kind="triangle",Points=points,Color=ink} end}
-language={GetPhrase=function(key) return key end}
+language={GetPhrase=function(key)
+    if key=="zombieplague.radarsurvivormarker" then return "S" end
+    if key=="zombieplague.radarnemesismarker" then return "N" end
+    return key
+end}
 local paint=include("cl_radar_hud.lua").paintRadar
 local palette={Accent=Color(10,80,160),Text=Color(240,230,220,200),Surface=Color(0,0,0),Muted=Color(100,100,100)}
 local overview={Material="map.png",X=-1000,Y=1000,Scale=2,Size=1024,
@@ -72,6 +79,46 @@ test("the local position arrow uses the viewer's own team color", () => run(setu
         paint(overview,{},state,{x=0,y=0,z=0},0,palette,"classic",0)
         local expected=teamID==TEAM_HUMANS and HUMANS_COLOR or ZOMBIES_COLOR
         assert(#shapes==1 and shapes[1].Color.r==expected.r and shapes[1].Color.b==expected.b)
+    end
+`));
+
+test("special contacts show S and N with darker role colors, fading and separate elevation triangles", () => run(setup + `
+    for index,contact in ipairs(state.Contacts) do
+        contact.Special=true; contact.Role=index%2==0 and "nemesis" or "survivor"
+    end
+    for _,teamID in ipairs({TEAM_HUMANS,TEAM_ZOMBIES}) do
+        state.Team=teamID
+        for _,theme in ipairs({"classic","hl2","cs16","addon"}) do
+            local rendered=render(theme,0)
+            local letters,triangles={},{}
+            for _,shape in ipairs(rendered) do
+                if shape.Kind=="letter" then letters[#letters+1]=shape else triangles[#triangles+1]=shape end
+            end
+            assert(#letters==9 and #triangles==6)
+            for index,shape in ipairs(letters) do
+                local survivor=index%2~=0
+                local base=survivor and HUMANS_COLOR or NEMESIS_COLOR
+                assert(shape.Text==(survivor and "S" or "N"))
+                assert(shape.Color.r==math.floor(base.r*0.75) and shape.Color.g==math.floor(base.g*0.75) and shape.Color.b==math.floor(base.b*0.75))
+                assert(shape.Color.a==(index<=3 and 255 or 170))
+            end
+            for index,shape in ipairs(triangles) do
+                assert(shape.Kind=="triangle")
+                assert((shape.Points[1].y>shape.Points[2].y)==(index%2==1))
+            end
+        end
+    end
+`));
+
+test("local special arrows have an identifying S or N and darker role colors", () => run(setup + `
+    state.Contacts={}
+    for _,teamID in ipairs({TEAM_HUMANS,TEAM_ZOMBIES}) do
+        state.Team=teamID; shapes={}
+        paint(overview,{},state,{x=0,y=0,z=0},0,palette,"classic",0,true)
+        local base=teamID==TEAM_HUMANS and HUMANS_COLOR or NEMESIS_COLOR
+        assert(#shapes==2 and shapes[1].Color.r==math.floor(base.r*0.75) and shapes[1].Color.b==math.floor(base.b*0.75))
+        assert(shapes[1].Color.a==255)
+        assert(shapes[2].Text==(teamID==TEAM_HUMANS and "S" or "N"))
     end
 `));
 

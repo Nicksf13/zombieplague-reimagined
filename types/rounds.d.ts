@@ -44,7 +44,7 @@ interface ZPServerRoundManager {
     AddPlayerToBeRewarded(this: ZPServerRoundManager, ply: ZPServerPlayer): void;
     ReturnValidPlayerToBeRewardedOrNil(this: ZPServerRoundManager, id: string, team: number): ZPServerPlayer | undefined;
 }
-interface ZPServerPlayer { Lifes?: number; MakeNemesis(this: ZPServerPlayer): void; MakeSurvivor(this: ZPServerPlayer): void; }
+interface ZPServerPlayer { UserID(this: ZPServerPlayer): number; Lifes?: number; MakeNemesis(this: ZPServerPlayer): void; MakeSurvivor(this: ZPServerPlayer): void; }
 interface ZPVoteMapManager {
     MapsToVote: Record<string, number>;
     Voting: boolean;

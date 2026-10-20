@@ -1,10 +1,12 @@
 const { BotMetricsClient } = include("cl_bot_metrics.lua") as typeof import("../../bots/client/cl_bot_metrics");
 const { BotPopulationClient } = include("cl_bot_population.lua") as typeof import("../../bots/client/cl_bot_population");
 const { ServerCvarsClient } = include("cl_server_cvars.lua") as typeof import("./cl_server_cvars");
+const { AdminRoundsClient } = include("cl_admin_rounds.lua") as typeof import("./cl_admin_rounds");
 export class AdminMenuController implements ZPAdminController {
     private diagnostics = new BotMetricsClient(() => this.Update());
     private population = new BotPopulationClient(() => this.Update());
     private cvars = new ServerCvarsClient(() => this.Update());
+    private rounds = new AdminRoundsClient(() => this.Update());
     private opened = false;
     private page: ZPAdminPage = "admin";
     private botCount = 1;
@@ -20,7 +22,7 @@ export class AdminMenuController implements ZPAdminController {
     private pending: { ID: number; Deadline: number; } | undefined;
 
     GetState(): ZPAdminState {
-        return { ...this.diagnostics.State(), Cvars: this.cvars.State(), BotPopulation: this.population.State(), Page: this.page, Values: [...this.values], Pending: this.pending !== undefined,
+        return { ...this.diagnostics.State(), Rounds: this.rounds.State(), Cvars: this.cvars.State(), BotPopulation: this.population.State(), Page: this.page, Values: [...this.values], Pending: this.pending !== undefined,
             Ready: this.revision > 0, Dirty: this.revision > 0 && ZPAdminConfig.Entries.some((entry, index) => {
                 const value = this.values[index] ?? "", normalized = ZPAdminConfig.Normalize(entry, value);
                 const saved = this.saved[index];
@@ -46,6 +48,7 @@ export class AdminMenuController implements ZPAdminController {
         this.opened = true;
         this.diagnostics.Stop();
         this.population.Stop();
+        this.rounds.Stop();
         this.page = "admin";
         this.Rebuild();
     }
@@ -64,7 +67,9 @@ export class AdminMenuController implements ZPAdminController {
         if (page !== "cvars") this.cvars.Suspend();
         this.diagnostics.Stop();
         this.population.Stop();
+        this.rounds.Stop();
         this.Rebuild();
+        if (page === "rounds") this.rounds.Open();
         if (page === "environment") this.Refresh();
         if (page === "botadd") this.diagnostics.Start();
         if (page === "population") this.population.Start();
@@ -73,7 +78,7 @@ export class AdminMenuController implements ZPAdminController {
         if (this.page === "population") this.Navigate("botadd");
         else if (this.page === "botadd") this.Navigate("bots");
         else if (this.page === "environment" || this.page === "cvars") this.Navigate("settings");
-        else if (this.page === "settings" || this.page === "bots") this.Navigate("admin");
+        else if (this.page === "settings" || this.page === "bots" || this.page === "rounds") this.Navigate("admin");
         else { this.Close(); ZPMainMenu.Open(); }
     }
     SetBotCount(count: number): void {
@@ -100,11 +105,15 @@ export class AdminMenuController implements ZPAdminController {
     SaveCvars(): void { if (this.opened && this.page === "cvars") this.cvars.Save(); }
     RefreshCvars(): void { if (this.opened && this.page === "cvars") this.cvars.Refresh(); }
     ReceiveCvars(length: number): void { this.cvars.Receive(length); }
+    StartRound(id: string): void { if (this.opened && this.page === "rounds" && this.Allowed()) this.rounds.Start(id); }
+    RefreshRounds(): void { if (this.opened && this.page === "rounds") this.rounds.Refresh(); }
+    ReceiveRounds(length: number): void { if (this.Allowed()) this.rounds.Receive(length); }
     Close(): void {
         this.opened = false;
         this.diagnostics.Stop();
         this.population.Stop();
         this.cvars.Stop();
+        this.rounds.Stop();
         this.CloseConfirmation();
         this.presentation?.Destroy(); this.presentation = undefined;
         // Replies to a closed menu are ignored and never reopen it.
@@ -191,6 +200,7 @@ export class AdminMenuController implements ZPAdminController {
         if (this.page === "botadd") this.diagnostics.Tick();
         if (this.page === "population") this.population.Tick();
         this.cvars.Tick();
+        this.rounds.Tick();
         if (this.pending && CurTime() > this.pending.Deadline) {
             this.pending = undefined;
             this.token = 0;
@@ -206,6 +216,7 @@ ZPMainMenu.RegisterOption({ ID: "admin", Label: "zombieplague.admintitle",
         const player = LocalPlayer(); return IsValid(player) && player.IsAdmin();
     }, Action: () => controller.Open() });
 net.Receive("ZPAdminSettingsReply", length => controller.Receive(length));
+net.Receive("ZPAdminRoundsReply", length => controller.ReceiveRounds(length));
 net.Receive("ZPServerCvarsReply", length => controller.ReceiveCvars(length));
 net.Receive("ZPBotPopulationReply", length => controller.ReceivePopulation(length));
 hook.Add("Think", "ZPAdminMenu", () => controller.Tick());

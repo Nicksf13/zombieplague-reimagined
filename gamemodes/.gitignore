@@ -11,6 +11,8 @@
 /zombieplague/gamemode/bankstorage/text.lua
 /zombieplague/gamemode/cl_admin_menu.lua
 /zombieplague/gamemode/cl_admin_menu_hud.lua
+/zombieplague/gamemode/cl_admin_rounds.lua
+/zombieplague/gamemode/cl_admin_rounds_hud.lua
 /zombieplague/gamemode/cl_bot_boost.lua
 /zombieplague/gamemode/cl_bot_boost_hud.lua
 /zombieplague/gamemode/cl_bot_boost_markers.lua
@@ -137,6 +139,7 @@
 /zombieplague/gamemode/sh_server_cvars.lua
 /zombieplague/gamemode/sh_weapon_menu_protocol.lua
 /zombieplague/gamemode/shared.lua
+/zombieplague/gamemode/sv_admin_rounds.lua
 /zombieplague/gamemode/sv_admin_settings.lua
 /zombieplague/gamemode/sv_bank.lua
 /zombieplague/gamemode/sv_bot_behavior.lua

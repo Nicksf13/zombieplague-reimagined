@@ -13,6 +13,9 @@ export class ScoreboardController implements ZPScoreboardController {
         ];
         const players = player.GetAll();
         const localPlayer = LocalPlayer();
+        const admin = IsValid(localPlayer) && localPlayer.IsAdmin();
+        const phase = admin ? RoundManager.GetRoundState() : undefined;
+        const beforeRound = admin && (phase === ROUND_WAITING_PLAYERS || phase === ROUND_RESTARTING || phase === ROUND_STARTING_NEW_ROUND);
         const teams = groups.map(group => {
             const entries: ZPScoreboardPlayer[] = [];
             for (const ply of players) {
@@ -21,6 +24,8 @@ export class ScoreboardController implements ZPScoreboardController {
                 entries.push({ ID: ply.UserID(), Name: ply.Name(), Points: ply.GetPoints(), Deaths: ply.Deaths(),
                     Ping: ply.Ping(), Status: group.ID === TEAM_SPECTATOR ? "spectating" : ply.Alive() ? "alive" : "dead",
                     Local: ply === localPlayer, CanMute: ply !== localPlayer, CanViewProfile: !ply.IsBot(),
+                    CanInfect: admin && ply.Alive() && group.ID === TEAM_HUMANS && (beforeRound || phase === ROUND_PLAYING),
+                    CanStartSpecial: beforeRound && ply.Alive() && group.ID === TEAM_HUMANS,
                     Muted: ply.IsBot() ? this.botMuted[ply.UserID()] ?? false : ply.IsMuted() });
             }
             entries.sort((a, b) => a.Points !== b.Points ? b.Points - a.Points :
@@ -70,6 +75,15 @@ export class ScoreboardController implements ZPScoreboardController {
         const ply = player.GetAll().find(entry => IsValid(entry) && entry.UserID() === id);
         if (ply && !ply.IsBot())
             ply.ShowProfile();
+    }
+
+    TransformPlayer(id: number, role: ZPAdminPlayerRole): void {
+        if (!this.opened || !IsValid(LocalPlayer()) || !LocalPlayer().IsAdmin()) return;
+        const entry = this.GetState().Teams.flatMap(group => group.Players).find(player => player.ID === id);
+        if (!entry || (role === "zombie" ? !entry.CanInfect : !entry.CanStartSpecial)) return;
+        net.Start("ZPAdminPlayerRound");
+        net.WriteUInt(1, 8); net.WriteUInt(role === "zombie" ? 0 : role === "nemesis" ? 1 : 2, 2); net.WriteUInt(id, 32);
+        net.SendToServer();
     }
 
     ToggleMute(id: number): void {

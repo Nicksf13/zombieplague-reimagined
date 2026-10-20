@@ -98,11 +98,15 @@ export class ScoreboardHUD implements ZPScoreboardPresentation {
     }
 
     private Cell(parent: GLuaPanel, text: (this: void) => string, x: number, width: number, height: number,
-        color: GLuaColor, centered: boolean, clicked?: ZPAction): void {
+        color: GLuaColor, centered: boolean, clicked?: ZPAction, rightClicked?: ZPAction): void {
         const cell = parent.Add(clicked ? "DButton" : "DPanel");
         if (clicked) {
             cell.SetText("");
             cell.DoClick = () => clicked();
+        }
+        if (rightClicked) {
+            if (clicked) cell.DoRightClick = () => rightClicked();
+            else cell.OnMousePressed = button => { if (button === MOUSE_RIGHT) rightClicked(); };
         }
         cell.SetPos(x, 0);
         cell.SetSize(width, height);
@@ -120,6 +124,7 @@ export class ScoreboardHUD implements ZPScoreboardPresentation {
         const row = parent.Add("DPanel");
         row.SetPos(0, y);
         row.SetSize(width, height);
+        row.OnMousePressed = button => { if (button === MOUSE_RIGHT) this.OpenPlayerMenu(id); };
         row.Paint = (w, h) => {
             draw.RoundedBox(this.Radius(), 0, 0, w, h, this.palette.Panel);
             if (this.players[id]?.Local)
@@ -137,7 +142,7 @@ export class ScoreboardHUD implements ZPScoreboardPresentation {
             const column = columns[index];
             if (column)
                 this.Cell(row, value, column.X, column.Width, height, this.palette.Text, index > 0,
-                    index === 0 ? () => this.OpenPlayerMenu(id) : undefined);
+                    index === 0 ? () => this.OpenPlayerMenu(id) : undefined, () => this.OpenPlayerMenu(id));
         });
         const sound = columns[5];
         if (sound && this.players[id]?.CanMute) {
@@ -157,6 +162,7 @@ export class ScoreboardHUD implements ZPScoreboardPresentation {
                     highlighted ? Color(12, 18, 22) : this.palette.Text);
             };
             button.DoClick = () => this.actions?.ToggleMute(id);
+            button.DoRightClick = () => this.OpenPlayerMenu(id);
         }
     }
 
@@ -167,9 +173,20 @@ export class ScoreboardHUD implements ZPScoreboardPresentation {
             return;
         const menu = DermaMenu();
         this.dropdown = menu;
+        ZPMenuControls.Menu(menu, this.palette, this.Radius());
         const profile = menu.AddOption(language.GetPhrase("zombieplague.scoreboardviewprofile"),
             () => this.actions?.ViewProfile(id));
         profile.SetEnabled(entry.CanViewProfile);
+        ZPMenuControls.MenuOption(profile, this.palette);
+        const add = (key: string, role: ZPAdminPlayerRole): void => {
+            const option = menu.AddOption(language.GetPhrase("zombieplague." + key), () => this.actions?.TransformPlayer(id, role));
+            ZPMenuControls.MenuOption(option, this.palette);
+        };
+        if (entry.CanInfect) add("adminmakezombie", "zombie");
+        if (entry.CanStartSpecial) {
+            add("adminmakenemesis", "nemesis");
+            add("adminmakesurvivor", "survivor");
+        }
         menu.Open();
     }
 

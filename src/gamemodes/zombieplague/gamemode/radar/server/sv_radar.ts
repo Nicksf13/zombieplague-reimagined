@@ -8,6 +8,10 @@ interface Viewer {
     NextReady: number; NextAllies: number;
 }
 
+function specialPlayerRole(this: void, target: ZPServerPlayer): ZPRadarSpecialRole | undefined {
+    return target.IsNemesis() === true ? "nemesis" : target.IsSurvivor() === true ? "survivor" : undefined;
+}
+
 class RadarService implements ZPRadarServer {
     private readonly overview = loadOverview();
     private viewers: Record<number, Viewer | undefined> = {};
@@ -129,7 +133,7 @@ class RadarService implements ZPRadarServer {
         }
         if (setting("allies", 1, 0, 1) < 1 || !this.Enabled(viewer) || !this.Playing()) return;
         for (const target of player.GetAll()) if (target !== viewer.Player && this.Alive(target) && !this.Enemy(viewer, target))
-            this.Mark(viewer, target, "ally", 1.5);
+            this.Mark(viewer, target, "ally", 1.5, specialPlayerRole(target));
     }
     RefreshAllies(): void {
         for (const [, viewer] of pairs(this.viewers)) if (viewer) {
@@ -137,11 +141,12 @@ class RadarService implements ZPRadarServer {
             if (viewer.Dirty) this.Send(viewer);
         }
     }
-    private Mark(viewer: Viewer, target: GLuaEntity, source: ZPRadarContact["Source"], duration: number): void {
+    private Mark(viewer: Viewer, target: GLuaEntity, source: ZPRadarContact["Source"], duration: number, role?: ZPRadarSpecialRole): void {
         if (!viewer.Contacts[target.EntIndex()] && Object.keys(viewer.Contacts).length >= 128) return;
         const position = target.GetPos();
         viewer.Contacts[target.EntIndex()] = { ID: target.EntIndex(), Position: { x: position.x, y: position.y, z: position.z },
-            Source: source, Created: CurTime(), Expires: CurTime() + duration };
+            Source: source, Created: CurTime(), Expires: CurTime() + duration, Special: role !== undefined,
+            ...(role === undefined ? {} : { Role: role }) };
         viewer.Dirty = true;
     }
     Attack(ply: ZPServerPlayer, melee: boolean): void {
@@ -159,7 +164,7 @@ class RadarService implements ZPRadarServer {
             const previous = viewer.Contacts[id];
             if (duration !== undefined && !(previous?.Source === "scan" && previous.Expires > now)) {
                 // The service tick batches simultaneous shots into one snapshot per viewer.
-                this.Mark(viewer, ply, "attack", duration);
+                this.Mark(viewer, ply, "attack", duration, specialPlayerRole(ply));
             }
         }
     }
@@ -179,7 +184,7 @@ class RadarService implements ZPRadarServer {
         viewer.NextPulse = CurTime() + interval;
         for (const target of player.GetAll()) if (this.Enemy(viewer, target) &&
             viewer.Player.GetPos().DistToSqr(target.GetPos()) <= range * range)
-            this.Mark(viewer, target, "scan", Math.min(interval, viewer.ScanUntil - CurTime()));
+            this.Mark(viewer, target, "scan", Math.min(interval, viewer.ScanUntil - CurTime()), specialPlayerRole(target));
         viewer.Dirty = true;
     }
     Tick(): void {

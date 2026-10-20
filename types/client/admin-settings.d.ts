@@ -1,4 +1,19 @@
-type ZPAdminPage = "admin" | "settings" | "environment" | "cvars" | "bots" | "botadd" | "population";
+type ZPAdminPage = "admin" | "settings" | "environment" | "cvars" | "bots" | "botadd" | "population" | "rounds";
+interface ZPAdminRoundEntry {
+    readonly ID: string; readonly Name: string; readonly MinPlayers: number; readonly Allowed: boolean;
+}
+interface ZPAdminRoundsState {
+    readonly Entries: readonly ZPAdminRoundEntry[]; readonly Pending: boolean; readonly Feedback: string;
+}
+interface ZPAdminRoundsClient {
+    State(this: ZPAdminRoundsClient): ZPAdminRoundsState;
+    Open(this: ZPAdminRoundsClient): void;
+    Stop(this: ZPAdminRoundsClient): void;
+    Refresh(this: ZPAdminRoundsClient): void;
+    Start(this: ZPAdminRoundsClient, id: string): void;
+    Receive(this: ZPAdminRoundsClient, length: number): void;
+    Tick(this: ZPAdminRoundsClient): void;
+}
 interface ZPBotPopulationState {
     readonly Snapshot?: ZPBotPopulationSnapshot;
     readonly Enabled: boolean;
@@ -8,6 +23,7 @@ interface ZPBotPopulationState {
     readonly Feedback: string;
 }
 interface ZPAdminState {
+    readonly Rounds: ZPAdminRoundsState;
     readonly Cvars: ZPServerCvarClientState;
     readonly Page: ZPAdminPage;
     readonly Values: readonly string[];
@@ -24,6 +40,8 @@ interface ZPAdminState {
     readonly BotPopulation: ZPBotPopulationState;
 }
 interface ZPAdminActions extends ZPServerCvarActions {
+    StartRound(this: ZPAdminActions, id: string): void;
+    RefreshRounds(this: ZPAdminActions): void;
     AddBot(this: ZPAdminActions): void;
     SetBotCount(this: ZPAdminActions, count: number): void;
     BotPage(this: ZPAdminActions, direction: number): void;

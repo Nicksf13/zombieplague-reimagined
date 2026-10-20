@@ -7,6 +7,54 @@ const setup = clientSetup + panelsSetup + `
 surface={SetFont=function() end,GetTextSize=function(value) return #tostring(value)*7,16 end}
 ` + scoreboardSetup;
 
+test("right click offers admin roles before the round and revalidates stale selections", () => run(setup + `
+    me.admin=true
+    GM:ScoreboardShow()
+    local name
+    for _,row in ipairs(panels[1].children[1].children) do
+        for _,cell in ipairs(row.children) do
+            if not name and cell.kind=="DButton" and cell.w~=36 then name=cell end
+        end
+    end
+    name:DoRightClick()
+    local menu=dropdowns[1]
+    assert(#menu.children==4 and menu.children[2].label=="zombieplague.adminmakezombie")
+    assert(menu.children[3].label=="zombieplague.adminmakenemesis" and menu.children[4].label=="zombieplague.adminmakesurvivor")
+    menu.children[3]:DoClick()
+    assert(requests==1 and sent[1]=="ZPAdminPlayerRound" and sent[2]==1 and sent[3]==1 and sent[4]==2)
+    RoundManager.state=ROUND_PLAYING
+    menu.children[3]:DoClick(); menu.children[4]:DoClick(); assert(requests==1)
+    menu.children[2]:DoClick(); assert(requests==2 and sent[3]==0)
+    timers.ScoreBoardUpdater[2](); name:DoRightClick()
+    assert(#dropdowns[2].children==2)
+    ally.alive=false; dropdowns[2].children[2]:DoClick(); assert(requests==2)
+    ally.alive=true; ally.invalid=true; dropdowns[2].children[2]:DoClick(); assert(requests==2)
+    ally.invalid=false; me.admin=false; dropdowns[2].children[2]:DoClick(); assert(requests==2)
+    GM:ScoreboardHide(); assert(dropdowns[2].removed)
+`));
+
+test("scoreboard dropdown uses each theme's palette and closes on theme changes", () => run(setup + `
+    me.admin=true
+    for _,theme in ipairs({"classic","hl2","cs16"}) do
+        ZPThemes:UseTheme(theme); GM:ScoreboardShow()
+        local name
+        for _,p in ipairs(panels) do
+            if not p.removed and p.kind=="DButton" and p.DoRightClick and p.w~=36 then name=p; break end
+        end
+        name:DoRightClick()
+        local menu=dropdowns[#dropdowns]
+        local palette=ZPThemes:GetTheme().Palette
+        local painted={}
+        draw.RoundedBox=function(radius,x,y,w,h,color) painted[#painted+1]={radius,color} end
+        menu:Paint(300,100)
+        assert(painted[1][1]==(theme=="cs16" and 0 or theme=="hl2" and 8 or 4))
+        assert(painted[1][2]==palette.Muted and painted[2][2]==palette.Surface)
+        menu.children[1]:SetEnabled(false); menu.children[1]:Paint(300,24)
+        assert(menu.children[1].textColor==palette.Muted)
+        GM:ScoreboardHide(); assert(menu.removed)
+    end
+`));
+
 test("scoreboard collects detached data, sorts points and tracks team swaps with unchanged counts", () => run(setup + `
     local state=ZPScoreboard:GetState()
     assert(not state.Open and state.Teams[1].Players[1].Name=="Ally")

@@ -258,7 +258,7 @@ const serverSetup = `
         "sv_player.lua", "sv_localization.lua", "sv_message.lua", "sv_classmanager.lua",
         "sv_roundmanager.lua", "sv_eventmanager.lua", "sv_player_participation.lua", "sv_infectionmanager.lua",
         "sv_weaponmanager.lua", "sv_weapon_menu.lua", "sv_class_menu_apply.lua", "sv_class_menu.lua", "sv_extraitems.lua", "sv_extra_menu.lua", "sv_particlemanager.lua",
-        "sv_votemap.lua", "sv_map_nominations.lua", "sv_mapmanager.lua", "sv_map_environment.lua", "sv_radar.lua", "sv_decoy.lua", "sv_admin_settings.lua", "sv_bank.lua", "sv_bots.lua", "sv_server_cvars.lua", "sv_dance.lua"
+        "sv_votemap.lua", "sv_map_nominations.lua", "sv_mapmanager.lua", "sv_map_environment.lua", "sv_radar.lua", "sv_decoy.lua", "sv_admin_settings.lua", "sv_admin_rounds.lua", "sv_bank.lua", "sv_bots.lua", "sv_server_cvars.lua", "sv_dance.lua"
     }
     for _, name in ipairs(expectedServerIncludes) do
         legacyIncludes[name] = function() assert(BOT_MODE == true) end
@@ -365,7 +365,7 @@ test("server init preserves include order, client downloads and network registra
         "cl_particlemanager.lua", "cl_keymanager.lua", "cl_key_input.lua", "cl_scoreboard.lua", "cl_scoreboard_hud.lua",
         "sh_weapon_menu_protocol.lua", "sh_class_menu_protocol.lua", "sh_extra_menu_protocol.lua", "sh_map_vote_protocol.lua", "cl_map_vote.lua", "cl_map_vote_hud.lua", "cl_extra_menu.lua", "cl_extra_menu_hud.lua", "cl_class_menu.lua", "cl_class_menu_hud.lua",
         "cl_weapon_menu.lua", "cl_weapon_menu_hud.lua", "cl_main_menu.lua", "cl_main_menu_hud.lua",
-        "cl_settings.lua", "cl_settings_hud.lua", "sh_admin_config.lua", "sh_server_cvars.lua", "sh_server_cvar_catalog.lua", "cl_server_cvars.lua", "cl_server_cvars_hud.lua", "cl_admin_menu.lua", "cl_admin_menu_hud.lua",
+        "cl_settings.lua", "cl_settings_hud.lua", "sh_admin_config.lua", "sh_server_cvars.lua", "sh_server_cvar_catalog.lua", "cl_server_cvars.lua", "cl_server_cvars_hud.lua", "cl_admin_menu.lua", "cl_admin_menu_hud.lua", "cl_admin_rounds.lua", "cl_admin_rounds_hud.lua",
         "sh_bot_metrics_protocol.lua", "sh_bot_statistics_analysis.lua", "cl_bot_statistics.lua", "cl_bot_statistics_hud.lua", "cl_bot_statistics_graph.lua", "sh_bot_motion_protocol.lua", "sh_bot_place_protocol.lua", "sh_bot_boost_protocol.lua", "sh_bot_boost_rules.lua", "cl_bot_boost.lua", "cl_bot_boost_hud.lua", "cl_bot_boost_markers.lua", "cl_bot_boost_preview.lua", "cl_bot_boost_presentation.lua", "cl_bot_boost_screen.lua", "cl_bot_metrics.lua", "cl_bot_population.lua", "cl_bot_population_hud.lua", "cl_bot_metrics_hud.lua",
         "cl_bot_metrics_card.lua", "cl_bot_decision_graph.lua", "cl_bot_motion_hud.lua",
         "cl_map_environment.lua", "cl_map_material_catalog.lua",

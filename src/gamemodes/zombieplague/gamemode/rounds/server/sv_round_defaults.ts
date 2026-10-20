@@ -38,8 +38,8 @@ manager.AddDefaultRounds = function (this: ZPServerRoundManager): void {
     const nemesis: ZPRoundDefinition = {
         Name: "RoundNemesisName", Chance: 5, MinPlayers: 5, SpecialRound: true, Respawn: false,
         StartSound: ["zombieplague/nemesis1.mp3", "zombieplague/nemesis2.mp3"], Order: 3,
-        StartFunction: () => {
-            const players = this.GetPlayersToPlay(true), selected = SafeTableRandom(players);
+        StartFunction: (chosen) => {
+            const players = this.GetPlayersToPlay(true), selected = chosen ?? SafeTableRandom(players);
             if (!selected)
                 return;
             selected.MakeNemesis();
@@ -54,8 +54,8 @@ manager.AddDefaultRounds = function (this: ZPServerRoundManager): void {
     const survivor: ZPRoundDefinition = {
         Name: "RoundSurvivorName", Chance: 5, MinPlayers: 3, SpecialRound: true,
         StartSound: ["zombieplague/survivor1.mp3", "zombieplague/survivor2.mp3"], Order: 4,
-        StartFunction: () => {
-            const players = this.GetPlayersToPlay(true), selected = SafeTableRandom(players);
+        StartFunction: (chosen) => {
+            const players = this.GetPlayersToPlay(true), selected = chosen ?? SafeTableRandom(players);
             if (!selected)
                 return;
             table.RemoveByValue(players, selected);

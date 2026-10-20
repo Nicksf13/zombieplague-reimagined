@@ -1,7 +1,22 @@
-function tint(this: void, color: GLuaColor, alpha: number): GLuaColor {
-    return Color(color.r, color.g, color.b, Math.floor(alpha * color.a));
+function tint(this: void, color: GLuaColor, alpha: number, special = false): GLuaColor {
+    const brightness = special ? 0.75 : 1;
+    return Color(Math.floor(color.r * brightness), Math.floor(color.g * brightness), Math.floor(color.b * brightness), Math.floor(alpha * color.a));
 }
-function marker(this: void, x: number, y: number, elevation: -1 | 0 | 1, color: GLuaColor): void {
+function roleLabel(this: void, x: number, y: number, color: GLuaColor, role: ZPRadarSpecialRole): void {
+    const text = language.GetPhrase(role === "survivor" ? "zombieplague.radarsurvivormarker" : "zombieplague.radarnemesismarker");
+    surface.SetFont("DermaDefaultBold");
+    const [width, height] = surface.GetTextSize(text);
+    draw.DrawText(text, "DermaDefaultBold", x - width / 2, y - height / 2, color, TEXT_ALIGN_LEFT);
+}
+function roleColor(this: void, role: ZPRadarSpecialRole): GLuaColor {
+    return role === "survivor" ? HUMANS_COLOR : NEMESIS_COLOR;
+}
+function marker(this: void, x: number, y: number, elevation: -1 | 0 | 1, color: GLuaColor, role?: ZPRadarSpecialRole): void {
+    if (role) {
+        roleLabel(x, y, color, role);
+        if (elevation === 0) return;
+        x += 12;
+    }
     if (elevation === 0) {
         draw.RoundedBox(4, x - 4, y - 4, 8, 8, color);
         return;
@@ -12,7 +27,8 @@ function marker(this: void, x: number, y: number, elevation: -1 | 0 | 1, color: 
 }
 
 export function paintRadar(this: void, overview: ZPRadarOverview, material: GLuaMaterial, state: ZPRadarSnapshot,
-    position: ZPRadarPosition, yaw: number, palette: ZPThemePalette, theme: string, layerIndex?: number): void {
+    position: ZPRadarPosition, yaw: number, palette: ZPThemePalette, theme: string, layerIndex?: number,
+    special: boolean | ZPRadarSpecialRole = false): void {
     const layer = layerIndex === undefined ? undefined : overview.Layers?.[layerIndex];
     const size = Math.floor(Math.min(240, ScrW() * 0.23, ScrH() * 0.3)), x = 18, y = 92, padding = 8;
     const radius = theme === "cs16" || theme === "hl2" ? 0 : 8;
@@ -34,21 +50,24 @@ export function paintRadar(this: void, overview: ZPRadarOverview, material: GLua
         const alpha = ally ? 1 : Math.max(0, Math.min(1,
             (contact.Expires - CurTime()) / Math.max(0.01, contact.Expires - contact.Created)));
         const perceivedTeam = ally ? state.Team : state.Team === TEAM_HUMANS ? TEAM_ZOMBIES : TEAM_HUMANS;
-        const color = tint(perceivedTeam === TEAM_HUMANS ? HUMANS_COLOR : ZOMBIES_COLOR, alpha);
+        const role = contact.Role ?? (contact.Special ? perceivedTeam === TEAM_HUMANS ? "survivor" : "nemesis" : undefined);
+        const color = tint(role ? roleColor(role) : perceivedTeam === TEAM_HUMANS ? HUMANS_COLOR : ZOMBIES_COLOR, alpha, role !== undefined);
         // Enemy height comes only from its saved sample, even when the target moves silently.
-        marker(point.x, point.y, ZPRadarRules.Elevation(layer, contact.Position.z, position.z), color);
+        marker(point.x, point.y, ZPRadarRules.Elevation(layer, contact.Position.z, position.z), color, role);
     }
     const own = screen(position);
     if (own) {
         // World +Y points north/up on the overview; yaw zero points east/right.
         const angle = -yaw * Math.PI / 180, forward = { x: Math.cos(angle), y: Math.sin(angle) };
-        const color = state.Team === TEAM_HUMANS ? HUMANS_COLOR : ZOMBIES_COLOR;
+        const role = typeof special === "string" ? special : special ? state.Team === TEAM_HUMANS ? "survivor" : "nemesis" : undefined;
+        const color = tint(role ? roleColor(role) : state.Team === TEAM_HUMANS ? HUMANS_COLOR : ZOMBIES_COLOR, 1, role !== undefined);
         draw.NoTexture(); surface.SetDrawColor(color.r, color.g, color.b, color.a);
         surface.DrawPoly([
             { x: own.x + forward.x * 9, y: own.y + forward.y * 9 },
             { x: own.x - forward.x * 5 - forward.y * 5, y: own.y - forward.y * 5 + forward.x * 5 },
             { x: own.x - forward.x * 5 + forward.y * 5, y: own.y - forward.y * 5 - forward.x * 5 },
         ]);
+        if (role) roleLabel(own.x, own.y - 16, color, role);
     }
     const remaining = Math.max(0, state.ScanUntil - CurTime());
     if (remaining > 0) {

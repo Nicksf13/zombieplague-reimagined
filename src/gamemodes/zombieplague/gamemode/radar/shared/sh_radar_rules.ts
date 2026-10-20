@@ -47,12 +47,14 @@ function snapshot(this: void, value: unknown, now: number): ZPRadarSnapshot | un
         const entry = record(raw), position = record(entry?.Position);
         if (!entry || !position || !finite(entry.ID, 1, 65535) || entry.ID % 1 !== 0 || seen[entry.ID] ||
             (entry.Source !== "attack" && entry.Source !== "scan" && entry.Source !== "ally") || !finite(entry.Created, 0, now + 2) ||
-            !finite(entry.Expires, entry.Created, now + 61) ||
+            !finite(entry.Expires, entry.Created, now + 61) || (entry.Special !== undefined && typeof entry.Special !== "boolean") ||
+            (entry.Role !== undefined && entry.Role !== "nemesis" && entry.Role !== "survivor") ||
             !finite(position.x, -1000000, 1000000) || !finite(position.y, -1000000, 1000000) ||
             !finite(position.z, -1000000, 1000000)) return;
         seen[entry.ID] = true;
         contacts.push({ ID: entry.ID, Position: { x: position.x, y: position.y, z: position.z },
-            Source: entry.Source, Created: entry.Created, Expires: entry.Expires });
+            Source: entry.Source, Created: entry.Created, Expires: entry.Expires, Special: entry.Special === true,
+            ...(entry.Role === undefined ? {} : { Role: entry.Role }) });
     }
     return { Version: 1, Team: data.Team, Enabled: data.Enabled, ScanUntil: data.ScanUntil, Contacts: contacts };
 }

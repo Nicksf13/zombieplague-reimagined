@@ -32,6 +32,8 @@ local function newPlayer(id,team,x)
     function p:Team() return self.team end
     function p:Alive() return self.alive end
     function p:IsZombie() return self.team==TEAM_ZOMBIES end
+    function p:IsNemesis() return self.nemesis==true end
+    function p:IsSurvivor() return self.survivor==true end
     function p:GetPos() return self.position end
     function p:GetAmmoPacks() return self.balance end
     function p:TakeAmmoPacks(price) self.balance=self.balance-price; self.charges=self.charges+1 end
