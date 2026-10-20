@@ -1,6 +1,8 @@
 // Client Players include distinct connection IDs even when bots share SteamID64.
 export const scoreboardSetup = `
 GM={}
+ROUND_WAITING_PLAYERS,ROUND_STARTING_NEW_ROUND,ROUND_ENDING,ROUND_RESTARTING,ROUND_VOTEMAP,ROUND_CHANGING_MAP=0,1,3,4,5,6
+RoundManager={state=ROUND_STARTING_NEW_ROUND,GetRoundState=function(self) return self.state end}
 local players={}
 player={GetAll=function() return players end}
 timer.Destroy=function(name) timers[name]=nil end
@@ -8,6 +10,7 @@ local function scorePlayer(id,name,teamID,points)
     local ply={id=id,name=name,team=teamID,points=points,deaths=2,ping=42,alive=true,muted=false,muteCalls=0}
     function ply:UserID() return self.id end
     function ply:IsBot() return self.bot or false end
+    function ply:IsAdmin() return self.admin==true end
     function ply:ShowProfile() self.profileCalls=(self.profileCalls or 0)+1 end
     function ply:Name() return self.name end
     function ply:Team() return self.team end

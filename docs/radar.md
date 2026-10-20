@@ -53,7 +53,13 @@ Purchased scans take server position samples at regular intervals, including
 silent enemies within their radius. Only the buyer receives those samples.
 Contacts use the perceived team's standard color: humans are blue (`HUMANS_COLOR`)
 and zombies are red (`ZOMBIES_COLOR`), regardless of their relationship to the
-viewer. Camouflage uses the imitated team's color. Hostile contacts fade with
+viewer. Survivor contacts use an **S** in the human color and Nemesis contacts an
+**N** in `NEMESIS_COLOR`, both 25% darker. These fixed role initials are defined in
+every localization catalog. Elevated contacts retain a separate triangle beside
+the letter; the local position arrow keeps its direction and gains a role letter
+above it. The server saves the role with each contact sample; changing roles does not refresh old
+enemy positions. Decoy contacts retain the standard human color. Camouflage uses
+the imitated team's color. Hostile contacts fade with
 sample age. The HUD shows the remaining scan time and a visual
 sweep. A scan sample expires at the next pulse or scan
 end, so the final pulse cannot extend the purchased duration. Existing scan

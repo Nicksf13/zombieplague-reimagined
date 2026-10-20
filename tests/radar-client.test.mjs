@@ -12,6 +12,8 @@ CreateClientConVar=function() return {GetBool=function() return visible end,SetB
 local viewer={alive=true,team=TEAM_HUMANS,z=0,ground=true,water=0,move=2}
 function viewer:Alive() return self.alive end
 function viewer:Team() return self.team end
+function viewer:IsNemesis() return self.nemesis==true end
+function viewer:IsSurvivor() return self.survivor==true end
 function viewer:GetPos() return {x=0,y=0,z=self.z} end
 function viewer:EyeAngles() return {y=0} end
 function viewer:OnGround() return self.ground end
@@ -25,11 +27,11 @@ ZPThemes={GetTheme=function() return {Palette={}} end,GetActiveID=function() ret
 net.SendToServer=function() end
 local hidden=false
 hook.Call=function() if hidden then return false end end
-local paints,selected,imagePath=0,nil,nil
+local paints,selected,imagePath,lastSpecial=0,nil,nil,nil
 local originalInclude=include
 include=function(path)
-    if path=="cl_radar_hud.lua" then return {paintRadar=function(map,image,state,pos,yaw,palette,theme,layer)
-        paints=paints+1; selected=layer; imagePath=image.path
+    if path=="cl_radar_hud.lua" then return {paintRadar=function(map,image,state,pos,yaw,palette,theme,layer,special)
+        paints=paints+1; selected=layer; imagePath=image.path; lastSpecial=special
     end} end
     return originalInclude(path)
 end
@@ -64,6 +66,12 @@ test("client rejects invalid overviews, coordinates, sources and unbounded snaps
     contact.Source="ally"
     assert(ZPRadarRules.Snapshot(data,10).Contacts[1].Source=="ally")
     contact.Source="attack"
+    contact.Special=true; assert(ZPRadarRules.Snapshot(data,10).Contacts[1].Special)
+    contact.Special=false; assert(not ZPRadarRules.Snapshot(data,10).Contacts[1].Special)
+    contact.Special="nemesis"; assert(not ZPRadarRules.Snapshot(data,10)); contact.Special=nil
+    contact.Role="nemesis"; assert(ZPRadarRules.Snapshot(data,10).Contacts[1].Role=="nemesis")
+    contact.Role="survivor"; assert(ZPRadarRules.Snapshot(data,10).Contacts[1].Role=="survivor")
+    contact.Role="boss"; assert(not ZPRadarRules.Snapshot(data,10)); contact.Role=nil
     contact.Position.x=math.huge; assert(not ZPRadarRules.Snapshot(data,10)); contact.Position.x=1
     contact.Source="tracking"; assert(not ZPRadarRules.Snapshot(data,10)); contact.Source="scan"
     contact.Expires=1000; assert(not ZPRadarRules.Snapshot(data,10)); contact.Expires=13
@@ -92,6 +100,13 @@ test("all radar captions and scan format parameters exist in every supported lan
         assert.equal((books[locale]["zombieplague.radarscanning"].match(/%[sdif]/g) ?? []).join(), "%d");
     }
 });
+
+test("local special role state reaches radar rendering and clears when the role ends", () => run(client + `
+    receive(snapshot()); ZPRadar:Paint(); assert(lastSpecial==false)
+    viewer.survivor=true; ZPRadar:Paint(); assert(lastSpecial=="survivor")
+    viewer.survivor=false; viewer.nemesis=true; ZPRadar:Paint(); assert(lastSpecial=="nemesis")
+    viewer.nemesis=false; ZPRadar:Paint(); assert(lastSpecial==false)
+`));
 
 test("floor metadata is normalized, bounded and rejects overlap, reversed ranges and unsafe paths", () => run(rules + `
     local base={Material="map.png",X=0,Y=0,Scale=1,Size=1024}

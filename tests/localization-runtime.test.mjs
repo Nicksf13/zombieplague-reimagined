@@ -4,6 +4,24 @@ import test from "node:test";
 import { run } from "./helpers/lua-runtime.mjs";
 import { books, locales, nativeLanguage } from "./helpers/native-localization.mjs";
 
+test("radar role identifiers remain S and N in every catalog", () => {
+    for (const locale of locales) {
+        assert.equal(books[locale]["zombieplague.radarsurvivormarker"], "S", locale);
+        assert.equal(books[locale]["zombieplague.radarnemesismarker"], "N", locale);
+    }
+});
+
+test("admin round actions are translated in every catalog with consistent format parameters", () => {
+    const keys = ["adminroundtitle", "adminroundhelp", "adminroundminimum", "adminroundstarted", "adminroundunavailable",
+        "adminroundrefresh", "adminmakezombie", "adminmakenemesis", "adminmakesurvivor"];
+    for (const locale of locales) for (const key of keys) {
+        const phrase = books[locale]["zombieplague." + key];
+        assert(phrase?.trim(), `${locale}: missing ${key}`);
+        assert.deepEqual(phrase.match(/%[sdif]/g) ?? [], key === "adminroundminimum" ? ["%d"] : [], `${locale}: ${key}`);
+        if (locale !== "en" && locale !== "en-PT") assert.notEqual(phrase, books.en["zombieplague." + key], `${locale}: English placeholder ${key}`);
+    }
+});
+
 test("decoy item and weapon instructions are translated in every native catalog", () => {
     for (const locale of locales) for (const key of ["extraitemdecoyname", "decoyinstructions"]) {
         const phrase = books[locale]["zombieplague." + key];

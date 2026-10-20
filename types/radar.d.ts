@@ -12,7 +12,10 @@ interface ZPRadarOverview {
     readonly Size: number;
     readonly Layers?: readonly ZPRadarLayer[];
 }
+type ZPRadarSpecialRole = "nemesis" | "survivor";
 interface ZPRadarContact {
+    readonly Role?: ZPRadarSpecialRole;
+    readonly Special?: boolean;
     readonly ID: number;
     readonly Position: ZPRadarPosition;
     readonly Source: "attack" | "scan" | "ally";

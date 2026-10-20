@@ -59,6 +59,9 @@ de alterar os fontes ou copiar arquivos isolados.
 The [radar guide](radar.md) documents activation modes, both extra-item shops,
 server-authoritative detection, and in-game overview generation.
 
+The [administrator round controls guide](admin-rounds.md) documents manual starts,
+scoreboard role selection, eligibility rules, and the network boundary.
+
 A raiz de `src/gamemodes/zombieplague/gamemode/` contém somente os pontos de
 entrada `init.ts`, `cl_init.ts` e `shared.ts`. Os demais fontes estão agrupados
 por domínio. Cada pacote contém `shared/`, `server/` e/ou `client/`, criando apenas

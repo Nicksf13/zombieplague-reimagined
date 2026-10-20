@@ -52,6 +52,37 @@ local function activeFrame()
 end
 `;
 
+test("round page lists authoritative modes, starts eligible modes, and ignores closed or stale replies", () => run(setup + `
+    ZPAdminMenu:Open(); ZPAdminMenu:Navigate("rounds")
+    assert(sent[1]=="ZPAdminRoundsRequest" and sent[4]==0 and ZPAdminMenu:GetState().Rounds.Pending)
+    local function replyRounds(sequence)
+        uints={1,sequence or sent[3],2,2,5}
+        strings={"","SimpleRound","RoundSimpleName","NemesisRound","RoundNemesisName"}
+        local bools={true,false}
+        local old=net.ReadBool; net.ReadBool=function() return table.remove(bools,1) end
+        receivers.ZPAdminRoundsReply(2000); net.ReadBool=old
+    end
+    replyRounds(sent[3]+1); assert(ZPAdminMenu:GetState().Rounds.Pending)
+    replyRounds()
+    local state=ZPAdminMenu:GetState().Rounds
+    assert(#state.Entries==2 and state.Entries[1].Allowed and not state.Entries[2].Allowed and not state.Pending)
+    local before=requests
+    ZPAdminMenu:StartRound("NemesisRound"); ZPAdminMenu:StartRound("unknown"); assert(requests==before)
+    for _,theme in ipairs({"classic","hl2","cs16"}) do
+        ZPThemes:UseTheme(theme); paintAll()
+        assert(ZPAdminMenu:GetState().Page=="rounds")
+    end
+    ZPAdminMenu:StartRound("SimpleRound")
+    assert(requests==before+1 and sent[4]==1 and sent[5]=="SimpleRound")
+    now=now+6; hooks.Think.ZPAdminMenu()
+    assert(ZPAdminMenu:GetState().Rounds.Feedback=="zombieplague.weaponmenutimeout")
+    ZPAdminMenu:RefreshRounds(); local id=sent[3]
+    ZPAdminMenu:Back(); assert(ZPAdminMenu:GetState().Page=="admin")
+    replyRounds(id); assert(not ZPAdminMenu:GetState().Rounds.Pending)
+    ZPAdminMenu:Close(); before=requests
+    ZPAdminMenu:StartRound("SimpleRound"); ZPAdminMenu:RefreshRounds(); assert(requests==before)
+`));
+
 test("admin navigation is visible only to admins and loads authoritative values", () => run(setup + `
     assert(#ZPMainMenu:GetState().Entries==6)
     viewer.admin=false
@@ -122,7 +153,7 @@ test("AI bot quantity validates integers, survives rebuild and reopening, and ca
 test("Bots groups creation, boost editing and history without starting diagnostics on the hub", () => run(setup + `
     for _,theme in ipairs({"classic","hl2","cs16"}) do
         ZPThemes:UseTheme(theme); ZPAdminMenu:Open()
-        assert(#activeFrame().children[3].children==2)
+        assert(#activeFrame().children[3].children==3)
         local before=requests
         ZPAdminMenu:Navigate("bots"); assert(requests==before)
         local choices=activeFrame().children[3].children

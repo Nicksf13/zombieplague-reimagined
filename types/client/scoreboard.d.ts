@@ -7,7 +7,7 @@ interface ZPClientPlayer {
     ShowProfile(this: ZPClientPlayer): void;
 }
 interface ZPScoreboardDropdown extends GLuaPanel {
-    AddOption(this: ZPScoreboardDropdown, label: string, action: ZPAction): GLuaPanel;
+    AddOption(this: ZPScoreboardDropdown, label: string, action: ZPAction): ZPMenuControlLabel;
     Open(this: ZPScoreboardDropdown): void;
 }
 declare function DermaMenu(this: void): ZPScoreboardDropdown;
@@ -21,6 +21,7 @@ interface GLuaPanel {
     Center(this: GLuaPanel): void;
     Paint?(this: GLuaPanel, width: number, height: number): void;
     DoClick?(this: GLuaPanel): void;
+    DoRightClick?(this: GLuaPanel): void;
     Clear(this: GLuaPanel): void;
     Close(this: GLuaPanel): void;
     Add(this: GLuaPanel, item: string | GLuaPanel): GLuaPanel;
@@ -36,6 +37,8 @@ declare namespace timer { function Create(id: string, delay: number, repeats: nu
 declare function tostring(this: void, value: unknown): string;
 
 interface ZPScoreboardPlayer {
+    readonly CanInfect: boolean;
+    readonly CanStartSpecial: boolean;
     readonly ID: number;
     readonly Name: string;
     readonly Points: number;
@@ -60,9 +63,11 @@ interface ZPScoreboardState {
     readonly Teams: readonly ZPScoreboardTeam[];
 }
 interface ZPScoreboardActions {
+    TransformPlayer(this: ZPScoreboardActions, id: number, role: ZPAdminPlayerRole): void;
     ToggleMute(this: ZPScoreboardActions, id: number): void;
     ViewProfile(this: ZPScoreboardActions, id: number): void;
 }
+type ZPAdminPlayerRole = "zombie" | "nemesis" | "survivor";
 interface ZPScoreboardPresentation {
     Open(this: ZPScoreboardPresentation, state: ZPScoreboardState, actions: ZPScoreboardActions): void;
     Update(this: ZPScoreboardPresentation, state: ZPScoreboardState): void;

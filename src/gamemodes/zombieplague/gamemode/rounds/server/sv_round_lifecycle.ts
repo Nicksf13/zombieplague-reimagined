@@ -164,6 +164,9 @@ manager.EndRound = function (reason): void {
     hook.Call("ZPEndRound", GAMEMODE, reason);
 };
 manager.StartRound = function (round, selected): void {
+    endFreezeTime(this);
+    timer.Destroy("NoSoundInfectionDelayTimer");
+    timer.Destroy("TimerSound");
     hook.Call("ZPPreNewRound", GAMEMODE, round);
     round.StartFunction(selected);
     this.SetSpecialRound(round.SpecialRound ?? false);
