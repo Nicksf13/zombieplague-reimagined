@@ -25,6 +25,8 @@ scan may be purchased after the previous one ends. Purchases cannot stack.
 The personal Settings menu offers Show radar (`zp_radar_show`, saved locally).
 This only controls drawing; hiding the HUD does not pause a purchased scan.
 Spectators do not receive radar contacts or scans.
+The separate [spectator overview](spectator-overview.md) reuses map images and
+floor metadata with its own server-authorized observer position updates.
 
 `zp_radar_allies` defaults to `1` and displays perceived allies without requiring
 an attack or purchased scan. Set it to `0` to hide those contacts. The toggle is

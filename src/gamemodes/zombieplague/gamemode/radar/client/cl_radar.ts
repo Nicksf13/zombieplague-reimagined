@@ -11,6 +11,10 @@ class RadarClient implements ZPRadarClient {
     private updated = -10;
 
     IsVisible(): boolean { return this.visible.GetBool(); }
+    GetOverview(): ZPRadarOverview | undefined { return this.material ? this.overview : undefined; }
+    GetMaterial(layer?: number): GLuaMaterial | undefined {
+        return layer === undefined ? this.material : this.layerMaterials[layer];
+    }
     SetVisible(visible: boolean): void { this.visible.SetBool(visible); }
     Configure(raw: unknown): void {
         this.overview = ZPRadarRules.Overview(raw); this.material = undefined; this.state = undefined;

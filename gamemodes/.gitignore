@@ -69,6 +69,9 @@
 /zombieplague/gamemode/cl_server_cvars_hud.lua
 /zombieplague/gamemode/cl_settings.lua
 /zombieplague/gamemode/cl_settings_hud.lua
+/zombieplague/gamemode/cl_spectator_overview.lua
+/zombieplague/gamemode/cl_spectator_overview_hud.lua
+/zombieplague/gamemode/cl_spectator_overview_map.lua
 /zombieplague/gamemode/cl_theme_hud.lua
 /zombieplague/gamemode/cl_theme_manager.lua
 /zombieplague/gamemode/cl_weapon_menu.lua
@@ -137,6 +140,7 @@
 /zombieplague/gamemode/sh_roundmanager.lua
 /zombieplague/gamemode/sh_server_cvar_catalog.lua
 /zombieplague/gamemode/sh_server_cvars.lua
+/zombieplague/gamemode/sh_spectator_protocol.lua
 /zombieplague/gamemode/sh_weapon_menu_protocol.lua
 /zombieplague/gamemode/shared.lua
 /zombieplague/gamemode/sv_admin_rounds.lua
@@ -240,6 +244,8 @@
 /zombieplague/gamemode/sv_roundmanager.lua
 /zombieplague/gamemode/sv_server_cvars.lua
 /zombieplague/gamemode/sv_spawn_occupancy.lua
+/zombieplague/gamemode/sv_spectator_overview.lua
+/zombieplague/gamemode/sv_spectator_rules.lua
 /zombieplague/gamemode/sv_sun_orbit.lua
 /zombieplague/gamemode/sv_utils.lua
 /zombieplague/gamemode/sv_votemap.lua

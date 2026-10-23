@@ -29,6 +29,7 @@ include("cl_map_vote_hud.lua");
 include("cl_map_vote.lua");
 include("cl_player_hud.lua");
 include("cl_radar.lua");
+include("cl_spectator_overview.lua");
 include("cl_radar_capture.lua");
 include("cl_keymanager.lua");
 include("cl_dance.lua");

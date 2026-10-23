@@ -1,4 +1,5 @@
 interface ZPRadarServer {
+    OverviewReady(this: ZPRadarServer, player: ZPServerPlayer): boolean;
     Available(this: ZPRadarServer): boolean;
     CanBuy(this: ZPRadarServer, player: ZPServerPlayer): boolean;
     Purchase(this: ZPRadarServer, player: ZPServerPlayer): void;

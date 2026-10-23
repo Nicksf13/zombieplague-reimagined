@@ -1,4 +1,6 @@
 interface ZPRadarClient {
+    GetOverview(this: ZPRadarClient): ZPRadarOverview | undefined;
+    GetMaterial(this: ZPRadarClient, layer?: number): GLuaMaterial | undefined;
     IsVisible(this: ZPRadarClient): boolean;
     SetVisible(this: ZPRadarClient, visible: boolean): void;
     Paint(this: ZPRadarClient): void;

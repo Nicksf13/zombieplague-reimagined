@@ -5,7 +5,7 @@
     "src/**/shared.ts", "src/**/sh_*.ts", "src/**/cl_*.ts", "src/**/vgui/**/*.ts",
     "types/glua.d.ts", "types/zombieplague.d.ts", "types/weapon-menu.d.ts", "types/dance.d.ts",
     "types/class-menu.d.ts", "types/extra-menu.d.ts", "types/map-vote.d.ts",
-    "types/bot-metrics.d.ts", "types/bot-statistics.d.ts", "types/bot-motion.d.ts", "types/bot-places.d.ts", "types/bot-boost.d.ts", "types/bot-population.d.ts", "types/admin-settings.d.ts", "types/server-cvars.d.ts", "types/radar.d.ts", "types/client/**/*.d.ts"
+    "types/bot-metrics.d.ts", "types/bot-statistics.d.ts", "types/bot-motion.d.ts", "types/bot-places.d.ts", "types/bot-boost.d.ts", "types/bot-population.d.ts", "types/admin-settings.d.ts", "types/server-cvars.d.ts", "types/radar.d.ts", "types/spectator-overview.d.ts", "types/client/**/*.d.ts"
   ],
   "exclude": []
 }

@@ -4,6 +4,15 @@ import test from "node:test";
 import { run } from "./helpers/lua-runtime.mjs";
 import { books, locales, nativeLanguage } from "./helpers/native-localization.mjs";
 
+test("spectator overview controls are translated in all catalogs with consistent parameters", () => {
+    for (const locale of locales) for (const key of ["title", "help", "alllevels", "teamonly", "allteams", "unavailable"]) {
+        const phrase = books[locale]["zombieplague.overview" + key];
+        assert(phrase?.trim(), `${locale}: missing overview${key}`);
+        assert.deepEqual(phrase.match(/%[sdif]/g) ?? [], key === "help" ? ["%s"] : [], `${locale}: overview${key}`);
+        if (locale !== "en") assert.notEqual(phrase, books.en["zombieplague.overview" + key], `${locale}: English placeholder overview${key}`);
+    }
+});
+
 test("radar role identifiers remain S and N in every catalog", () => {
     for (const locale of locales) {
         assert.equal(books[locale]["zombieplague.radarsurvivormarker"], "S", locale);

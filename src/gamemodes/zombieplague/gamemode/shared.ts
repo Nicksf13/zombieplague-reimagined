@@ -49,6 +49,7 @@ include("sh_map_vote_protocol.lua");
 include("sh_admin_config.lua");
 include("sh_server_cvars.lua");
 include("sh_radar_rules.lua");
+include("sh_spectator_protocol.lua");
 include("sh_bot_metrics_protocol.lua");
 include("sh_bot_motion_protocol.lua");
 include("sh_bot_place_protocol.lua");
