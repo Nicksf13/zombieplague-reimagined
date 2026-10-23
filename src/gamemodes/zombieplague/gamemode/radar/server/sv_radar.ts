@@ -20,6 +20,10 @@ class RadarService implements ZPRadarServer {
 
     private Mode(): number { return Math.floor(setting("mode", 2, 0, 2)); }
     Available(): boolean { return this.overview !== undefined && this.Mode() > 0; }
+    OverviewReady(ply: ZPServerPlayer): boolean {
+        const viewer = this.viewers[ply.EntIndex()];
+        return this.overview !== undefined && viewer?.Player === ply && viewer.Ready;
+    }
     private Playing(): boolean { return RoundManager.GetRoundState() === ROUND_PLAYING; }
     private Alive(ply: ZPServerPlayer): boolean {
         return IsValid(ply) && ply.Alive() && (ply.Team() === TEAM_HUMANS || ply.Team() === TEAM_ZOMBIES);

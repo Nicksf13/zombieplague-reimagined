@@ -14,6 +14,10 @@ is unfrozen, silently killed if alive, disarmed and placed in roaming spectator
 mode. Nightvision, flashlight, light and special-role flags are cleared.
 Existing spectator controls remain available.
 
+The [spectator overview](spectator-overview.md) adds a full-screen map to the
+camera cycle when the current map has a usable overview image. It shares the
+server's camera target permissions and supports clicking markers to follow players.
+
 The server-only `ZPVoluntarySpectator` flag prevents automatic participation,
 including repeated server-status requests, until an explicit return. Round
 preparation only spawns participants, so observers remain outside later rounds.

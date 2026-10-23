@@ -1,4 +1,5 @@
 export {};
+const { ready, targets } = include("sv_spectator_rules.lua") as typeof import("../../player/server/sv_spectator_rules");
 const rounds = RoundManager as ZPServerRoundManager;
 GM.PlayerCanHearPlayersVoice = function (listener, talker): boolean {
     if (!rounds.IsPlayingRound())
@@ -53,19 +54,21 @@ GM.PlayerDeathThink = function (ply): boolean {
         ply.Spawn();
         return true;
     }
-    if (CurTime() - (ply.DeathTime ?? CurTime()) > 3)
+    if (ready(ply))
         CalculateSpectator(ply);
     return false;
 };
 _G.CalculateSpectator = (ply): void => {
+    if (_G.ZPSpectatorOverview?.Input(ply)) return;
     const teamOnly = cvars.Bool("zp_spectate_team_only", true);
-    const candidates = ply.Team() !== TEAM_SPECTATOR && (rounds.IsRealisticMod() || teamOnly)
-        ? (ply.IsZombie() ? rounds.GetAliveZombies() : rounds.GetAliveHumans()) : rounds.GetPlayersToPlay(true);
+    const candidates = targets(ply);
     if (candidates.length > 0) {
         if (ShouldResetSpectate(ply, teamOnly))
             ply.MoveSpectateID(0, candidates);
-        else if (ply.KeyPressed(IN_JUMP))
-            ply.Spectate(((ply.GetObserverMode() + 1) % 3) + 4);
+        else if (ply.KeyPressed(IN_JUMP)) {
+            if (ply.GetObserverMode() !== OBS_MODE_CHASE || !_G.ZPSpectatorOverview?.Open(ply))
+                ply.Spectate(((ply.GetObserverMode() + 1) % 3) + 4);
+        }
         else if (ply.KeyPressed(IN_ATTACK))
             ply.MoveSpectateID(1, candidates);
         else if (ply.KeyPressed(IN_ATTACK2))
