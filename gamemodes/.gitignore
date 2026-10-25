@@ -75,6 +75,7 @@
 /zombieplague/gamemode/cl_server_cvars_hud.lua
 /zombieplague/gamemode/cl_settings.lua
 /zombieplague/gamemode/cl_settings_hud.lua
+/zombieplague/gamemode/cl_special_aura.lua
 /zombieplague/gamemode/cl_spectator_overview.lua
 /zombieplague/gamemode/cl_spectator_overview_hud.lua
 /zombieplague/gamemode/cl_spectator_overview_map.lua

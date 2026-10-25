@@ -9,6 +9,8 @@ interface ZPServerStatusPlayer {
     Battery: number;
     ZombieClass: string;
     HumanClass: string;
+    Nemesis: boolean;
+    Survivor: boolean;
     Light?: GLuaColor | undefined;
     Footstep?: boolean | undefined;
     AbilityPower: number;

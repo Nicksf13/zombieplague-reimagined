@@ -123,6 +123,7 @@ test("editor discovers both realms and their ambient dependencies without runtim
             ["gamemode/maps/client/cl_map_environment.ts", "client"],
             ["gamemode/maps/client/cl_map_material_catalog.ts", "client"],
             ["gamemode/player/client/cl_nightvision.ts", "client"],
+            ["gamemode/effects/client/cl_special_aura.ts", "client"],
             ["gamemode/weapons/server/sv_weapon_definition.ts", "server"],
             ["gamemode/menus/shared/sh_weapon_menu_protocol.ts", "server"],
             ["gamemode/bots/shared/sh_bot_metrics_protocol.ts", "server"],

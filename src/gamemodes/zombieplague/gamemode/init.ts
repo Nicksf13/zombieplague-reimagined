@@ -46,6 +46,7 @@ AddCSLuaFile("cl_player_hud.lua");
 AddCSLuaFile("cl_data.lua");
 AddCSLuaFile("cl_message.lua");
 AddCSLuaFile("cl_player.lua");
+AddCSLuaFile("cl_special_aura.lua");
 AddCSLuaFile("sh_dance.lua");
 AddCSLuaFile("cl_dance.lua");
 AddCSLuaFile("cl_dance_camera.lua");
