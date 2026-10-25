@@ -3,13 +3,14 @@ import type { NavStep, NavRoute } from "./sv_bot_pathfinding";
 import type { MotionPhysics } from "./sv_bot_motion_physics";
 const routing = include("sv_bot_pathfinding.lua") as typeof import("./sv_bot_pathfinding");
 const movement = include("sv_bot_motion_actions.lua") as typeof import("./sv_bot_motion_actions");
-const { physics } = include("sv_bot_motion_physics.lua") as typeof import("./sv_bot_motion_physics");
+const { physics, jumpReach } = include("sv_bot_motion_physics.lua") as typeof import("./sv_bot_motion_physics");
 const ladder = include("sv_bot_ladder.lua") as typeof import("./sv_bot_ladder");
 const { BotDropTraversal } = include("sv_bot_drop.lua") as typeof import("./sv_bot_drop");
 const { BotGroundTraversal } = include("sv_bot_ground.lua") as typeof import("./sv_bot_ground");
 const { BotPrecisionTraversal } = include("sv_bot_precision.lua") as typeof import("./sv_bot_precision");
 const { fallRisk, diagnostic } = include("sv_bot_traversal.lua") as typeof import("./sv_bot_traversal");
-export interface BotSteering { Position?: GLuaVector; Jump: boolean; Duck: boolean; Use: boolean; Stuck: boolean; Pick?: MoveOption; Unreachable?: boolean; Precision?: boolean; Blocker?: ZPServerPlayer; Controller?: string; }
+const { BotSearch } = include("sv_bot_search.lua") as typeof import("./sv_bot_search");
+export interface BotSteering { Position?: GLuaVector; Waypoint?: GLuaVector; Jump: boolean; Duck: boolean; Use: boolean; Stuck: boolean; Pick?: MoveOption; Unreachable?: boolean; Precision?: boolean; Blocker?: ZPServerPlayer; Controller?: string; Probe?: import("./sv_bot_motion_actions").BlockedProbe; SupportProbe?: import("./sv_bot_precision_support").BlockedSupport; }
 export class BotNavigator {
     private path: NavStep[] = [];
     private lastGoal: GLuaVector | undefined;
@@ -25,6 +26,7 @@ export class BotNavigator {
     private nextWaterGoal = 0;
     private intent: string | undefined;
     private expectedSpeed = 0;
+    private arrivalTolerance = 40;
     private routeKind: NavRoute["Kind"] = "missing";
     private goalArea = 0;
     private failedPlans = 0;
@@ -34,10 +36,12 @@ export class BotNavigator {
     private detail: ZPBotNavigationDiagnostic | undefined;
     private blockedEdges = new Map<string, number>();
     private failure: { Detail: ZPBotNavigationDiagnostic; Until: number } | undefined;
+    private search = new BotSearch();
     Diagnostic(): ZPBotNavigationDiagnostic | undefined { return ZPBotMotionProtocol.Navigation(this.detail); }
     Status(): { Route: ZPBotRoute; Remaining: number; Replans: number } { return { Route: this.route, Remaining: this.remaining, Replans: this.replans }; }
     IsFollowing(): boolean { return (this.route === "mesh" && this.path.length > 0) || this.routeKind === "partial"; }
-    Reset(): void {
+    Reset(clearSearch = true): void {
+        if (clearSearch) this.search.Reset();
         this.path = []; this.lastGoal = undefined; this.nextPath = 0; this.stuckAttempts = 0; this.lastPosition = undefined;
         this.route = "none"; this.remaining = 0; this.replans = 0; this.nextStuckCheck = 0; this.waterGoal = undefined;
         this.expectedSpeed = 0;
@@ -47,13 +51,9 @@ export class BotNavigator {
     }
     Wander(ply: ZPServerPlayer): GLuaVector | undefined {
         if (ply.WaterLevel() >= 2) return routing.dryExit(ply) ?? Vector(ply.GetPos().x, ply.GetPos().y, ply.GetPos().z + 96);
-        if (!navmesh.IsLoaded()) return;
-        const area = routing.nearest(ply.GetPos(), 200, true), state = physics(ply);
-        const candidates = area ? routing.connections(area).filter(step => step.Area && !step.Area.IsBlocked(-2) && !step.Area.IsUnderwater() &&
-            (step.Ladder !== undefined || (area.ComputeAdjacentConnectionHeightChange(step.Area) <= Math.max(48, state.Jump * state.Jump / (2 * state.Gravity) * 0.85) &&
-                fallRisk(ply, -area.ComputeAdjacentConnectionHeightChange(step.Area), state).Allowed))) : [];
-        return candidates[math.random(1, Math.max(1, candidates.length)) - 1]?.Position;
+        return this.search.Choose(ply, CurTime());
     }
+    SearchFailed(goal: GLuaVector, now: number): void { this.search.Failed(goal, now); }
     private Remaining(position: GLuaVector, goal: GLuaVector): number {
         let remaining = 0, previous = position;
         for (const step of this.path.length > 0 ? this.path : [{ Position: goal }]) {
@@ -67,7 +67,7 @@ export class BotNavigator {
         if (ply.WaterLevel() >= 2 && step.Area && !step.Area.IsUnderwater()) return false;
         if (ply.WaterLevel() >= 2 && this.waterGoal && step.Position.DistToSqr(this.waterGoal) < 1600) return false;
         if (!ply.OnGround() && ply.WaterLevel() < 2) return false;
-        if (final || !step.Area) return Math.abs(position.z - step.Position.z) <= 24 && position.DistToSqr(step.Position) < 1600;
+        if (final || !step.Area) return Math.abs(position.z - step.Position.z) <= 24 && position.DistToSqr(step.Position) < this.arrivalTolerance ** 2;
         return step.Area.Contains(position) && Math.abs(step.Area.GetClosestPointOnArea(position).z - position.z) < 24;
     }
     private Frame(ply: ZPServerPlayer, step: NavStep, goal: GLuaVector, state: MotionPhysics, dynamic: boolean, obstacle: boolean, stage = step.Position): MoveFrame {
@@ -80,18 +80,19 @@ export class BotNavigator {
         }
         const path = points.slice(0, 5).flatMap(point => [point.x, point.y, point.z]);
         const velocity = ply.GetVelocity();
-        return { Key: edge + cell + ":" + state.Mode + ":" + (dynamic ? "dynamic" : obstacle ? "blocked" : "clear") + ":" + (ply.GetBreath() < 20 ? "low" : "normal"),
+        return { Key: "v2:" + edge + cell + ":" + state.Mode + ":" + (dynamic ? "dynamic" : obstacle ? "blocked" : "clear") + ":" + (ply.GetBreath() < 20 ? "low" : "normal") + (this.arrivalTolerance !== 40 ? ":contact" : ""),
             Edge: edge, Mode: state.Mode, From: step.From, To: step.To, Position: ply.GetPos(), Remaining: Math.sqrt(ply.GetPos().DistToSqr(stage)),
             RouteRemaining: this.remaining, Speed: this.expectedSpeed || state.Speed, Breath: ply.GetBreath(), Drain: drain, Dynamic: dynamic, Goal: goal,
             Completed: this.Arrived(ply, step, this.routeKind === "complete" && this.path.length <= 1),
-            Final: (this.routeKind === "complete" || this.routeKind === "missing") && ply.GetPos().DistToSqr(goal) < 1600, Path: path,
+            Final: (this.routeKind === "complete" || this.routeKind === "missing") && ply.GetPos().DistToSqr(goal) < this.arrivalTolerance ** 2, Path: path,
             Ladder: step.Ladder !== undefined, Forced: velocity.x * velocity.x + velocity.y * velocity.y > state.Run * state.Run * 2.25,
             Velocity: velocity, Gravity: state.Gravity, Run: state.Run,
             Stage: Vector(stage.x, stage.y, stage.z), ...(this.intent !== undefined ? { Intent: this.intent } : {}) };
     }
-    Steer(ply: ZPServerPlayer, requested: GLuaVector, now: number, learner?: BotMotionLearner, sprintPreferred = false, intent?: string): BotSteering {
+    Steer(ply: ZPServerPlayer, requested: GLuaVector, now: number, learner?: BotMotionLearner, sprintPreferred = false, intent?: string, arrivalTolerance = 40): BotSteering {
         const result: BotSteering = { Jump: false, Duck: false, Use: false, Stuck: false }, position = ply.GetPos(), state = physics(ply);
-        if (this.physicsKey !== state.Key) { this.Reset(); learner?.Cancel("physics_changed"); this.physicsKey = state.Key; }
+        if (this.physicsKey !== state.Key) { this.Reset(false); learner?.Cancel("physics_changed"); this.physicsKey = state.Key; }
+        this.arrivalTolerance = Number.isFinite(arrivalTolerance) ? Math.max(4, Math.min(256, arrivalTolerance)) : 40;
         const landed = this.path[0];
         // Credit the old passage before a nearby target changes pursuit into melee dodging.
         if (landed && this.drop.Active() && this.Arrived(ply, landed, false)) {
@@ -117,8 +118,13 @@ export class BotNavigator {
         if (!(this.drop.Active() && state.Mode === "air") && (changedGoal || (now >= this.nextPath && this.path.length === 0))) {
             for (const [key, until] of this.blockedEdges) if (now >= until) this.blockedEdges.delete(key);
             const route = routing.findPath(ply, goal, state, (from, to, distance) => this.blockedEdges.has(from + ">" + to) ? Infinity : learner?.Cost(state.Key + ":" + from + ">" + to, distance, state.Speed) ?? 1);
+            const previous = this.path[0], next = route.Steps[0];
+            const continuing = previous !== undefined && next !== undefined && previous.From !== previous.To &&
+                previous.From === next.From && previous.To === next.To && previous.Ladder === next.Ladder;
             this.path = route.Steps; this.routeKind = route.Kind; this.goalArea = area?.GetID() ?? 0;
-            this.drop.Reset(); this.ground.Reset(); this.precision.Reset(); this.detail = route.Detail ?? diagnostic("ready", this.path[0]?.From ?? 0, this.path[0]?.To ?? 0);
+            // Retargeting beyond the same passage must not restart alignment or descent timers.
+            if (!continuing) { this.drop.Reset(); this.ground.Reset(); this.precision.Reset(); }
+            this.detail = route.Detail ?? diagnostic("ready", this.path[0]?.From ?? 0, this.path[0]?.To ?? 0);
             if (route.Kind === "unreachable" && this.failure && now < this.failure.Until) this.detail = this.failure.Detail;
             this.lastGoal = Vector(goal.x, goal.y, goal.z); this.nextPath = now + (route.Kind === "unreachable" ? 5 : 1); this.replans++;
         } else if (this.routeKind === "complete") {
@@ -132,7 +138,7 @@ export class BotNavigator {
         }
         if (this.path.length === 0 && this.routeKind === "approach") { this.routeKind = "unreachable"; this.nextPath = now + 5; }
         const height = goal.z - position.z, local = this.routeKind === "missing" &&
-            (state.Mode === "water" || (height >= -80 && height <= Math.max(48, state.Jump * state.Jump / (2 * state.Gravity) * 0.85)));
+            (state.Mode === "water" || (height >= -80 && height <= jumpReach(state)));
         if (this.path.length === 0 && !local && this.routeKind !== "complete") {
             this.route = "none"; this.remaining = Math.sqrt(position.DistToSqr(goal)); learner?.Cancel("route_unavailable", state.Mode === "air");
             result.Stuck = true; result.Unreachable = this.routeKind !== "partial"; return result;
@@ -161,14 +167,24 @@ export class BotNavigator {
             const control = ladder.steer(ply, step, state.Width); target = control.Target; ladderAim = control.Aim;
         }
         const current = navmesh.IsLoaded() ? routing.nearest(position, 100) : undefined;
-        const jump = (step.Area?.HasAttributes(NAV_MESH_JUMP) ?? false) || (step.Position.z - position.z > 18 && state.Mode === "ground");
+        const entry = step.Area?.GetClosestPointOnArea(position) ?? step.Position;
+        const nearEntry = (entry.x - position.x) ** 2 + (entry.y - position.y) ** 2 <= (state.Width + 48) ** 2;
+        const departure = step.Source?.GetClosestPointOnArea(step.Position);
+        const nearDeparture = departure !== undefined && (departure.x - position.x) ** 2 + (departure.y - position.y) ** 2 <= (state.Width + 48) ** 2;
+        const jump = (nearEntry || nearDeparture) && ((step.Area?.HasAttributes(NAV_MESH_JUMP) ?? false) || (entry.z - position.z > 18 && state.Mode === "ground"));
         const duck = (current?.HasAttributes(NAV_MESH_CROUCH) ?? false) || (step.Area?.HasAttributes(NAV_MESH_CROUCH) ?? false);
-        const precision = !descent && !step.Ladder && !jump ? this.precision.Control(ply, step, state, duck, now) : undefined;
+        let precision = !descent && !step.Ladder && !jump ? this.precision.Control(ply, step, state, duck, now) : undefined;
         if (descent || step.Ladder || jump) this.precision.Reset();
         if (precision) { target = precision.Target; result.Precision = true; }
         let checkpoint = !precision && !descent && !step.Ladder ? this.ground.Control(ply, step, state.Width, state.Speed, false) : undefined;
         if (checkpoint) target = checkpoint.Target;
         let surface = precision?.Surface ?? movement.options(ply, target, state, this.stuckAttempts > 0, jump, duck, sprintPreferred || this.remaining > 350, ladderAim, descent?.Crossing);
+        if (!precision && !descent && !step.Ladder && !jump && state.Mode === "ground" && surface.Obstacle && !surface.Dynamic) {
+            const approach = this.precision.Control(ply, step, state, duck, now, true);
+            if (approach && approach.Surface.Options.length > 0) {
+                precision = approach; target = approach.Target; surface = approach.Surface; result.Precision = true;
+            } else this.precision.Reset();
+        }
         if (!precision && !checkpoint && !descent && !step.Ladder && state.Mode === "ground" && surface.Ground &&
             !surface.Options.some(option => option.Action === "forward" || option.Action === "duck" || option.Action === "sprint")) {
             checkpoint = this.ground.Control(ply, step, state.Width, state.Speed, true);
@@ -182,6 +198,7 @@ export class BotNavigator {
             const pace = descent?.SpeedLimit ?? checkpoint?.SpeedLimit;
             if (pace !== undefined) for (const option of surface.Options) option.SpeedLimit = pace;
         }
+        result.Waypoint = target;
         const frame = this.Frame(ply, step, requested, state, surface.Dynamic, surface.Obstacle, target);
         const controller = precision ? "precision" : descent ? "descent" : checkpoint ? "ground_transition" : step.Ladder ? "ladder" : state.Mode === "water" ? "water" : undefined;
         if (controller) result.Controller = controller;
@@ -198,6 +215,8 @@ export class BotNavigator {
             if (!pick && !frame.Completed) this.detail.Reason = surface.Dynamic ? "occupied" : surface.Obstacle ? "obstacle" : surface.Ground ? "ground" : "stalled";
         }
         if (pick && !frame.Completed) { result.Pick = pick; result.Position = pick.Position; result.Jump = pick.Jump; result.Duck = pick.Duck; }
+        if (!pick && surface.Probe) result.Probe = surface.Probe;
+        if (!pick && surface.SupportProbe) result.SupportProbe = surface.SupportProbe;
         this.expectedSpeed = Math.min(pick?.SpeedLimit ?? Infinity, pick?.Sprint ? state.Run : pick?.Duck ? state.Speed * ply.GetCrouchedWalkSpeed() : state.Speed);
         if (surface.Obstacle) {
             const trace = util.TraceHull({ start: position, endpos: target, filter: ply, mask: MASK_PLAYERSOLID, mins: Vector(-8, -8, 0), maxs: Vector(8, 8, 32) });

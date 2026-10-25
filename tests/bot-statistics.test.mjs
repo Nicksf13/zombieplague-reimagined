@@ -9,7 +9,7 @@ test("integrity evaluation separates stamina flags and records the rules needed 
     values.zp_run_should_drain=true; values.zp_realistic_mode=true
     successRow(); local all=navigationRows(); local after=all[#all]
     assert(before.Settings~=after.Settings and analysis.conditions(before)~=analysis.conditions(after))
-    assert(before.Rewards:match("^integrity%-v2:") and after.Settings:find("DrainEnabled",1,true) and after.Settings:find("Tick",1,true))
+    assert(before.Rewards:match("^objectives%-v3:") and after.Settings:find("DrainEnabled",1,true) and after.Settings:find("Tick",1,true))
 `));
 
 test("navigation success closes once, samples movement and keeps time together with success", () => run(setup + `

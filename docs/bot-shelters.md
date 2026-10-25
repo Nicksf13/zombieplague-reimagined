@@ -14,6 +14,11 @@ Nearby candidates come from
 Where native points are absent, a few projected nav-area corners can qualify
 after geometry checks. This does not identify every mapper-designed hideout.
 
+Administrators can also add role-scoped shelter suggestions through
+**Bots > Tools > Safe points**. See [Authored safe points](bot-safe-points.md)
+for placement, storage and safety checks. These candidates participate in the
+same bounded search and visit policy, with an initial preference.
+
 Search visits at most 48 connected areas, examines 48 connections per area,
 queues at most 128 areas and returns at most 32 distinct point identities.
 Points are keyed by area ID and coordinates rounded to 16-unit cells. Cache
@@ -35,7 +40,9 @@ perception supplies all enemy sightings and remembered positions.
 
 Choice opportunities occur every 8–14 seconds. Human selection probabilities
 are 20% for aggressive, 35% cooperative, 65% defensive and 75% cautious bots.
-Zombies use 40% for aggressive bots and 30% otherwise. Selection randomizes
+Zombies always consider an eligible investigation. Known-threat human escape and
+zombie repositioning bypass the quiet human lottery and retry at most once per
+second; a failed quiet opportunity does not delay urgent cover. Selection randomizes
 among the top three valid candidates; learned preference contributes at most
 0.35 in either direction. A recent human sighting can bias a zombie's search
 for up to 45 seconds, using only the last observed position.
@@ -43,8 +50,9 @@ for up to 45 seconds, using only the last observed position.
 After arrival, humans guard for 6–14 seconds; zombies inspect for 2–4 seconds.
 They look toward connected entrances at eye height. Required crouching remains
 active while stationary and its actual input is visible in movement diagnostics.
-Combat, a close threat or substantial damage can interrupt a visit. Pursuit of
-a known enemy takes priority for zombies. Human shelter plans can continue
+Combat, compromised cover or substantial damage can interrupt a visit. A nearby
+threat does not cancel travel to still-viable cover. Zombies can use cover during
+repositioning; ordinary pursuit takes priority over hiding-place patrols. Human shelter plans can continue
 after losing sight of a threat.
 
 Every completed/interrupted visit imposes a 35–65 second point cooldown and
@@ -61,8 +69,8 @@ escapes into cover, deaths/infections, empty completed inspections, incoming
 damage and sampled holding time. Quiet survival supplies no positive reward.
 
 Once per visit, a zombie can earn +0.8 for actually seeing a human near the
-investigated point. A human can earn +0.6 for losing sight of a recent threat
-after reaching cover, with geometry confirming protection. Damage subtracts
+investigated point. A human can earn +0.6 only after arrival and three continuously observed seconds of protection,
+with no recent hostile damage, geometric cover and over 320 units of separation. Damage subtracts
 up to one normalized-health unit per event; death/infection subtracts one.
 An empty zombie inspection costs 0.15; failed navigation costs 0.25. On visit
 completion the estimate moves 20% toward the accumulated reward clamped to
@@ -100,3 +108,10 @@ In GMod, verify shelter suitability, entrance scanning, interruptions, route
 coverage, crouched clearance, ladder attachment/dismount and tick cost at the
 intended bot count. Automated tests do not establish reliable physical traversal
 or increased match skill on a real map.
+
+Place identities now use a `v2:` prefix to isolate the changed outcome semantics.
+Old records remain readable, subject to the existing 64-record retention bound.
+Endpoint cover and two straight-route samples estimate exposure; actual NavMesh
+access is checked by the navigator. This is not a full tactical route optimizer.
+See [decision contracts and evaluation](bot-objectives.md) for hearing, temporary
+investigation memory and the engine scenario matrix.

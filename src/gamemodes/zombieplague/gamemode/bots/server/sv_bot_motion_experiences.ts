@@ -66,10 +66,8 @@ export class BotMotionExperiences implements ExperienceContract {
         const attempt = this.Current; this.Current = undefined;
         if (!attempt) return;
         attempt.End = end; attempt.Reason = reason;
-        if ((attempt.ShotDamage ?? 0) > 0) {
-            this.Add(-Math.max(0, attempt.Reward) - Math.min(1, (attempt.ShotDamage ?? 0) / 100), "jump_exposure", attempt);
-            attempt.End = "failure"; attempt.Reason = "confirmed_jump_damage";
-        }
+        // A shot during flight establishes exposure, not a failed jump. Combat owns that damage;
+        // crossing progress, grounded completion and attributed falls establish the movement outcome.
         if (attempt.End === "observed" && now - attempt.Started >= 0.45 && attempt.Reward <= 0) this.Add(-0.45, "no_progress", attempt);
         this.Flush(now);
     }

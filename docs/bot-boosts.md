@@ -1,9 +1,11 @@
 # Cooperative bot boosts
 
-Admins and superadmins can open **F4 > Administration > Bots > Get boost tool** to
+Admins and superadmins can open **F4 > Administration > Bots > Tools > Get boost tool** to
 equip the temporary `zp_bot_boost_tool` SWEP. It uses the built-in toolgun models
-and starts in selection mode, or resumes that admin's unfinished draft. F4 only
-equips the weapon; the editor creates no Derma windows. The editor stores up to 32 directed,
+and automatically opens its on-weapon action menu after equipment is acknowledged.
+The initial choices include New and Select a saved boost; R closes or reopens
+the menu. An unfinished draft is retained, and ordinary polling never reopens a
+dismissed menu. The editor creates no Derma windows. It stores up to 32 directed,
 three-point maneuvers per map:
 
 - Blue: the supporting bot's crouched position.
@@ -51,9 +53,23 @@ or adjusting valid points keeps the tool in aiming mode and indicates readiness
 to save; the player opens R to save. The support outline
 is crouched; the jump-point and destination outlines are standing guides, not
 class-specific clearance guarantees.
-End editing or changing weapons releases the tool. The SWEP handles prediction
-and explicitly forwards callbacks to the client in singleplayer, without global
-attack-binding interception.
+End editing or changing weapons releases the tool. The client editor reads
+attack, secondary attack and reload from `CreateMove` while a living admin has
+the editor open and this weapon equipped. It consumes only those three buttons,
+leaving movement, aim and unrelated buttons intact. One press performs one UI
+action; holding a button does not repeat it. Reload has priority over secondary
+and primary attack when several buttons become pressed in the same command.
+Typing, console/game menus and a visible cursor suppress editor actions, and a
+held button must be released before it can act after those inputs close.
+
+This path works independently of predicted SWEP attack/reload callbacks in both
+singleplayer and multiplayer. Those callbacks perform no editor actions, so
+engine replays cannot double-submit a placement or toggle. The legacy
+`ZPBotBoostToolAction` listener remains available for explicit addon integration.
+Server requests still validate the active leased tool, permission, geometry and
+revision; client input handling grants no editing authority. The command API is
+documented by Facepunch under [CreateMove](https://wiki.facepunch.com/gmod/GM:CreateMove)
+and [CUserCmd:RemoveKey](https://wiki.facepunch.com/gmod/CUserCmd:RemoveKey).
 
 The toolgun's built-in screen shows the selected boost, selection/editing mode,
 all three colored roles with the active role highlighted, placement checks,
@@ -69,6 +85,21 @@ Full instructions and errors appear near the top right on wide screens, away
 from health and round HUD cards. Compact layouts center this panel at the top
 to preserve the ammo-pack card at the right. The screen and panel use the active
 theme, and every new/changed caption is present in all 32 language catalogs.
+
+Equipment failures also appear in chat, using the existing localized error, and
+release the temporary tool session immediately. Equipment requires a living
+administrator; training spectators cannot equip it. A tool that never arrives
+on the client reports a timeout once after five seconds. Normal weapon switching
+still closes the editor silently, and short client replication delays remain
+allowed.
+
+If the tool equips but its controls and overlays do not initialize, inspect the
+client console for missing includes such as `sh_bot_boost_rules.lua`. That error
+aborts the editor's startup before its action hooks are registered. Build and
+distribute the complete gamemode, then fully restart the server and reconnect;
+hot-refreshing the entry point does not establish that newly added client
+dependencies were delivered. The current server entry point distributes the
+rules before the boost client files, and local startup tests verify that list.
 
 The client preview checks surface direction, static surface type, range and
 shared distance/height rules. Invalid surfaces or dimensions use a red outline.
@@ -185,12 +216,21 @@ Local tests exercise capture authority, access control, stale revisions,
 malformed snapshots, persistence and failed writes, same-team pairing, class
 reach, contact/launch/landing phases, wrong-floor failure, neutral cancellation,
 input-token invalidation, class/map separation, learning disabled, weapon-screen
-menu navigation and confirmations, live aim previews, role cycling, prediction replay,
-singleplayer callback forwarding and temporary weapon cleanup. Editor regressions
+menu navigation and confirmations, live aim previews, role cycling, native command
+input independent of prediction, inert SWEP callbacks and temporary weapon cleanup. Editor regressions
 also cover ordinary admin access, all-point visibility, immediate editing from
 both selection paths, wheel isolation from weapon switching, current-draft resume,
 save/discard/cancel continuations, named deletion, exact error measurements,
-draft recovery after timeouts and concurrent catalog changes. They simulate the
+draft recovery after timeouts and concurrent catalog changes. Equipment regressions
+cover visible refusal messages without a weapon HUD, one-time timeout notices,
+replication delay and silent cleanup after normal weapon switching. The build
+generated 420 Lua files and all 773 tests passed after the equipment, command
+input and initial action-menu changes. Initial-menu coverage verifies automatic
+opening, retained drafts and polling that leaves a dismissed menu closed.
+Input coverage includes held-button suppression, independent movement,
+typing/cursor guards, other weapons, permissions and closed sessions. No engine
+session was run to confirm the reported inert-tool symptom.
+They simulate the
 engine; they do not establish
 that player-on-player collision and crouch-jump timing work on a real ledge.
 

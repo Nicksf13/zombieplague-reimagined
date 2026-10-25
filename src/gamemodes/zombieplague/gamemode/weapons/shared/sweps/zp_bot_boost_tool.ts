@@ -20,16 +20,12 @@ for (const ammo of [SWEP.Primary, SWEP.Secondary]) {
     ammo.ClipSize = -1; ammo.DefaultClip = -1; ammo.Automatic = false; ammo.Ammo = "none";
 }
 SWEP.Initialize = function (): void { this.SetHoldType("revolver"); };
-// Predicted callbacks dispatch once on the owning client. Singleplayer needs an explicit client call.
-function action(weapon: ZPScriptedWeapon, method: string, operation: number): void {
-    if (SERVER) { if (game.SinglePlayer()) weapon.CallOnClient(method); return; }
-    if (IsFirstTimePredicted()) hook.Run("ZPBotBoostToolAction", operation);
-}
+// The editor consumes input in CreateMove. Engine callbacks must never replay UI actions.
 SWEP.PrimaryAttack = function (): void {
-    this.SetNextPrimaryFire(CurTime() + 0.2); action(this, "PrimaryAttack", 0);
+    this.SetNextPrimaryFire(CurTime() + 0.2);
 };
 SWEP.SecondaryAttack = function (): void {
-    this.SetNextSecondaryFire(CurTime() + 0.2); action(this, "SecondaryAttack", 1);
+    this.SetNextSecondaryFire(CurTime() + 0.2);
 };
-SWEP.Reload = function (): void { action(this, "Reload", 2); };
+SWEP.Reload = function (): void {};
 SWEP.OnDrop = function (): void { if (SERVER) this.Remove(); };

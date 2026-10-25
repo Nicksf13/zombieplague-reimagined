@@ -1,4 +1,5 @@
 export {};
+include("sv_bot_safe_points.lua");
 const { BotController, isProfile } = include("sv_bot_controller.lua") as typeof import("./sv_bot_controller");
 const { register } = include("sv_bot_commands.lua") as typeof import("./sv_bot_commands");
 const { BotMetricsService } = include("sv_bot_metrics_service.lua") as typeof import("./sv_bot_metrics_service");
@@ -26,7 +27,16 @@ ConvarManager.CreateConVar("zp_bot_learning_trace", 0, 8, "Log bounded learning 
 ConvarManager.CreateConVar("zp_bot_learning_trace_bot", 0, 8, "Diagnostic bot identity filter; zero includes every managed bot");
 // A single realm instance owns all bots and saved identities. Engine callbacks never use SteamID64 as a bot key.
 export const bots = new BotController();
+const { BotRecording } = include("sv_bot_recording.lua") as typeof import("./sv_bot_recording");
+const { BotRecordingService } = include("sv_bot_recording_service.lua") as typeof import("./sv_bot_recording_service");
+export const recording = new BotRecording(bots, bots.Statistics.Session, bots.Statistics.Code);
+const recordingService = new BotRecordingService(recording);
+util.AddNetworkString("ZPBotRecordingRequest"); util.AddNetworkString("ZPBotRecordingReply");
+net.Receive("ZPBotRecordingRequest", (length, ply) => recordingService.Receive(length, ply));
+hook.Add("PlayerDisconnected", "ZPBotRecording", ply => recordingService.Remove(ply));
+timer.Create("ZPBotRecording", 0.5, 0, () => recording.Tick());
 concommand.Add("zp_bot_learning_trace_export", ply => { if (!IsValid(ply) || ply.IsSuperAdmin()) bots.Trace.Export(); });
+concommand.Add("zp_bot_activity_export", ply => { if (!IsValid(ply) || ply.IsSuperAdmin()) bots.Activity.Export(); });
 concommand.Add("zp_bot_learning_trace_mark", (ply, _command, args) => {
     if (IsValid(ply) && !ply.IsSuperAdmin()) return;
     const id = tonumber(args[0] ?? "");
@@ -64,6 +74,20 @@ util.AddNetworkString("ZPBotMetricsReply");
 net.Receive("ZPBotMetricsRequest", (length, ply) => metrics.Receive(length, ply));
 hook.Add("PlayerDisconnected", "ZPBotMetrics", ply => metrics.Remove(ply));
 if (BOT_MODE) {
+    hook.Add("PostEntityFireBullets", "ZPBotHearing", entity => {
+        if (!IsValid(entity) || !cvars.Bool("zp_bot_ai_enabled", true) || RoundManager.GetRoundState() !== ROUND_PLAYING) return;
+        const source = entity.IsPlayer() ? entity : entity.GetOwner();
+        if (IsValid(source) && source.IsPlayer()) {
+            const weapon = source.GetActiveWeapon();
+            // Unknown SWEPs may fire silent bullets. Add an explicit audible adapter before supporting them.
+            if (IsValid(weapon) && ["weapon_pistol", "weapon_357", "weapon_smg1", "weapon_ar2", "weapon_shotgun"].includes(weapon.GetClass()))
+                bots.Hearing.Emit(source, entity.WorldSpaceCenter(), "gunshot", CurTime());
+        }
+    });
+    hook.Add("PlayerFootstep", "ZPBotHearing", (ply, position, _foot, sound, volume) => {
+        if (ply.GetFootstep() && sound !== "" && volume > 0 && cvars.Bool("zp_bot_ai_enabled", true) && RoundManager.GetRoundState() === ROUND_PLAYING)
+            bots.Hearing.Emit(ply, position, "footstep", CurTime());
+    });
     register(bots, isProfile, spawner);
     hook.Add("Think", "ZPAdaptiveBots", () => bots.Update());
     hook.Add("StartCommand", "ZPAdaptiveBots", (ply, command) => bots.Command(ply, command));

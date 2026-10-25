@@ -1,5 +1,5 @@
 import type { MotionPhysics } from "./sv_bot_motion_physics";
-const { jumpHeight } = include("sv_bot_motion_physics.lua") as typeof import("./sv_bot_motion_physics");
+const { jumpReach } = include("sv_bot_motion_physics.lua") as typeof import("./sv_bot_motion_physics");
 const { fallRisk, diagnostic } = include("sv_bot_traversal.lua") as typeof import("./sv_bot_traversal");
 export interface NavStep { Position: GLuaVector; Area?: GLuaNavArea; Source?: GLuaNavArea; From: number; To: number; Ladder?: GLuaNavLadder; }
 export interface NavRoute { Steps: NavStep[]; Kind: "complete" | "partial" | "approach" | "missing" | "unreachable"; Detail?: ZPBotNavigationDiagnostic; }
@@ -29,7 +29,7 @@ export function connections(area: GLuaNavArea): NavStep[] {
 export function findPath(ply: ZPServerPlayer, destination: GLuaVector, physics: MotionPhysics,
     multiplier: (this: void, from: number, to: number, distance: number) => number, origin = ply.GetPos()): NavRoute {
     if (!navmesh.IsLoaded()) return { Steps: [], Kind: "missing", Detail: diagnostic("missing", 0, 0) };
-    const start = physics.Mode === "water" || physics.Mode === "ladder" ? nearest(origin, 250) : floorArea(origin, 250, physics.Mode === "air" ? Math.max(64, jumpHeight(physics) + 24) : 64);
+    const start = physics.Mode === "water" || physics.Mode === "ladder" ? nearest(origin, 250) : floorArea(origin, 250, physics.Mode === "air" ? Math.max(64, jumpReach(physics) + 24) : 64);
     const goal = floorArea(destination, 400, physics.Mode === "water" ? 1000 : 64);
     if (!start || !goal) return { Steps: [], Kind: "missing", Detail: diagnostic("missing", start?.GetID() ?? 0, goal?.GetID() ?? 0) };
     if (goal.IsBlocked(-2) || (goal.IsUnderwater() && physics.Mode !== "water")) return { Steps: [], Kind: "unreachable", Detail: diagnostic("obstacle", start.GetID(), goal.GetID()) };
@@ -64,7 +64,7 @@ export function findPath(ply: ZPServerPlayer, destination: GLuaVector, physics: 
             if (closed[step.To]) continue;
             const risk = fallRisk(ply, -height, physics);
             const reason: ZPBotNavReason | undefined = other.IsBlocked(-2) || (other.IsUnderwater() && physics.Mode !== "water") ? "obstacle" :
-                !step.Ladder && height > Math.max(48, jumpHeight(physics)) ? "height" : !step.Ladder && !risk.Allowed ? "fall" : undefined;
+                !step.Ladder && height > Math.max(48, jumpReach(physics)) ? "height" : !step.Ladder && !risk.Allowed ? "fall" : undefined;
             if (reason) {
                 const proximity = distance(other.GetCenter(), destination);
                 if (proximity < rejectionDistance) { rejected = diagnostic(reason, step.From, step.To, height, risk.Damage); rejectionDistance = proximity; }

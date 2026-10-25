@@ -21,21 +21,23 @@ class BotBoostEditor implements ZPBotBoostEditor {
     private toolReady = false;
     private equipDeadline = 0;
     private escapeDown = false;
-    private reloadDown = false;
     private reconcile = false;
     private editingSlot = 2;
+    private inputDown = new Set<number>();
     private Allowed(): boolean { const ply = LocalPlayer(); return IsValid(ply) && ply.IsAdmin(); }
     private Active(): boolean { const weapon = LocalPlayer().GetActiveWeapon(); return IsValid(weapon) && weapon.GetClass() === "zp_bot_boost_tool"; }
     Open(): void {
         if (!this.Allowed()) return;
         if (this.opened) { this.Show(); return; }
+        _G.ZPBotSafeEditor?.Close();
         this.opened = true; this.data = undefined; this.slot = 0; this.selected = 0; this.feedback = ""; this.reconcile = false;
         this.toolReady = false; this.equipDeadline = CurTime() + 5; this.Request(10, 0);
     }
     Close(): void {
         if (this.opened) this.Send(11, 0);
         screen.Restore();
-        this.opened = false; this.slot = 0; this.pending = undefined; this.deferred = undefined; this.continuation = undefined; this.confirm = undefined; this.reloadDown = false; this.Hide();
+        this.inputDown.clear();
+        this.opened = false; this.slot = 0; this.pending = undefined; this.deferred = undefined; this.continuation = undefined; this.confirm = undefined; this.Hide();
     }
     private Hide(): void { this.menu.Close(); }
     private Show(): void { this.menu.Open(this.confirm ? 22 : undefined); }
@@ -99,12 +101,18 @@ class BotBoostEditor implements ZPBotBoostEditor {
         const keys: Record<ZPBotBoostFeedback, string> = { ready: "botboostready", saved: "botboostsaved", invalid: "botboostinvalid", error: "adminerror", missing: "botnavreasonmissing", busy: "botboostretry", testing: "botboosttesting", success: "botboostsuccess", failed: "botboostfailed" };
         if (operation !== 0 || ["testing", "success", "failed"].includes(data.Feedback)) this.feedback = language.GetPhrase("zombieplague." + keys[data.Feedback]);
         const accepted = data.Feedback === "ready" || data.Feedback === "saved" || data.Feedback === "testing";
+        // Equipment failures cannot be shown on a weapon the player never received.
+        if (operation === 10 && !accepted) {
+            chat.AddText(ui.issueText(data.Issue) || this.feedback);
+            this.Close(); return;
+        }
         const recovering = operation === 0 && this.reconcile;
         if (operation === 0) this.reconcile = false;
         if ((accepted && [1, 9, 10].includes(operation)) || recovering) {
             this.slot = data.Editing ? Math.max(2, [data.Draft.Base, data.Draft.Approach, data.Draft.Exit].findIndex(point => point.length !== 3) + 2) : 0;
             if (operation === 1 || operation === 9) this.Hide();
         }
+        if (operation === 10 && accepted) this.menu.Open(1);
         if (operation >= 2 && operation <= 4 && accepted) {
             const missing = [data.Draft.Base, data.Draft.Approach, data.Draft.Exit].findIndex(point => point.length !== 3);
             if (missing !== -1) this.slot = missing + 2;
@@ -120,8 +128,6 @@ class BotBoostEditor implements ZPBotBoostEditor {
     ToolAction(operation: number): void {
         if (!this.opened || !this.Allowed() || !this.Active()) return;
         if (operation === 2) {
-            if (this.reloadDown) return;
-            this.reloadDown = LocalPlayer().KeyDown(IN_RELOAD);
             if (this.menu.IsOpen()) this.CancelMenu(); else this.Show();
             return;
         }
@@ -142,6 +148,19 @@ class BotBoostEditor implements ZPBotBoostEditor {
             const target = preview.capture(this.data?.Draft, this.slot);
             if (target.Valid) this.Request(this.slot); else this.feedback = ui.issueText(target.Issue);
         }
+    }
+    Input(command: ZPClientUserCommand): void {
+        if (!this.opened || !this.Allowed() || !this.Active() || !LocalPlayer().Alive()) { this.inputDown.clear(); return; }
+        let operation: number | undefined;
+        for (const [key, action] of [[IN_RELOAD, 2], [IN_ATTACK2, 1], [IN_ATTACK, 0]] as const) {
+            const down = command.KeyDown(key);
+            if (down && !this.inputDown.has(key) && operation === undefined) operation = action;
+            if (down) this.inputDown.add(key); else this.inputDown.delete(key);
+            command.RemoveKey(key);
+        }
+        // Consume before the engine processes the SWEP. One physical press owns one UI action.
+        if (operation !== undefined && !LocalPlayer().IsTyping() && !gui.IsGameUIVisible() &&
+            !gui.IsConsoleVisible() && !vgui.CursorVisible()) this.ToolAction(operation);
     }
     private ToggleEditing(): void {
         if (this.slot !== 0) {
@@ -172,11 +191,14 @@ class BotBoostEditor implements ZPBotBoostEditor {
         if (!this.opened) return;
         if (!this.Allowed()) { this.Close(); return; }
         if (this.Active()) this.toolReady = true;
-        else if (this.toolReady || CurTime() >= this.equipDeadline) { this.Close(); return; }
+        else if (this.toolReady) { this.Close(); return; }
+        else if (CurTime() >= this.equipDeadline) {
+            chat.AddText(language.GetPhrase("zombieplague.weaponmenutimeout"));
+            this.Close(); return;
+        }
         const escape = input.IsKeyDown(KEY_ESCAPE);
         if (escape && !this.escapeDown && this.menu.IsOpen()) this.CancelMenu();
         this.escapeDown = escape;
-        if (!LocalPlayer().KeyDown(IN_RELOAD)) this.reloadDown = false;
         if (this.pending && CurTime() >= this.pending.Deadline) { this.reconcile = this.pending.Operation !== 0; this.pending = undefined; this.continuation = undefined; this.feedback = language.GetPhrase("zombieplague.weaponmenutimeout"); }
         if (!this.pending && this.deferred && CurTime() >= this.nextSend) { const next = this.deferred; this.deferred = undefined; this.Request(next.Operation, next.ID); }
         else if (!this.pending && !this.deferred && CurTime() >= this.nextPoll) this.Request(0);
@@ -194,6 +216,7 @@ class BotBoostEditor implements ZPBotBoostEditor {
 const editor = new BotBoostEditor(); _G.ZPBotBoostEditor = editor;
 net.Receive("ZPBotBoostReply", length => editor.Receive(length));
 hook.Add("Think", "ZPBotBoostEditor", () => editor.Tick());
+hook.Add("CreateMove", "ZPBotBoostInput", command => editor.Input(command));
 hook.Add("ZPBotBoostToolAction", "ZPBotBoostEditor", operation => editor.ToolAction(operation));
 hook.Add("PlayerBindPress", "ZPBotBoostPointWheel", (_ply, bind, pressed) => editor.Wheel(bind, pressed));
 hook.Add("PreDrawViewModel", "ZPBotBoostScreen", (vm, ply, weapon) => editor.Screen(vm, ply, weapon));

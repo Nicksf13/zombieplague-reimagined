@@ -10,6 +10,7 @@ interface ZPClientPlayer {
     KeyDown(this: ZPClientPlayer, key: number): boolean;
 }
 declare const IN_RELOAD: number;
+interface ZPClientUserCommand { KeyDown(this: ZPClientUserCommand, key: number): boolean; }
 /** @noSelf */
 declare namespace hook { function Add(name: "ZPBotBoostToolAction", id: string, callback: (this: void, operation: number) => void): void; }
 /** @noSelf */

@@ -13,7 +13,7 @@ selects an active profile using a contextual score:
 The assigned profile receives a prior of 0.15; other profiles start at zero.
 Profiles are aggressive, cooperative, defensive and cautious. Separate estimates
 cover the existing role, low/healthy life, numerical disadvantage and range
-contexts. Thus a successful cautious episode does not teach every bot to be
+contexts, with separate quiet/pressured versioned contexts. Thus a successful cautious episode does not teach every bot to be
 cautious in every situation.
 
 Normally the highest-weight profile supplies the action rules. Approximately 8%
@@ -37,8 +37,8 @@ reassigning it retains the existing reset semantics. Automatic trials never
 reassign it and never reset experience.
 
 Profile estimates use the optional `Behaviors` field in each identity's existing
-`data/zombieplague/bots/learning-v3.json` record. It accepts up to 24 combat
-contexts with four validated profile estimates each. Older records without the
+`data/zombieplague/bots/learning-v3.json` record. It accepts up to 72 combat contexts
+(24 legacy plus 48 versioned) with four validated profile estimates each. Older records without the
 field retain their action estimates and start with neutral profile estimates.
 Verified backups, failure retries and corruption protection follow the shared
 store's existing rules. Map-specific metric files contain empty behavior tables.
@@ -59,3 +59,7 @@ changes, independent identities, held contexts, disabled learning and safety
 rules. `tests/bot-behavior-storage.test.mjs` covers map/restart continuity, older
 records, malformed estimates and controller/spacing integration. Tests simulate
 GMod; improved match performance still needs measurement in the engine.
+
+Current tactical keys use `v2:` and a `quiet`/`pressured` suffix. Legacy action
+and profile estimates remain readable and saved, but are not queried for new
+contexts. See [decision contracts and evaluation](bot-objectives.md).

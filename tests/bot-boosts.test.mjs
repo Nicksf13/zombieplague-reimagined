@@ -22,7 +22,7 @@ test("wrong-floor landings fail and cooldowns prevent immediate repeated boosts"
 test("freeze, infection, class/physics changes and disconnect cancel pending boosts neutrally", () => run(boostSetup + `
     savePoint()
     for _,kind in ipairs({"freeze","team","physics","cancel"}) do
-        now=now+3; support.ducking=false; climber.position=Vector(-64,0,0); climber.team=TEAM_ZOMBIES; climber.jumpPower=200
+        now=now+6; support.ducking=false; climber.position=Vector(-64,0,0); climber.team=TEAM_ZOMBIES; climber.jumpPower=200
         RoundManager.FreezeTimeActive=false; assert(start())
         if kind=="freeze" then RoundManager.FreezeTimeActive=true
         elseif kind=="team" then climber.team=TEAM_HUMANS
@@ -56,6 +56,17 @@ test("automatic boosts join two separately reachable navmesh regions without edi
     savePoint(); assert(#source.adjacent==0)
     assert(manager:Start(climber,Vector(64,0,72),{support,climber},now))
     assert(#source.adjacent==0 and #upper.adjacent==0)
+`));
+
+test("escape cooperation uses a known exit that increases separation without learning a neutral cancellation as failure", () => run(boostSetup + `
+    savePoint()
+    assert(manager:Escape(climber,Vector(-400,0,0),{support,climber},now))
+    assert(manager:Sessions()[1].Climber==climber:EntIndex())
+    manager:Cancel(climber)
+    assert(not manager:Escape(climber,Vector(-400,0,0),{support,climber},now+0.2))
+    assert(manager.Store:Results()[1].Failures==0 and manager.Store:Results()[1].Successes==0)
+    now=now+6
+    assert(not manager:Escape(climber,Vector(100,0,0),{support,climber},now), "an exposed assembly beside the threat is unsuitable")
 `));
 
 test("controller executes ordinary crouch and jump inputs and immediately suppresses a cancelled partner plan", () => run(boostSetup + `

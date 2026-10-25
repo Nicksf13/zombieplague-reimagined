@@ -1,5 +1,5 @@
 export {};
-const actions: readonly ZPBotMove[] = ["forward", "back", "left", "right", "diagonalleft", "diagonalright", "jump", "jumpleft", "jumpright", "duck", "duckleft", "duckright", "sprint", "swim", "climb"];
+const actions: readonly ZPBotMove[] = ["forward", "back", "left", "right", "diagonalleft", "diagonalright", "jump", "jumpleft", "jumpright", "duck", "duckleft", "duckright", "sprint", "swim", "climb", "jumpduck"];
 const record = (value: unknown): Record<string, unknown> | undefined => typeof value === "object" && value !== null ? value as Record<string, unknown> : undefined;
 const number = (value: unknown, min = 0, max = 1e12): value is number => typeof value === "number" && value === value && value >= min && value <= max;
 const integer = (value: unknown, max = 1e9): value is number => number(value, 0, max) && value % 1 === 0;
@@ -45,7 +45,8 @@ function diagnostic(value: unknown): ZPBotMoveDiagnostic | undefined {
     const data = record(value), path = record(data?.Path), values = record(data?.Values), passage = record(data?.Passage);
     if (!data || !path || !values || !passage || Object.keys(passage).length !== 3 || !actions.some(action => action === data.Action) || !["ground", "air", "water", "ladder"].some(mode => mode === data.Mode) ||
         !integer(data.From) || !integer(data.To) || !integer(data.Samples) || !number(data.Reward, -2, 2) || !number(data.Progress, -1e12) ||
-        !integer(data.Keys, 2147483647) || !number(data.Look, -89, 89) || Object.keys(path).length > 15 || Object.keys(path).length % 3 !== 0 || Object.keys(values).length !== actions.length) return;
+        !integer(data.Keys, 2147483647) || !number(data.Look, -89, 89) || Object.keys(path).length > 15 || Object.keys(path).length % 3 !== 0 ||
+        (Object.keys(values).length !== actions.length && Object.keys(values).length !== actions.length - 1)) return;
     const output: ZPBotMoveDiagnostic = { Action: data.Action as ZPBotMove, Mode: data.Mode as ZPBotMoveMode, From: data.From, To: data.To,
         Samples: data.Samples, Reward: data.Reward, Progress: data.Progress, Keys: data.Keys, Look: data.Look, Path: [], Values: [], Passage: [],
         Attempts: 0, Successes: 0, Failures: 0, Seconds: 0, Stuck: 0, Breath: 0, Goals: 0, Recoveries: 0, Water: 0, Ladders: 0, Harm: 0 };
@@ -53,7 +54,11 @@ function diagnostic(value: unknown): ZPBotMoveDiagnostic | undefined {
         const amount = data[key]; if (!number(amount)) return; output[key] = amount;
     }
     for (let i = 1; i <= Object.keys(path).length; i++) { const item = path[i]; if (!number(item, -1e7, 1e7)) return; output.Path.push(item); }
-    for (let i = 1; i <= actions.length; i++) { const item = values[i]; if (!number(item, -2, 2)) return; output.Values.push(item); }
+    // jumpduck was appended; preserve the positions of existing diagnostic values.
+    for (let i = 1; i <= actions.length; i++) {
+        const item = i === actions.length && Object.keys(values).length === actions.length - 1 ? 0 : values[i];
+        if (!number(item, -2, 2)) return; output.Values.push(item);
+    }
     for (let i = 1; i <= 3; i++) { const item = passage[i]; if (!number(item)) return; output.Passage.push(item); }
     if ((output.Passage[1] ?? 0) > (output.Passage[0] ?? 0)) return;
     if (data.Navigation !== undefined) {

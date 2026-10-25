@@ -35,7 +35,7 @@ export class BotStatistics implements StatisticsContract {
         const names = files.filter(name => name.startsWith("sv_bot") || name.startsWith("sh_bot"));
         const read = (name: string): string => file.Read("gamemodes/zombieplague/gamemode/" + name, "GAME") ?? "missing";
         names.sort(); this.Code = names.length > 0 ? util.SHA256(names.map(name => name + read(name)).join("\n")) : "unavailable";
-        this.rewards = "integrity-v2:" + util.SHA256(["sv_bot_brain", "sv_bot_behavior", "sv_bot_controller", "sv_bot_motion", "sv_bot_motion_experiences", "sv_bot_motion_causality", "sv_bot_places", "sv_bot_place_learning", "sv_bot_boost_store"].map(name => name + read(name + ".lua")).join("\n"));
+        this.rewards = "objectives-v3:" + util.SHA256(["sv_bot_brain", "sv_bot_behavior", "sv_bot_controller", "sv_bot_objectives", "sv_bot_hearing", "sv_bot_jump_control", "sv_bot_motion", "sv_bot_motion_actions", "sv_bot_motion_experiences", "sv_bot_motion_causality", "sv_bot_places", "sv_bot_place_learning", "sv_bot_boost_store"].map(name => name + read(name + ".lua")).join("\n"));
     }
     Attach(id: number): void { this.tracked.set(id, { Life: 0, Incarnation: ++this.serial, Next: 0 }); }
     private Start(id: number, state: Tracking, ply: ZPServerPlayer, scope: ZPBotScope, policy: string | ((this: void) => string), kind: ZPBotTrial["Kind"], goal?: GLuaVector): ZPBotTrial {

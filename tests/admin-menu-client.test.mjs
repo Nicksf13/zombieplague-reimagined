@@ -52,6 +52,47 @@ local function activeFrame()
 end
 `;
 
+test("safe points in Tools equip a dedicated weapon and close the admin frame", () => run(setup + `
+    local equipped=0; ZPBotSafeEditor={Open=function() equipped=equipped+1 end}
+    for _,theme in ipairs({"classic","hl2","cs16"}) do
+        ZPThemes:UseTheme(theme); ZPAdminMenu:Open(); ZPAdminMenu:Navigate("tools")
+        activeFrame().children[3].children[2]:DoClick()
+        assert(not activeFrame())
+    end
+    assert(equipped==3)
+`));
+
+test("recording menu acknowledges server state, survives theme changes and ignores closed replies", () => run(setup + `
+    local function replyRecording(enabled,seconds,result,path,id,length)
+        uints={id or sent[3],seconds or 0,result or 0}; strings={path or ""}; readBool=enabled
+        receivers.ZPBotRecordingReply(length or 200)
+    end
+    ZPAdminMenu:Open(); ZPAdminMenu:Navigate("recording")
+    assert(sent[1]=="ZPBotRecordingRequest" and sent[4]==0)
+    assert(ZPAdminMenu:GetState().Recording.Pending and not ZPAdminMenu:GetState().Recording.Ready)
+    replyRecording(false,0,0,"",sent[3]+1); assert(ZPAdminMenu:GetState().Recording.Pending)
+    replyRecording(false)
+    assert(ZPAdminMenu:GetState().Recording.Ready)
+    for _,theme in ipairs({"classic","hl2","cs16"}) do
+        ZPThemes:UseTheme(theme); paintAll()
+        assert(ZPAdminMenu:GetState().Page=="recording")
+    end
+    ZPAdminMenu:RecordingAction(1); assert(sent[4]==1)
+    replyRecording(true,20)
+    assert(ZPAdminMenu:GetState().Recording.Enabled and ZPAdminMenu:GetState().Recording.Seconds==20)
+    ZPAdminMenu:RecordingAction(3); assert(sent[4]==3)
+    replyRecording(true,22,1,"data/zombieplague/bots/diagnostics/test.json")
+    assert(ZPAdminMenu:GetState().Recording.Feedback=="zombieplague.brecsaved")
+    assert(ZPAdminMenu:GetState().Recording.Enabled)
+    ZPAdminMenu:RecordingAction(2); local id=sent[3]
+    ZPAdminMenu:Close(); local before=requests
+    replyRecording(false,23,0,"",id)
+    assert(ZPAdminMenu:GetState().Recording.Enabled)
+    ZPAdminMenu:RecordingAction(1); assert(requests==before)
+    viewer.superadmin=false; ZPAdminMenu:Open(); ZPAdminMenu:Navigate("recording")
+    assert(ZPAdminMenu:GetState().Page=="admin")
+`));
+
 test("round page lists authoritative modes, starts eligible modes, and ignores closed or stale replies", () => run(setup + `
     ZPAdminMenu:Open(); ZPAdminMenu:Navigate("rounds")
     assert(sent[1]=="ZPAdminRoundsRequest" and sent[4]==0 and ZPAdminMenu:GetState().Rounds.Pending)
@@ -157,14 +198,15 @@ test("Bots groups creation, boost editing and history without starting diagnosti
         local before=requests
         ZPAdminMenu:Navigate("bots"); assert(requests==before)
         local choices=activeFrame().children[3].children
-        assert(#choices==3)
+        assert(#choices==4)
         choices[1]:DoClick(); assert(ZPAdminMenu:GetState().Page=="botadd")
         ZPAdminMenu:Back(); assert(ZPAdminMenu:GetState().Page=="bots")
         choices=activeFrame().children[3].children
         choices[3]:DoClick(); assert(botCommands[#botCommands][1]=="zp_bot_statistics")
         ZPAdminMenu:Open(); ZPAdminMenu:Navigate("bots")
         local equipped=0; ZPBotBoostEditor={Open=function() equipped=equipped+1 end}
-        activeFrame().children[3].children[2]:DoClick(); assert(equipped==1 and not activeFrame())
+        activeFrame().children[3].children[2]:DoClick(); assert(ZPAdminMenu:GetState().Page=="tools")
+        activeFrame().children[3].children[1]:DoClick(); assert(equipped==1 and not activeFrame())
         ZPAdminMenu:Open(); ZPAdminMenu:Navigate("bots"); ZPAdminMenu:Back()
         assert(ZPAdminMenu:GetState().Page=="admin")
     end

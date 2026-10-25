@@ -1,8 +1,10 @@
 const { BotMetricsClient } = include("cl_bot_metrics.lua") as typeof import("../../bots/client/cl_bot_metrics");
+const { BotRecordingClient } = include("cl_bot_recording.lua") as typeof import("../../bots/client/cl_bot_recording");
 const { BotPopulationClient } = include("cl_bot_population.lua") as typeof import("../../bots/client/cl_bot_population");
 const { ServerCvarsClient } = include("cl_server_cvars.lua") as typeof import("./cl_server_cvars");
 const { AdminRoundsClient } = include("cl_admin_rounds.lua") as typeof import("./cl_admin_rounds");
 export class AdminMenuController implements ZPAdminController {
+    private recording = new BotRecordingClient(() => this.Update());
     private diagnostics = new BotMetricsClient(() => this.Update());
     private population = new BotPopulationClient(() => this.Update());
     private cvars = new ServerCvarsClient(() => this.Update());
@@ -22,7 +24,7 @@ export class AdminMenuController implements ZPAdminController {
     private pending: { ID: number; Deadline: number; } | undefined;
 
     GetState(): ZPAdminState {
-        return { ...this.diagnostics.State(), Rounds: this.rounds.State(), Cvars: this.cvars.State(), BotPopulation: this.population.State(), Page: this.page, Values: [...this.values], Pending: this.pending !== undefined,
+        return { Recording: this.recording.State(), ...this.diagnostics.State(), Rounds: this.rounds.State(), Cvars: this.cvars.State(), BotPopulation: this.population.State(), Page: this.page, Values: [...this.values], Pending: this.pending !== undefined,
             Ready: this.revision > 0, Dirty: this.revision > 0 && ZPAdminConfig.Entries.some((entry, index) => {
                 const value = this.values[index] ?? "", normalized = ZPAdminConfig.Normalize(entry, value);
                 const saved = this.saved[index];
@@ -63,6 +65,8 @@ export class AdminMenuController implements ZPAdminController {
     Navigate(page: ZPAdminPage): void {
         if (!this.opened || !this.Allowed()) return;
         if (page === "population" && !this.GetState().CanAddBot) return;
+        if (page === "recording" && !LocalPlayer().IsSuperAdmin()) return;
+        this.recording.Stop();
         this.page = page;
         if (page !== "cvars") this.cvars.Suspend();
         this.diagnostics.Stop();
@@ -73,10 +77,12 @@ export class AdminMenuController implements ZPAdminController {
         if (page === "environment") this.Refresh();
         if (page === "botadd") this.diagnostics.Start();
         if (page === "population") this.population.Start();
+        if (page === "recording") this.recording.Start();
     }
+    RecordingAction(action: number): void { if (this.opened && this.page === "recording") this.recording.Action(action); }
     Back(): void {
         if (this.page === "population") this.Navigate("botadd");
-        else if (this.page === "botadd") this.Navigate("bots");
+        else if (this.page === "botadd" || this.page === "recording" || this.page === "tools") this.Navigate("bots");
         else if (this.page === "environment" || this.page === "cvars") this.Navigate("settings");
         else if (this.page === "settings" || this.page === "bots" || this.page === "rounds") this.Navigate("admin");
         else { this.Close(); ZPMainMenu.Open(); }
@@ -109,6 +115,7 @@ export class AdminMenuController implements ZPAdminController {
     RefreshRounds(): void { if (this.opened && this.page === "rounds") this.rounds.Refresh(); }
     ReceiveRounds(length: number): void { if (this.Allowed()) this.rounds.Receive(length); }
     Close(): void {
+        this.recording.Stop();
         this.opened = false;
         this.diagnostics.Stop();
         this.population.Stop();
@@ -199,6 +206,7 @@ export class AdminMenuController implements ZPAdminController {
         if (!this.Allowed() || input.IsKeyDown(KEY_ESCAPE)) { this.Close(); return; }
         if (this.page === "botadd") this.diagnostics.Tick();
         if (this.page === "population") this.population.Tick();
+        if (this.page === "recording") this.recording.Tick();
         this.cvars.Tick();
         this.rounds.Tick();
         if (this.pending && CurTime() > this.pending.Deadline) {

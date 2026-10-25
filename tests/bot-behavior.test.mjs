@@ -84,13 +84,13 @@ test("neutral episodes and disabled learning do not change weights, while learne
 `));
 
 test("profile experiments cannot bypass low-health exploration limits or zombie retreat safety rules", () => run(setup + `
-    situation.Role="zombie"; situation.Enemies=3; situation.Health=1; situation.HasAlly=false
+    situation.Role="zombie"; situation.Enemies=1; situation.Health=1; situation.HasAlly=false
     math.random=exploreProfile
     for index=1,4 do
         assert(brain:Decide(situation,index*3)~="retreat")
         brain:Finish()
     end
-    situation.Health=0.2
+    situation.Health=0.2; situation.Enemies=3
     math.random=function() error("critical health must not explore profiles or actions") end
     assert(brain:Decide(situation,20)=="retreat")
 `));

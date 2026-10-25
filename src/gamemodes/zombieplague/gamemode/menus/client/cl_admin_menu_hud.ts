@@ -22,6 +22,11 @@ export class AdminMenuHUD implements ZPAdminPresentation {
     private reload: GLuaPanel | undefined;
     private feedback: GLuaPanel | undefined;
     private botCount: ZPMenuComboBox<number> | undefined;
+    private recordingStart: GLuaPanel | undefined;
+    private recordingStop: GLuaPanel | undefined;
+    private recordingSave: GLuaPanel | undefined;
+    private recordingStatus: GLuaPanel | undefined;
+    private recordingFeedback: GLuaPanel | undefined;
     constructor(private palette: ZPThemePalette, private square: boolean) {}
 
     private Label(parent: GLuaPanel, key: string, y: number, width: number, height: number): GLuaPanel {
@@ -63,6 +68,8 @@ export class AdminMenuHUD implements ZPAdminPresentation {
             draw.RoundedBox(0, 0, 0, w, 3, this.palette.Accent);
         };
         const title = this.Label(frame, state.Page === "admin" ? "zombieplague.admintitle" :
+            state.Page === "tools" ? "zombieplague.admintools" :
+            state.Page === "recording" ? "zombieplague.brectitle" :
             state.Page === "settings" ? "zombieplague.adminmapsettings" :
             state.Page === "rounds" ? "zombieplague.adminroundtitle" :
             state.Page === "cvars" ? ZPServerCvars.Categories[state.Cvars.Category]?.Label ?? "zombieplague.adminmapsettings" :
@@ -91,8 +98,22 @@ export class AdminMenuHUD implements ZPAdminPresentation {
         }
         else if (state.Page === "bots") {
             this.Button(content, "zombieplague.botmetricsadd", 0, 0, rowWidth, () => actions.Navigate("botadd"));
-            this.Button(content, "zombieplague.botboostequip", 0, 48, rowWidth, () => { actions.Close(); ZPBotBoostEditor.Open(); });
+            this.Button(content, "zombieplague.admintools", 0, 48, rowWidth, () => actions.Navigate("tools"));
             this.Button(content, "zombieplague.botstatstitle", 0, 96, rowWidth, () => { actions.Close(); RunConsoleCommand("zp_bot_statistics"); });
+            if (LocalPlayer().IsSuperAdmin()) this.Button(content, "zombieplague.brectitle", 0, 144, rowWidth, () => actions.Navigate("recording"));
+        }
+        else if (state.Page === "tools") {
+            this.Button(content, "zombieplague.botboostequip", 0, 0, rowWidth, () => { actions.Close(); ZPBotBoostEditor.Open(); });
+            this.Button(content, "zombieplague.bsafeequip", 0, 48, rowWidth, () => { actions.Close(); ZPBotSafeEditor.Open(); });
+        }
+        else if (state.Page === "recording") {
+            ZPMenuControls.ScrollPanel(content, this.palette, this.square);
+            this.Label(content, "zombieplague.brechelp", 0, rowWidth, 96);
+            this.recordingStatus = this.Label(content, "", 100, rowWidth, 56);
+            this.recordingStart = this.Button(content, "zombieplague.brecstart", 0, 168, rowWidth, () => actions.RecordingAction(1));
+            this.recordingStop = this.Button(content, "zombieplague.brecstop", 0, 216, rowWidth, () => actions.RecordingAction(2));
+            this.recordingSave = this.Button(content, "zombieplague.brecsave", 0, 264, rowWidth, () => actions.RecordingAction(3));
+            this.recordingFeedback = this.Label(content, "", 312, rowWidth, 120);
         }
         else if (state.Page === "botadd") {
             this.Label(content, "zombieplague.adminbotshelp", 0, rowWidth, 90);
@@ -159,6 +180,16 @@ export class AdminMenuHUD implements ZPAdminPresentation {
     }
     Update(state: ZPAdminState): void {
         this.state = state;
+        const recording = state.Recording;
+        if (recording !== undefined) {
+            this.recordingStart?.SetEnabled(recording.Ready && !recording.Pending && !recording.Enabled);
+            this.recordingStop?.SetEnabled(recording.Ready && !recording.Pending && recording.Enabled);
+            this.recordingSave?.SetEnabled(recording.Ready && !recording.Pending);
+            this.recordingStatus?.SetText(language.GetPhrase(recording.Enabled ? "zombieplague.settingsenabled" : "zombieplague.settingsdisabled") +
+                "\n" + string.format(language.GetPhrase("zombieplague.brechistory"), tostring(recording.Seconds)));
+            this.recordingFeedback?.SetText((recording.Feedback.length > 0 ? language.GetPhrase(recording.Feedback) : "") +
+                (recording.Path.length > 0 ? "\n" + recording.Path : ""));
+        }
         this.botCount?.SetEnabled(state.CanAddBot);
         if (this.botCount && this.botCount.GetText() !== tostring(state.BotCount)) this.botCount.SetValue(tostring(state.BotCount));
         this.addAI?.SetEnabled(state.CanAddBot);
@@ -209,6 +240,8 @@ export class AdminMenuHUD implements ZPAdminPresentation {
         return dialog;
     }
     Destroy(): void {
+        this.recordingStart = undefined; this.recordingStop = undefined; this.recordingSave = undefined;
+        this.recordingStatus = undefined; this.recordingFeedback = undefined;
         this.metrics?.Destroy(); this.metrics = undefined; this.addAI = undefined;
         this.populationView = undefined; this.populationButton = undefined;
         this.cvarsView = undefined;

@@ -20,6 +20,7 @@ include("cl_main_menu_hud.lua");
 include("cl_admin_menu.lua");
 include("cl_admin_menu_hud.lua");
 include("cl_bot_boost.lua");
+include("cl_bot_safe_points.lua");
 include("cl_bot_statistics.lua");
 include("cl_settings.lua");
 include("cl_settings_hud.lua");

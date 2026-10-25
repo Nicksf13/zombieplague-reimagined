@@ -1,4 +1,5 @@
 interface ZPServerPlayer {
+    GetStepSize(this: ZPServerPlayer): number;
     GetHull(this: ZPServerPlayer): LuaMultiReturn<[GLuaVector, GLuaVector]>;
     GetHullDuck(this: ZPServerPlayer): LuaMultiReturn<[GLuaVector, GLuaVector]>;
     GetCrouchedWalkSpeed(this: ZPServerPlayer): number;

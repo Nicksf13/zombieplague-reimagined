@@ -5,6 +5,10 @@ It selects from programmed, feasible maneuvers and learns their observed value.
 It also records traversal outcomes to adjust A* passage costs. It does not infer
 new geometry, invent arbitrary button programs, imitate players or train aiming.
 
+[Crouch jumps](bot-crouch-jumps.md) add a learned standing-launch/airborne-duck
+sequence for elevated passages, using live movement attributes and observed
+checkpoint completion.
+
 ## Goals and checkpoints
 
 The tactical controller supplies a goal and intent identity. Navigation keeps
@@ -65,6 +69,31 @@ a center probe and a small lateral margin of up to three units. This permits
 legitimate beams narrower than a standing hull while rejecting intermediate holes,
 steep support normals and floors more than 24 units below the expected surface.
 The whole collision hull still must pass the ordinary obstruction trace.
+
+For a static blocked approach, precision can retain a supported right-angle
+alignment within 64 units, validating the full hull to the corner and into the
+next segment. A grounded player whose origin overhangs a beam can use a short
+inward recentering backed by actual hull-footprint support; the destination
+still needs ordinary point support. This fallback is limited to recentering
+within 32 units and is rechecked per command.
+
+A narrow target activates precision only within hull width plus 48 units of
+its boundary. Narrow source areas and detected nearby edges retain immediate
+activation. Wide open uphill approaches can therefore retain ordinary movement
+until they reach a narrow passage. Jump eligibility uses the destination's
+local entry height, which can differ from a sloped area's center height.
+
+A grounded world collision on a flat walking sweep can be checked through a
+bounded up/across/down hull path, respecting the player's step height (at most
+24 units here), headroom and walkable landing. Both planning and per-command
+precision movement use this check. It does not bypass player occupancy or
+replace the precision floor-support samples.
+
+Traffic reservations compare immediate movement or blocked alignment waypoints,
+rather than final pursuit destinations. A reservation ends after three seconds
+without movement of either participant, or after twelve seconds overall; failed
+leases give both bots a two-second retry delay. See the
+[crowding incident analysis](canals-crowding-incident.md) for evidence and limits.
 
 The motor also checks support and hull occupancy on every `StartCommand`, rather
 than trusting a plan for the full 0.2-second decision interval. Velocity feedback
@@ -167,25 +196,19 @@ foreign controller are distinct outcomes; see [learning integrity](bot-learning-
 Hostile bullets do not mark movement passages as failures. Trial rewards are
 clamped to +/-2 and estimates move 20% toward a target clamped to +/-1.
 
-Human damage received by an airborne zombie during pursuit also penalizes the
-specific jump maneuver, provided the bot actually issued its ground jump input.
-Selecting a jump without executing it, walking off a ledge, being pushed into the
-air without jumping, swimming and ladder climbing do not qualify. The controller
-requires a fresh pursuit plan, a playing round and active, unfrozen AI. Human
-bots, zombie retreats, friendly hits and unapplied damage do not receive this
-additional movement feedback. Ordinary combat damage feedback remains separate.
+An issued pursuit jump can still record airborne bullet exposure in diagnostics.
+A hit alone does not establish failed traversal and does not negate useful
+crossing progress. Combat feedback owns hostile damage; observed stage completion,
+attributed falls and genuine no-progress outcomes own movement feedback. Knockback
+fences causal movement attribution. No guessed movement failure is added for
+shots that coincide with a useful jump.
 
-Damage is accumulated for the active jump trial and charged to its original
-takeoff context, including diagonal jumps. Positive progress/arrival bonuses
-cannot offset a hit jump's exposure cost: its reward is at most zero before
-subtracting `min(1, damage / 100)`, followed by the existing no-progress timing
-penalty. This uses damage amount rather than hit count; a headshot's greater
-applied damage therefore has a greater cost up to the cap, without changing
-weapon damage or knockback. A forced-motion cancellation commits the injury
-before discarding movement deltas, so getting launched cannot turn into a reward.
-Only the maneuver estimate changes; bullets never teach that the navmesh passage
-itself is impassable. Injury totals and action rewards appear in the existing
-Movement diagnostics, using the same map/class/variant/identity persistence.
+Recovery on clear ground does not introduce jump candidates. Real obstacles and
+nearby navmesh jump transitions retain them. Launch input is issued once per plan,
+with a per-bot cooldown and a retry budget that survives replanning. Actual
+progress reopens the budget; swimming and cooperative boost launches retain their
+normal physical commands. New runtime movement estimate keys use the v2 prefix;
+passage identities and costs keep their existing physical meaning.
 
 The learner chooses finite maneuvers. A short reverse action may help a later
 jump without immediately reducing goal distance; delayed credit across arbitrary

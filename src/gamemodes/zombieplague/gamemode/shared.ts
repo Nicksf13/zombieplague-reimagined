@@ -53,4 +53,5 @@ include("sh_spectator_protocol.lua");
 include("sh_bot_metrics_protocol.lua");
 include("sh_bot_motion_protocol.lua");
 include("sh_bot_place_protocol.lua");
+include("sh_bot_safe_protocol.lua");
 include("sh_bot_boost_protocol.lua");

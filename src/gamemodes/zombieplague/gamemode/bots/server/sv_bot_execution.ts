@@ -1,5 +1,5 @@
 import type { CommandEvidence, ExperienceTrace, Intervention, MovementRequest } from "./sv_bot_experience_trace";
-export interface MotorExecution { Commanded: CommandEvidence; Interventions: Intervention[]; }
+export interface MotorExecution { Commanded: CommandEvidence; Interventions: Intervention[]; AttackGate?: string; }
 export interface ExecutionPlan {
     Decision: string; Experience: string; Stage: string; Action: ZPBotAction; Requested: MovementRequest;
 }

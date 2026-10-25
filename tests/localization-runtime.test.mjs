@@ -4,6 +4,26 @@ import test from "node:test";
 import { run } from "./helpers/lua-runtime.mjs";
 import { books, locales, nativeLanguage } from "./helpers/native-localization.mjs";
 
+test("safe point tools have complete translations including the distance precision parameter", () => {
+    const keys = ["admintools", "bsafetitle", "bsafehelp", "bsafemark", "bsafeaim", "bsaferole", "bsafehuman", "bsafezombie",
+        "bsafeboth", "bsafeempty", "bsafepoint", "bsafesaved", "bsafeinvalid", "bsafecapacity", "bsafestale", "bsafedelete", "bsaferefresh", "bsafeequip", "bsafetoolhint", "bsaferolehint", "bsafemenuhint", "bsafepointhint"];
+    for (const locale of locales) for (const key of keys) {
+        const phrase = books[locale]["zombieplague." + key];
+        assert(phrase?.trim(), `${locale}: ${key}`);
+        assert.deepEqual(phrase.match(/%[-+ #0]*\d*(?:\.\d+)?[sdif]/g) ?? [], key === "bsafepoint" ? ["%d", "%s", "%.0f"] : [], `${locale}: ${key}`);
+        if (key === "bsafehelp" && locale !== "en") assert.notEqual(phrase, books.en["zombieplague." + key]);
+    }
+});
+
+test("recording controls are translated in every catalog with matching parameters", () => {
+    for (const locale of locales) for (const key of ["title", "help", "start", "stop", "save", "saved", "error", "history"]) {
+        const phrase = books[locale]["zombieplague.brec" + key];
+        assert(phrase?.trim(), `${locale}: brec${key}`);
+        assert.deepEqual(phrase.match(/%[sdif]/g) ?? [], key === "history" ? ["%s"] : []);
+        if (locale !== "en") assert.notEqual(phrase, books.en["zombieplague.brec" + key]);
+    }
+});
+
 test("spectator overview controls are translated in all catalogs with consistent parameters", () => {
     for (const locale of locales) for (const key of ["title", "help", "alllevels", "teamonly", "allteams", "unavailable"]) {
         const phrase = books[locale]["zombieplague.overview" + key];

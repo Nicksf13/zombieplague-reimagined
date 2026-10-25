@@ -52,7 +52,7 @@ test("ladder exit uses the destination floor height and permits crouching throug
     local surface=motion.options(bot,exit.Target,physics(bot),false,false,true,false,exit.Aim)
     local pick=surface.Options[1]; assert(pick and pick.Action=="climb" and pick.Duck)
     local cmd=apply(pick); assert(cmd.buttons & IN_DUCK~=0)
-    local prop={IsPlayer=function() return false end,GetClass=function() return "prop_physics" end}
+    local prop={IsPlayer=function() return false end,GetClass=function() return "prop_physics" end,EntIndex=function() return 99 end}
     util.TraceHull=function(options) return {Hit=true,Entity=prop,HitPos=options.endpos} end
     surface=motion.options(bot,exit.Target,physics(bot),false,false,true,false,exit.Aim)
     assert(surface.Dynamic and #surface.Options==0, "temporary props still block ladder commands")

@@ -1,14 +1,33 @@
 import type { BotSteering } from "./sv_bot_navigation";
-const { supported } = include("sv_bot_precision_support.lua") as typeof import("./sv_bot_precision_support");
+const { supported, walkingTrace } = include("sv_bot_precision_support.lua") as typeof import("./sv_bot_precision_support");
 const { options } = include("sv_bot_motion_actions.lua") as typeof import("./sv_bot_motion_actions");
 const { physics } = include("sv_bot_motion_physics.lua") as typeof import("./sv_bot_motion_physics");
+/** Target is the immediate movement target or blocked waypoint, rather than the final pursuit goal. */
 export interface TrafficPeer { Player: ZPServerPlayer; ID: number; Target: GLuaVector | undefined; Busy: boolean; }
-interface Passage { Passer: ZPServerPlayer; Yielder: ZPServerPlayer; Started: number; Origin: GLuaVector; X: number; Y: number; Points: GLuaVector[]; Ready: boolean; }
-interface TrafficContract { Remove(ply: ZPServerPlayer): void; Request(ply: ZPServerPlayer, steering: BotSteering, peers: TrafficPeer[], now: number): void; Control(ply: ZPServerPlayer, now: number): BotSteering | undefined; }
+interface Passage {
+    Passer: ZPServerPlayer; Yielder: ZPServerPlayer; Started: number; Origin: GLuaVector;
+    X: number; Y: number; Points: GLuaVector[]; Ready: boolean;
+    ProgressAt: number; PasserPosition: GLuaVector; YielderPosition: GLuaVector;
+}
+export interface TrafficDiagnostic { Passer: number; Yielder: number; Ready: boolean; Seconds: number; Idle: number; Parking: number[]; }
+interface TrafficContract {
+    Remove(ply: ZPServerPlayer): void;
+    Request(ply: ZPServerPlayer, steering: BotSteering, peers: TrafficPeer[], now: number): void;
+    Control(ply: ZPServerPlayer, now: number): BotSteering | undefined;
+    Diagnostic(ply: ZPServerPlayer, now: number): TrafficDiagnostic | undefined;
+}
 const wait = (): BotSteering => ({ Jump: false, Duck: false, Use: false, Stuck: false, Precision: true });
 export class BotTrafficManager implements TrafficContract {
     private passages = new Map<ZPServerPlayer, Passage>();
     private retry = new Map<ZPServerPlayer, number>();
+    Diagnostic(ply: ZPServerPlayer, now: number): TrafficDiagnostic | undefined {
+        const passage = this.passages.get(ply); if (!passage) return;
+        if (!IsValid(passage.Passer) || !IsValid(passage.Yielder)) return;
+        const target = passage.Points[0];
+        return { Passer: passage.Passer.EntIndex(), Yielder: passage.Yielder.EntIndex(), Ready: passage.Ready,
+            Seconds: Math.max(0, now - passage.Started), Idle: Math.max(0, now - passage.ProgressAt),
+            Parking: target ? [target.x, target.y, target.z] : [] };
+    }
     Remove(ply: ZPServerPlayer): void {
         const passage = this.passages.get(ply);
         if (passage) { this.passages.delete(passage.Passer); this.passages.delete(passage.Yielder); }
@@ -18,7 +37,7 @@ export class BotTrafficManager implements TrafficContract {
     private Parking(ply: ZPServerPlayer, x: number, y: number): GLuaVector[] | undefined {
         const pos = ply.GetPos(), state = physics(ply), [mins, maxs] = ply.GetHull(), margin = state.Width + 12;
         const clear = (from: GLuaVector, to: GLuaVector): boolean => supported(ply, from, to) &&
-            !util.TraceHull({ start: Vector(from.x, from.y, from.z + 4), endpos: Vector(to.x, to.y, to.z + 4), filter: ply, mask: MASK_PLAYERSOLID, mins, maxs }).Hit;
+            !walkingTrace(ply, Vector(from.x, from.y, from.z + 4), Vector(to.x, to.y, to.z + 4), mins, maxs).Hit;
         // Reach a wider section before stepping sideways; never sidestep off a beam.
         for (const back of [0, 32, 64, 96, 128]) {
             const approach = Vector(pos.x + x * back, pos.y + y * back, pos.z);
@@ -44,8 +63,9 @@ export class BotTrafficManager implements TrafficContract {
         const passer = opposite && other.ID < requester.ID ? blocker : ply, yielder = passer === ply ? blocker : ply;
         const x = passer === ply ? dx / distance : -dx / distance, y = passer === ply ? dy / distance : -dy / distance;
         const points = this.Parking(yielder, x, y); if (!points) return;
-        const origin = yielder.GetPos();
-        const passage: Passage = { Passer: passer, Yielder: yielder, Started: now, Origin: Vector(origin.x, origin.y, origin.z), X: x, Y: y, Points: points, Ready: false };
+        const origin = yielder.GetPos(), passerPosition = passer.GetPos();
+        const passage: Passage = { Passer: passer, Yielder: yielder, Started: now, Origin: Vector(origin.x, origin.y, origin.z), X: x, Y: y, Points: points, Ready: false,
+            ProgressAt: now, PasserPosition: Vector(passerPosition.x, passerPosition.y, passerPosition.z), YielderPosition: Vector(origin.x, origin.y, origin.z) };
         this.passages.set(passer, passage); this.passages.set(yielder, passage);
     }
     Control(ply: ZPServerPlayer, now: number): BotSteering | undefined {
@@ -53,7 +73,17 @@ export class BotTrafficManager implements TrafficContract {
         const a = passage.Passer, b = passage.Yielder;
         if (!this.Available(a) || !this.Available(b)) { this.Remove(ply); return; }
         const pos = a.GetPos();
-        if (a.Team() !== b.Team() || now - passage.Started > 12 ||
+        const otherPosition = b.GetPos();
+        if (pos.DistToSqr(passage.PasserPosition) > 16 || otherPosition.DistToSqr(passage.YielderPosition) > 16) {
+            passage.ProgressAt = now;
+            passage.PasserPosition = Vector(pos.x, pos.y, pos.z);
+            passage.YielderPosition = Vector(otherPosition.x, otherPosition.y, otherPosition.z);
+        }
+        // A failed parking maneuver must release both bots before the absolute lease timeout.
+        if (now - passage.ProgressAt > 3 || now - passage.Started > 12) {
+            this.Remove(ply); this.retry.set(a, now + 2); this.retry.set(b, now + 2); return;
+        }
+        if (a.Team() !== b.Team() ||
             (pos.x - b.GetPos().x) * passage.X + (pos.y - b.GetPos().y) * passage.Y > physics(a).Width + 16) {
             this.Remove(ply); return;
         }

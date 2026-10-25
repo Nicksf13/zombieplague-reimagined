@@ -46,6 +46,18 @@ test("connected drops over 100 units follow alignment, edge crossing and landing
     assert(navigator:Diagnostic().Phase=="route", "completed landings do not leave a stale airborne phase")
 `));
 
+test("a new goal beyond the same descent retains crossing and its original failure deadline", () => run(setup + `
+    local farther=newArea(3,400,0,0); platform.adjacent={farther}
+    steer(); bot.position=Vector(16,0,200); now=10.2; steer()
+    assert(navigator:Diagnostic().Phase=="cross")
+    bot.position=Vector(40,0,200); now=10.4
+    navigator:Steer(bot,farther.center,now,learner,false,"pursuit:2")
+    assert(navigator:Diagnostic().Phase=="cross", "retargeting must not send a committed descent back to alignment")
+    now=26
+    navigator:Steer(bot,platform.center,now,learner,false,"pursuit:2")
+    assert(navigator:Diagnostic().Reason=="stalled", "moving goals cannot indefinitely renew a stalled descent")
+`));
+
 test("descent risk follows live class immunity, gravity and remaining health, with bounded nonlethal damage", () => run(setup + `
     bot.fallDamage=true
     local state=physics(bot)
@@ -164,7 +176,9 @@ test("controller exposes descent waypoints and credits landing before melee purs
     bot.airborne=true; bot.position=Vector(80,0,100); bot.velocity=Vector(60,0,-350); now=11.4; bots:Update()
     assert(bots:Diagnostics(0,2).Rows[1].Motion.Navigation.Phase=="land")
     bot.airborne=false; bot.position=Vector(104,0,0); bot.velocity=Vector(0,0,0); now=11.6; bots:Update(); bots:Save()
-    assert(bots:Diagnostics(0,3).Rows[1].Motion.Goals==1)
+    assert(bots:Diagnostics(0,3).Rows[1].Motion.Goals==0, "landing settlement retains its causal owner")
+    now=11.85; bots:Update(); bots:Save()
+    assert(bots:Diagnostics(0,4).Rows[1].Motion.Goals==1)
     local saved
     for path,text in pairs(files) do if path:find("/movement/",1,true) and path:match("/1.json$") then saved=jsonValues[text] end end
     assert(saved and saved.Memory.Passages[physics(bot).Key..":1>2"].Successes==1)

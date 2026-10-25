@@ -1,4 +1,7 @@
-type ZPAdminPage = "admin" | "settings" | "environment" | "cvars" | "bots" | "botadd" | "population" | "rounds";
+type ZPAdminPage = "admin" | "settings" | "environment" | "cvars" | "bots" | "botadd" | "population" | "rounds" | "recording" | "tools";
+interface ZPBotRecordingState {
+    Enabled: boolean; Seconds: number; Path: string; Feedback: string; Ready: boolean; Pending: boolean;
+}
 interface ZPAdminRoundEntry {
     readonly ID: string; readonly Name: string; readonly MinPlayers: number; readonly Allowed: boolean;
 }
@@ -23,6 +26,7 @@ interface ZPBotPopulationState {
     readonly Feedback: string;
 }
 interface ZPAdminState {
+    readonly Recording: ZPBotRecordingState;
     readonly Rounds: ZPAdminRoundsState;
     readonly Cvars: ZPServerCvarClientState;
     readonly Page: ZPAdminPage;
@@ -40,6 +44,7 @@ interface ZPAdminState {
     readonly BotPopulation: ZPBotPopulationState;
 }
 interface ZPAdminActions extends ZPServerCvarActions {
+    RecordingAction(this: ZPAdminActions, action: number): void;
     StartRound(this: ZPAdminActions, id: string): void;
     RefreshRounds(this: ZPAdminActions): void;
     AddBot(this: ZPAdminActions): void;
