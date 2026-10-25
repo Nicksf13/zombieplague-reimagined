@@ -35,6 +35,7 @@ manager.GetServerStatus = function (): ZPServerStatus {
         Players: this.GetPlayersToPlay().map(ply => ({
             ID: PlayerManager.GetPlayerID(ply), AmmoPacks: ply.GetAmmoPacks(), Battery: ply.GetMaxBatteryCharge(),
             ZombieClass: ply.GetZombieClass().Name, HumanClass: ply.GetHumanClass().Name,
+            Nemesis: ply.IsNemesis() === true, Survivor: ply.IsSurvivor() === true,
             Light: ply.GetLight(), Footstep: ply.GetFootstep(), AbilityPower: ply.GetAbilityPower(), MaxAbilityPower: ply.GetMaxAbilityPower(),
         })),
     };

@@ -361,7 +361,7 @@ test("server init preserves include order, client downloads and network registra
     local expectedClientFiles = {
         "shared.lua", "sh_bank.lua", "sh_roundmanager.lua", "sh_player.lua", "sh_playermanager.lua",
         "cl_hud.lua", "cl_theme_manager.lua", "cl_menu_controls.lua", "cl_theme_hud.lua", "cl_player_hud.lua",
-        "cl_data.lua", "cl_message.lua", "cl_player.lua", "sh_dance.lua", "cl_dance.lua", "cl_dance_camera.lua", "sh_emotes.lua", "cl_emote_wheel.lua", "cl_emote_wheel_hud.lua", "cl_nightvision.lua", "cl_roundmanager.lua",
+        "cl_data.lua", "cl_message.lua", "cl_player.lua", "cl_special_aura.lua", "sh_dance.lua", "cl_dance.lua", "cl_dance_camera.lua", "sh_emotes.lua", "cl_emote_wheel.lua", "cl_emote_wheel_hud.lua", "cl_nightvision.lua", "cl_roundmanager.lua",
         "cl_particlemanager.lua", "cl_keymanager.lua", "cl_key_input.lua", "cl_scoreboard.lua", "cl_scoreboard_hud.lua",
         "sh_weapon_menu_protocol.lua", "sh_class_menu_protocol.lua", "sh_extra_menu_protocol.lua", "sh_map_vote_protocol.lua", "cl_map_vote.lua", "cl_map_vote_hud.lua", "cl_extra_menu.lua", "cl_extra_menu_hud.lua", "cl_class_menu.lua", "cl_class_menu_hud.lua",
         "cl_weapon_menu.lua", "cl_weapon_menu_hud.lua", "cl_main_menu.lua", "cl_main_menu_hud.lua",

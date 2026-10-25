@@ -6,6 +6,7 @@ include("cl_roundmanager.lua");
 include("cl_particlemanager.lua");
 include("cl_message.lua");
 include("cl_player.lua");
+include("cl_special_aura.lua");
 include("cl_nightvision.lua");
 include("cl_hud.lua");
 include("cl_theme_manager.lua");
@@ -63,6 +64,8 @@ net.Receive("SendServerStatus", () => {
         ply.SetAmmoPacks(state.AmmoPacks);
         ply.SetZombieClass(state.ZombieClass);
         ply.SetHumanClass(state.HumanClass);
+        ply.SetNemesis(state.Nemesis === true);
+        ply.SetSurvivor(state.Survivor === true);
         const light = ZPClientData.Record(state.Light);
         if (light && typeof light.r === "number" && typeof light.g === "number" && typeof light.b === "number" && typeof light.a === "number") {
             ply.SetLight(Color(light.r, light.g, light.b, light.a));
