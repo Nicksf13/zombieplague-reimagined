@@ -48,3 +48,59 @@ test("three bots cannot form reciprocal leases and death, role changes and timeo
     now=12; request(a,b); b.team=TEAM_HUMANS; assert(not traffic:Control(a,now)); b.team=TEAM_ZOMBIES
     now=14; request(a,b); now=27; assert(not traffic:Control(b,now))
 `));
+
+test("a stalled parking reservation releases both bots and cannot immediately be reacquired", () => run(setup + `
+    request(a,b)
+    local initial=traffic:Diagnostic(a,now)
+    assert(initial and initial.Passer==a:EntIndex() and initial.Yielder==b:EntIndex() and #initial.Parking==3 and not initial.Ready)
+    assert(traffic:Control(a,now) and traffic:Control(b,now).Position)
+    local pending=traffic:Diagnostic(b,now+2)
+    assert(pending.Seconds==2 and pending.Idle==2,"observing a lease must not renew its progress timer")
+    now=13.1
+    assert(not traffic:Control(a,now) and not traffic:Control(b,now),"three seconds without progress release the pair")
+    assert(not traffic:Diagnostic(a,now) and not traffic:Diagnostic(b,now))
+    request(a,b); request(b,a)
+    assert(not traffic:Control(a,now) and not traffic:Control(b,now),"both bots receive a retry delay")
+    now=15.2; request(a,b)
+    assert(traffic:Control(a,now) and traffic:Control(b,now).Position)
+`));
+
+test("a shared final goal does not turn opposing local alignment waypoints into following traffic", () => run(setup + `
+    local finalGoal=Vector(200,0,0)
+    peers[1].Target=finalGoal; peers[2].Target=finalGoal
+    request(a,b); assert(not traffic:Control(a,now),"actual following traffic waits for its leader")
+    peers[2].Target=Vector(-20,0,0); now=12
+    request(a,b)
+    assert(traffic:Control(a,now) and traffic:Control(b,now).Position,
+        "alignment toward the requester needs a passing reservation even when both pursue the same human")
+`));
+
+test("the bot controller negotiates opposing local routes despite a shared human destination", () => run(botSetup + `
+    loaded=true
+    local start,other,goal=newArea(1,0),newArea(2,80),newArea(3,400)
+    start.adjacent={goal}; other.adjacent={start}
+    local a,b=newPlayer(TEAM_ZOMBIES,0),newPlayer(TEAM_ZOMBIES,80)
+    local human=newPlayer(TEAM_HUMANS,400,false)
+    local bots=include("sv_bots.lua").bots
+    bots:Attach(a,"aggressive"); bots:Attach(b,"aggressive")
+    now=11; bots:Update()
+    local snapshots=bots:Snapshot()
+    assert(snapshots[1].Goal[1]==400 and snapshots[2].Goal[1]==400)
+    assert(snapshots[1].Steering[1]>0 and snapshots[2].Steering[1]<80,"the nav graph requires opposing local approaches")
+    util.TraceHull=function(options)
+        local blocker=options.filter==a and b or a
+        local toward=(options.endpos.x-options.start.x)*(blocker.position.x-options.filter.position.x)>0
+        return {Hit=toward,Entity=toward and blocker or emptyEntity,HitPos=options.endpos}
+    end
+    function a:GetClass() return "player" end
+    function b:GetClass() return "player" end
+    now=11.3; bots:Update()
+    bots:Command(a,command()); bots:Command(b,command())
+    local reserved=false
+    for _,snapshot in ipairs(bots:Snapshot()) do
+        for _,intervention in ipairs(snapshot.Input.Controllers) do
+            if intervention=="traffic:negotiated_passage" then reserved=true end
+        end
+    end
+    assert(reserved,"traffic must compare immediate navigation direction instead of the shared human position")
+`));

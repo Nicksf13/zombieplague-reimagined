@@ -5,6 +5,7 @@
 /zombieplague/entities/entities/zp_infection_grenade.lua
 /zombieplague/entities/weapons/zp_antidote_grenade_thrower.lua
 /zombieplague/entities/weapons/zp_bot_boost_tool.lua
+/zombieplague/entities/weapons/zp_bot_safe_tool.lua
 /zombieplague/entities/weapons/zp_decoy_grenade_thrower.lua
 /zombieplague/entities/weapons/zp_infection_grenade_thrower.lua
 /zombieplague/entities/weapons/zp_weapon_fists.lua
@@ -26,9 +27,14 @@
 /zombieplague/gamemode/cl_bot_motion_hud.lua
 /zombieplague/gamemode/cl_bot_population.lua
 /zombieplague/gamemode/cl_bot_population_hud.lua
+/zombieplague/gamemode/cl_bot_recording.lua
+/zombieplague/gamemode/cl_bot_safe_hud.lua
+/zombieplague/gamemode/cl_bot_safe_markers.lua
+/zombieplague/gamemode/cl_bot_safe_points.lua
 /zombieplague/gamemode/cl_bot_statistics.lua
 /zombieplague/gamemode/cl_bot_statistics_graph.lua
 /zombieplague/gamemode/cl_bot_statistics_hud.lua
+/zombieplague/gamemode/cl_bot_tool_screen.lua
 /zombieplague/gamemode/cl_class_menu.lua
 /zombieplague/gamemode/cl_class_menu_hud.lua
 /zombieplague/gamemode/cl_dance.lua
@@ -128,6 +134,7 @@
 /zombieplague/gamemode/sh_bot_metrics_protocol.lua
 /zombieplague/gamemode/sh_bot_motion_protocol.lua
 /zombieplague/gamemode/sh_bot_place_protocol.lua
+/zombieplague/gamemode/sh_bot_safe_protocol.lua
 /zombieplague/gamemode/sh_bot_statistics_analysis.lua
 /zombieplague/gamemode/sh_class_menu_protocol.lua
 /zombieplague/gamemode/sh_dance.lua
@@ -146,6 +153,8 @@
 /zombieplague/gamemode/sv_admin_rounds.lua
 /zombieplague/gamemode/sv_admin_settings.lua
 /zombieplague/gamemode/sv_bank.lua
+/zombieplague/gamemode/sv_bot_activity.lua
+/zombieplague/gamemode/sv_bot_ammo_purchase.lua
 /zombieplague/gamemode/sv_bot_behavior.lua
 /zombieplague/gamemode/sv_bot_boost.lua
 /zombieplague/gamemode/sv_bot_boost_actions.lua
@@ -163,6 +172,8 @@
 /zombieplague/gamemode/sv_bot_execution.lua
 /zombieplague/gamemode/sv_bot_experience_trace.lua
 /zombieplague/gamemode/sv_bot_ground.lua
+/zombieplague/gamemode/sv_bot_hearing.lua
+/zombieplague/gamemode/sv_bot_jump_control.lua
 /zombieplague/gamemode/sv_bot_ladder.lua
 /zombieplague/gamemode/sv_bot_learning_gate.lua
 /zombieplague/gamemode/sv_bot_learning_migration.lua
@@ -176,6 +187,7 @@
 /zombieplague/gamemode/sv_bot_motion_storage.lua
 /zombieplague/gamemode/sv_bot_motor.lua
 /zombieplague/gamemode/sv_bot_navigation.lua
+/zombieplague/gamemode/sv_bot_objectives.lua
 /zombieplague/gamemode/sv_bot_pathfinding.lua
 /zombieplague/gamemode/sv_bot_perception.lua
 /zombieplague/gamemode/sv_bot_place_catalog.lua
@@ -185,7 +197,14 @@
 /zombieplague/gamemode/sv_bot_population_config.lua
 /zombieplague/gamemode/sv_bot_population_service.lua
 /zombieplague/gamemode/sv_bot_precision.lua
+/zombieplague/gamemode/sv_bot_precision_alignment.lua
 /zombieplague/gamemode/sv_bot_precision_support.lua
+/zombieplague/gamemode/sv_bot_recording.lua
+/zombieplague/gamemode/sv_bot_recording_obstacles.lua
+/zombieplague/gamemode/sv_bot_recording_service.lua
+/zombieplague/gamemode/sv_bot_safe_points.lua
+/zombieplague/gamemode/sv_bot_safe_store.lua
+/zombieplague/gamemode/sv_bot_search.lua
 /zombieplague/gamemode/sv_bot_shared_learning.lua
 /zombieplague/gamemode/sv_bot_spawner.lua
 /zombieplague/gamemode/sv_bot_statistics.lua
@@ -197,6 +216,8 @@
 /zombieplague/gamemode/sv_bot_traffic.lua
 /zombieplague/gamemode/sv_bot_training.lua
 /zombieplague/gamemode/sv_bot_traversal.lua
+/zombieplague/gamemode/sv_bot_weapon_ammo.lua
+/zombieplague/gamemode/sv_bot_weapons.lua
 /zombieplague/gamemode/sv_bots.lua
 /zombieplague/gamemode/sv_class_definitions.lua
 /zombieplague/gamemode/sv_class_menu.lua

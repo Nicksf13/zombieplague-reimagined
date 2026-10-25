@@ -88,7 +88,13 @@ export function run(script, resultName) {
     lualib.luaL_openlibs(state);
     try {
         const status = lauxlib.luaL_dostring(state, to_luastring(prelude + script));
-        assert.equal(status, lua.LUA_OK, status === lua.LUA_OK ? undefined : to_jsstring(lua.lua_tostring(state, -1)));
+        let failure;
+        if (status !== lua.LUA_OK) {
+            failure = to_jsstring(lua.lua_tostring(state, -1));
+            const line = Number(failure.match(/\[string [^\n]*\]:(\d+):/)?.[1]) - prelude.split("\n").length;
+            if (line >= 0) failure += `\nScript line ${line + 1}: ${script.split("\n")[line]}`;
+        }
+        assert.equal(status, lua.LUA_OK, failure);
         if (resultName) {
             lua.lua_getglobal(state, to_luastring(resultName));
             assert.equal(lua.lua_type(state, -1), lua.LUA_TSTRING);

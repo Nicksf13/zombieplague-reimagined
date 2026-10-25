@@ -39,7 +39,7 @@ test("a range intervention preserves the tactical label, records issued movement
     end
     assert(finalized and issued and duration)
     situation.Distance=400; now=13; brain:Decide(situation,now); brain:Reward(0.5); brain:Finish()
-    assert(memory.Experience["human:healthy:balanced:mid:attack"].Value>0,"unmodified decisions must still learn")
+    assert(memory.Experience["v2:human:healthy:balanced:mid:quiet:attack"].Value>0,"unmodified decisions must still learn")
 `));
 
 test("a delayed command from another decision cannot invalidate the current tactical experience", () => run(setup + `
@@ -47,7 +47,7 @@ test("a delayed command from another decision cannot invalidate the current tact
     now=13; situation.Distance=400; brain:Decide(situation,now)
     brain:Intervene({Controller="traffic",Reason="old_command",Tactical=true,Motion=true},old)
     brain:Reward(0.5); brain:Finish(); brain:Finish()
-    assert(memory.Experience["human:healthy:balanced:mid:attack"].Samples==1)
+    assert(memory.Experience["v2:human:healthy:balanced:mid:quiet:attack"].Samples==1)
 `));
 
 test("pending human consequences update the old role once before infection selects zombie knowledge", () => run(botSetup + `
@@ -56,10 +56,10 @@ test("pending human consequences update the old role once before infection selec
     bots:Attach(human,"aggressive"); now=11; bots:Update(); bots:Command(human,command())
     human.team=TEAM_ZOMBIES; bots:Infection(human,zombie); bots:Save()
     local saved=sharedMemory(1,"human","HumanDefault")
-    assert(saved.Experience["human:healthy:balanced:mid:attack"].Samples==1 and saved.Experience["human:healthy:balanced:mid:attack"].Value<0)
+    assert(saved.Experience["v2:human:healthy:balanced:mid:quiet:attack"].Samples==1 and saved.Experience["v2:human:healthy:balanced:mid:quiet:attack"].Value<0)
     assert(bots:GetStatus(human).Role=="zombie" and bots:GetStatus(human).Samples==0)
     bots:Reset(human); bots:Save()
-    assert(sharedMemory(1,"human","HumanDefault").Experience["human:healthy:balanced:mid:attack"].Samples==1)
+    assert(sharedMemory(1,"human","HumanDefault").Experience["v2:human:healthy:balanced:mid:quiet:attack"].Samples==1)
 `));
 
 test("death and post-damage callbacks observe one fall and finalize its old movement experience once", () => run(botSetup + `
@@ -141,4 +141,15 @@ test("a selected tactical decision cannot receive damage credit before its first
     assert(bots:GetStatus(bot).Samples==0)
     now=12; bots:Update(); bots:Command(bot,command()); bots:Damage(bot,damage(target,5),true); bots:Reset(bot)
     assert(bots:GetStatus(bot).Samples==1,"once input was issued, the same ordinary outcome may train its own decision")
+`));
+
+test("an empty motor command cannot train a new tactical intention when physical options are unavailable", () => run(botSetup + `
+    local bots=include("sv_bots.lua").bots
+    local bot=newPlayer(TEAM_ZOMBIES,0); local target=newPlayer(TEAM_HUMANS,400,false)
+    blocked=true
+    bots:Attach(bot,"aggressive"); now=11; bots:Update()
+    local cmd=command(); bots:Command(bot,cmd)
+    assert(cmd.forward==0 and cmd.side==0 and cmd.buttons & IN_ATTACK==0)
+    bots:Damage(bot,damage(target,5),true); bots:Reset(bot)
+    assert(bots:GetStatus(bot).Samples==0, "absence of execution cannot establish a policy outcome")
 `));

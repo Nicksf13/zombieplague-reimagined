@@ -1,40 +1,12 @@
+const { BotToolScreen } = include("cl_bot_tool_screen.lua") as typeof import("./cl_bot_tool_screen");
 import type { BoostViewState } from "./cl_bot_boost_presentation";
 const ui = include("cl_bot_boost_presentation.lua") as typeof import("./cl_bot_boost_presentation");
 export interface ScreenContract { Begin(vm: GLuaBoostViewModel, state: BoostViewState, palette: ZPThemePalette): void; Restore(): void; }
 class BotBoostScreen implements ScreenContract {
-    private texture: GLuaBoostTexture | undefined;
-    private material: GLuaMaterial | undefined;
-    private override: { Model: GLuaBoostViewModel; Slot: number; Previous: string } | undefined;
-
-    Restore(): void {
-        const previous = this.override;
-        this.override = undefined;
-        if (previous && IsValid(previous.Model) && previous.Model.GetSubMaterial(previous.Slot) === "!" + this.material?.GetName())
-            previous.Model.SetSubMaterial(previous.Slot, previous.Previous === "" ? undefined : previous.Previous);
-    }
-
+    private surface = new BotToolScreen("ZPBotBoostScreen");
+    Restore(): void { this.surface.Restore(); }
     Begin(vm: GLuaBoostViewModel, state: BoostViewState, palette: ZPThemePalette): void {
-        this.Restore();
-        if (!IsValid(vm)) return;
-        const slot = vm.GetMaterials().findIndex(name => name.toLowerCase() === "models/weapons/v_toolgun/screen");
-        if (slot < 0) return;
-        if (!this.texture) {
-            this.texture = GetRenderTarget("ZPBotBoostScreen", 512, 512);
-            this.material = CreateMaterial("ZPBotBoostScreenMaterial", "UnlitGeneric", { "$basetexture": this.texture.GetName(), "$model": 1 });
-            surface.CreateFont("ZPBotBoostScreenText", { font: "Roboto", size: 28, weight: 700, antialias: true, additive: false, extended: true });
-        }
-        if (!this.material) return;
-        const clipping = DisableClipping(true);
-        render.PushRenderTarget(this.texture);
-        render.Clear(palette.Surface.r, palette.Surface.g, palette.Surface.b, 255);
-        cam.Start2D();
-        const [ok] = pcall(() => this.Paint(state, palette));
-        cam.End2D();
-        render.PopRenderTarget();
-        DisableClipping(clipping);
-        if (!ok) return;
-        this.override = { Model: vm, Slot: slot, Previous: vm.GetSubMaterial(slot) };
-        vm.SetSubMaterial(slot, "!" + this.material.GetName());
+        this.surface.Begin(vm, palette, () => this.Paint(state, palette));
     }
 
     private Text(text: string, y: number, color: GLuaColor, lines = 2): void {

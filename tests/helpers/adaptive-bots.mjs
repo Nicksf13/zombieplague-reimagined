@@ -146,10 +146,14 @@ function playerMeta:SetEyeAngles(angles) self.angles=angles end
 function playerMeta:Health() return self.health end
 function playerMeta:GetMaxHealth() return self.maxHealth end
 function playerMeta:Armor() return self.armor or 0 end
-function playerMeta:GetAmmoCount() return self.reserveAmmo or 90 end
+function playerMeta:GetAmmoCount(ammo)
+    if self.reserveByType then return self.reserveByType[ammo] or 0 end
+    return self.reserveAmmo or 90
+end
 function playerMeta:GetWalkSpeed() return self.walkSpeed or 200 end
 function playerMeta:GetRunSpeed() return self.runSpeed or 300 end
 function playerMeta:GetJumpPower() return self.jumpPower or 200 end
+function playerMeta:GetStepSize() return self.stepSize or 18 end
 function playerMeta:GetAuxGravity() return self.gravity or 1 end
 function playerMeta:GetGravity() return self.gravity or 1 end
 function playerMeta:GetCrouchedWalkSpeed() return self.crouchSpeed or 0.4 end
@@ -211,5 +215,6 @@ end
 include("sh_bot_metrics_protocol.lua")
 include("sh_bot_motion_protocol.lua")
 include("sh_bot_place_protocol.lua")
+include("sh_bot_safe_protocol.lua")
 include("sh_bot_boost_protocol.lua")
 `;

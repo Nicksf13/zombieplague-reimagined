@@ -7,6 +7,8 @@ export interface MoveOption {
     Aim?: GLuaVector; Look?: number;
     SpeedLimit?: number;
     Precision?: boolean;
+    EdgeRecovery?: boolean;
+    JumpReason?: string;
 }
 export interface MoveFrame {
     Key: string; Edge: string; Mode: ZPBotMoveMode; From: number; To: number; Position: GLuaVector;

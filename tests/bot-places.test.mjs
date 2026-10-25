@@ -14,6 +14,45 @@ local start,cover=newArea(1,0),newArea(2,240); start.adjacent={cover}; cover.adj
 math.random=function(low,high) return low end
 `;
 
+test("authored safe points respect role, connected nav floors, geometry and leases", () => run(setup + `
+    local points={{ID=1,Role="human",Position={240,0,0}},{ID=2,Role="zombie",Position={240,20,0}},
+        {ID=3,Role="both",Position={900,0,0}},{ID=4,Role="both",Position={240,0,100}}}
+    ZPBotSafePoints={Points=function() return points end}
+    newArea(3,900)
+    local function authored(ply)
+        local result={}; for _,point in ipairs(catalog:Points(ply,include("sv_bot_motion_physics.lua").physics(ply),now)) do
+            if point.SafeID then result[#result+1]=point end
+        end; return result
+    end
+    local human=authored(bot); assert(#human==1 and human[1].SafeID==1)
+    local nearby=0
+    for _,point in ipairs(catalog:Points(bot,include("sv_bot_motion_physics.lua").physics(bot),now)) do
+        if point.Position:DistToSqr(Vector(240,0,0))<32*32 then nearby=nearby+1 end
+    end
+    assert(nearby==1, "a native hiding spot must not bypass the marked point's reservation")
+    assert(catalog:Validate(bot,human[1]), "an authored point can qualify without native hiding flags or two walls")
+    catalog:Reserve(human[1],"human",1,now)
+    assert(not catalog:Available(human[1],"human",2,now))
+    blocked=true; assert(not catalog:Validate(bot,human[1])); blocked=false
+    bot.team=TEAM_ZOMBIES; local zombie=authored(bot); assert(#zombie==1 and zombie[1].SafeID==2)
+    cover.blocked=true; assert(#authored(bot)==0)
+`));
+
+test("authored shelter suggestions yield to known danger and deletion ends visits neutrally", () => run(setup + `
+    cover.hiding={}
+    local points={{ID=9,Role="both",Position={240,0,0}}}
+    ZPBotSafePoints={Points=function() return points end}
+    assert(not goals:Update(bot,{Visible=true,EnemyPosition=Vector(600,0,0),Enemies=1,Allies=0},"retreat",now),
+        "a marked point exposed to a known enemy is unsafe")
+    now=12; wall=true
+    local intent=goals:Update(bot,{Visible=false,EnemyPosition=Vector(600,0,0),Enemies=0,Allies=0},"retreat",now)
+    assert(intent and intent.Key:sub(1,5)=="safe:")
+    points={}; now=12.2
+    assert(not goals:Update(bot,none,"group",now))
+    assert(goals:Diagnostic(now).State=="patrol")
+    for _,entry in pairs(state.Records) do assert(entry.Samples==0 and entry.Value==0) end
+`));
+
 test("place diagnostic lifecycles expose active and frozen outcomes without changing their learning contract", () => run(setup + `
     local rows,serial={},0
     local trace={NewID=function() serial=serial+1; return "place:"..serial end,Record=function(row) rows[#rows+1]=clone(row) end}
@@ -54,8 +93,10 @@ test("damage makes a human abandon its shelter and observed protection is reward
     bot.position=Vector(240,0,0); now=11
     local hidden={Visible=false,EnemyPosition=Vector(1000,0,0),Enemies=0,Allies=0}
     goals:Update(bot,hidden,"group",now); now=11.2; goals:Update(bot,hidden,"group",now)
+    assert(state.Totals.Escapes==0, "loss of sight alone is not an escape")
+    for i=2,21 do now=11+i*0.2; goals:Update(bot,hidden,"group",now) end
     assert(state.Totals.Escapes==1)
-    goals:Damage(20,100); now=11.4; assert(not goals:Update(bot,hidden,"defend",now))
+    goals:Damage(20,100); now=15.4; assert(not goals:Update(bot,hidden,"defend",now))
     assert(state.Totals.Damage==20)
     for _,entry in pairs(state.Records) do assert(entry.Samples==1 and entry.Value>0 and entry.Value<0.12) end
     bot.position=Vector(0,0,0); now=80; assert(goals:Update(bot,none,"group",now))
@@ -178,8 +219,30 @@ test("round completion retains earned place outcomes while ending a quiet visit 
     assert(goals:Update(bot,threat,"defend",now))
     bot.position=Vector(240,0,0); now=11
     goals:Update(bot,{Visible=false,EnemyPosition=Vector(1000,0,0)},"group",now)
+    for i=1,21 do now=11+i*0.2; goals:Update(bot,{Visible=false,EnemyPosition=Vector(1000,0,0)},"group",now) end
     assert(state.Totals.Escapes==1); goals:Finish(); goals:Reset()
     for _,entry in pairs(state.Records) do assert(entry.Samples==1 and entry.Value>0) end
     bot.position=Vector(0,0,0); now=80; goals:Update(bot,none,"group",now); goals:Finish()
     for _,entry in pairs(state.Records) do assert(entry.Samples==1, "ending a quiet visit never creates survival samples") end
+`));
+
+test("urgent human shelter and zombie cover do not depend on personality chance or a quiet choice interval", () => run(setup + `
+    goals=construct(Places,catalog,learning,1,"aggressive")
+    math.random=function(low,high) return high end
+    assert(not goals:Update(bot,none,"group",now))
+    wall=true
+    local threat={Visible=true,EnemyPosition=Vector(1000,0,0),Enemies=3,Allies=0,RecentDamage=true}
+    now=10.2; assert(goals:Update(bot,threat,"retreat",now), "urgent retreat bypasses the quiet lottery")
+    goals:Reset(); bot.team=TEAM_ZOMBIES; goals=construct(Places,catalog,learning,1,"aggressive")
+    now=11; assert(goals:Update(bot,threat,"retreat",now), "zombies can use the same validated cover system")
+`));
+
+test("runtime place ownership rejects unissued damage and retains known damage through a later intervention", () => run(setup + `
+    goals=construct(Places,catalog,learning,1,"cautious",nil,nil,true)
+    local visit=goals:Update(bot,none,"group",now); assert(visit)
+    goals:Damage(20,100); assert(state.Totals.Damage==0)
+    goals:Executed(visit.Goal); goals:Damage(20,100)
+    goals:Intervene({Controller="traffic",Reason="wait",Tactical=true,Motion=true})
+    assert(state.Totals.Damage==20)
+    for _,entry in pairs(state.Records) do assert(entry.Samples==1 and entry.Value<0) end
 `));

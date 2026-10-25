@@ -71,6 +71,7 @@ test("water without navmesh still offers ascent when the bot has nobody to pursu
 `));
 
 test("jump trials continue through flight and credit landing progress without issuing air jumps", () => run(setup + `
+    obstacle=true
     bot.jumpPower=500
     local steering=navigator:Steer(bot,Vector(200,0,50),now,learner)
     assert(steering.Pick.Action=="jump")
@@ -85,6 +86,13 @@ test("jump trials continue through flight and credit landing progress without is
     local learned=false
     for key,entry in pairs(memory.Estimates) do if key:match(":jump$") and entry.Value>0 then learned=true end end
     assert(learned and memory.Totals.Goals==1)
+`));
+
+test("a distant elevated local goal does not request a jump before a nearby obstacle or transition", () => run(setup + `
+    bot.jumpPower=500
+    local steering=navigator:Steer(bot,Vector(500,0,50),now,learner)
+    assert(steering.Pick and not steering.Jump)
+    for _,value in pairs(memory.Estimates) do assert(value.Value<=0) end
 `));
 
 test("ladder links produce upward view and ordinary movement, then reward actual top-area entry", () => run(setup + `

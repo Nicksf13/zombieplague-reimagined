@@ -5,11 +5,12 @@ import { nativeLanguage } from "./helpers/native-localization.mjs";
 
 const setup = clientSetup + panelsSetup + nativeLanguage + `
 viewer.admin=true; viewer.superadmin=false
+vgui.CursorVisible=function() return false end
 function viewer:IsAdmin() return self.admin end
 function viewer:IsSuperAdmin() return self.superadmin end
 viewer.weapon={GetClass=function() return "zp_bot_boost_tool" end}
 function viewer:GetActiveWeapon() return self.weapon end
-IN_RELOAD=8192; viewer.reloadHeld=false
+IN_ATTACK,IN_ATTACK2,IN_RELOAD=1,2048,8192; viewer.reloadHeld=false
 function viewer:KeyDown(key) return key==IN_RELOAD and self.reloadHeld end
 function viewer:EyePos() return Vector(0,0,64) end
 function viewer:GetEyeTrace() return self.trace end
@@ -48,7 +49,17 @@ local function ack(fields)
     for key,value in pairs(fields or {}) do readTable[key]=value end
     receivers.ZPBotBoostReply(4096)
 end
-local function press(method) now=now+0.2; tool[method](tool) end
+local function commandInput(keys)
+    local cmd={keys=keys}
+    function cmd:KeyDown(key) return self.keys & key~=0 end
+    function cmd:RemoveKey(key) self.keys=self.keys & ~key end
+    hooks.CreateMove.ZPBotBoostInput(cmd); return cmd
+end
+local function press(method)
+    now=now+0.2
+    commandInput(method=="Reload" and IN_RELOAD or method=="SecondaryAttack" and IN_ATTACK2 or IN_ATTACK)
+    if method~="Reload" or not viewer.reloadHeld then commandInput(0) end
+end
 local function clickDerma(key)
     local expected=language.GetPhrase("zombieplague."..key)
     for _,panel in ipairs(panels) do
@@ -81,10 +92,67 @@ local function chooseText(expected)
 end
 local function click(key) chooseText(language.GetPhrase("zombieplague."..key)) end
 local function selectSaved(id) click("botboostchoose"); chooseText("#"..id) end
-local function tick() now=now+0.2; hooks.Think.ZPBotBoostEditor() end
-local function open() now=now+0.2; ZPBotBoostEditor:Open(); assert(sent[5]==10); ack() end
+local function tick() now=now+0.2; if not viewer.reloadHeld then commandInput(0) end; hooks.Think.ZPBotBoostEditor() end
+local function open()
+    now=now+0.2; ZPBotBoostEditor:Open(); assert(sent[5]==10); ack()
+    assert(menuOpen(), "equipping opens the action choices")
+    press("Reload") -- Selection/capture scenarios below explicitly dismiss the initial menu.
+end
 local function newDraft() press("Reload"); click("botboostnew"); assert(sent[5]==1); ack({Editing=true}) end
 `;
+
+test("equipping opens boost choices after acknowledgment and polling preserves a dismissed menu and draft", () => run(setup + `
+    selectedLocale="pt-BR"
+    ZPBotBoostEditor:Open(); assert(not menuOpen())
+    ack(); assert(menuOpen() and requests==1 and not frame())
+    local text=screenText()
+    assert(text:find(language.GetPhrase("zombieplague.botboostnew"),1,true))
+    assert(text:find(language.GetPhrase("zombieplague.botboostchoose"),1,true))
+    press("Reload"); assert(not menuOpen())
+    now=now+1.1; hooks.Think.ZPBotBoostEditor(); ack(); assert(not menuOpen())
+    ZPBotBoostEditor:Close(); now=now+0.2; ZPBotBoostEditor:Open()
+    ack({Editing=true,Dirty=true,Draft=saved,Selected=1}); assert(menuOpen())
+    assert(readTable.Draft.Base[1]==0 and readTable.Dirty and readTable.Editing)
+    click("botboostback"); assert(not menuOpen())
+    now=now+0.2; press("PrimaryAttack"); assert(sent[5]==2)
+`));
+
+test("tool input works without predicted weapon callbacks and consumes only editing buttons", () => run(setup + `
+    open(); predicted=false
+    local function inputCommand(keys)
+        local cmd={keys=keys,forward=120}
+        function cmd:KeyDown(key) return self.keys & key~=0 end
+        function cmd:RemoveKey(key) self.keys=self.keys & ~key end
+        hooks.CreateMove.ZPBotBoostInput(cmd)
+        return cmd
+    end
+    inputCommand(IN_RELOAD); assert(menuOpen(), "reload must open the menu without SWEP prediction")
+    inputCommand(0)
+    now=now+0.2
+    local cmd=inputCommand(IN_ATTACK+8)
+    assert(sent[5]==1 and cmd.keys==8 and cmd.forward==120)
+    ack({Editing=true}); local count=requests
+    for i=1,5 do now=now+0.2; inputCommand(IN_ATTACK); assert(requests==count) end
+    inputCommand(0); now=now+0.2; inputCommand(IN_ATTACK); assert(sent[5]==2)
+`));
+
+test("command input respects other weapons, permission, closed sessions and typing without replaying held presses", () => run(setup + `
+    open(); local count=requests
+    local weapon=viewer.weapon; viewer.weapon={GetClass=function() return "weapon_pistol" end}
+    assert(commandInput(IN_ATTACK+IN_RELOAD).keys==IN_ATTACK+IN_RELOAD and requests==count)
+    viewer.weapon=weapon; viewer.admin=false
+    assert(commandInput(IN_ATTACK).keys==IN_ATTACK and requests==count)
+    viewer.admin=true; local typing=true; function viewer:IsTyping() return typing end
+    commandInput(IN_RELOAD); assert(not menuOpen())
+    typing=false; commandInput(IN_RELOAD); assert(not menuOpen(), "a held typing key does not become a new press")
+    commandInput(0); commandInput(IN_RELOAD); assert(menuOpen())
+    commandInput(0); vgui.CursorVisible=function() return true end
+    commandInput(IN_ATTACK); assert(requests==count)
+    vgui.CursorVisible=function() return false end
+    commandInput(IN_ATTACK); assert(requests==count)
+    ZPBotBoostEditor:Close(); count=requests
+    assert(commandInput(IN_ATTACK+IN_RELOAD).keys==IN_ATTACK+IN_RELOAD and requests==count)
+`));
 
 test("aim selection immediately edits the nearest highlighted boost without opening the menu", () => run(setup + `
     open(); assert(not frame())
@@ -97,11 +165,35 @@ test("aim selection immediately edits the nearest highlighted boost without open
     assert(not frame())
     drawn={}; hooks.PostDrawTranslucentRenderables.ZPBotBoostEditor()
     assert(drawn[6].color.r==240 and drawn[6].color.g==80, "errors highlight the affected draft point")
-    local count=requests; predicted=false; press("PrimaryAttack"); predicted=true; assert(requests==count)
+    local count=requests; predicted=false; tool:PrimaryAttack(); predicted=true; tool:PrimaryAttack(); assert(requests==count)
     assert(hooks.PlayerBindPress.ZPBotBoostPointWheel(viewer,"invnext",true)==true)
     assert(requests==count, "cycling changes no server data")
     press("PrimaryAttack"); assert(sent[5]==3)
     assert(not hooks.PlayerBindPress or not hooks.PlayerBindPress.ZPBotBoostEditor)
+`));
+
+test("failed boost-tool equipment reports the server reason without requiring an equipped weapon", () => run(setup + `
+    local notices={}; chat={AddText=function(...) notices[#notices+1]={...} end}
+    viewer.weapon=nil; selectedLocale="pt-BR"
+    ZPBotBoostEditor:Open(); ack({Feedback="invalid",Issue={Code="alive",Slot=0,Actual=0,Min=0,Max=0}})
+    assert(#notices==1, "equipment errors must remain visible without the weapon HUD")
+    local text=table.concat(notices[1],"|")
+    assert(text:find(language.GetPhrase("zombieplague.botboostalive"),1,true))
+    assert(sent[5]==11, "failed equipment closes and releases the temporary tool session")
+    local count=requests; now=now+6; hooks.Think.ZPBotBoostEditor(); assert(requests==count)
+`));
+
+test("equipment timeouts notify once and successful equipment tolerates client replication delay", () => run(setup + `
+    local notices={}; chat={AddText=function(text) notices[#notices+1]=text end}
+    local weapon=viewer.weapon; viewer.weapon=nil
+    ZPBotBoostEditor:Open(); ack()
+    now=now+1; hooks.Think.ZPBotBoostEditor(); assert(#notices==0)
+    viewer.weapon=weapon; tick(); assert(#notices==0)
+    viewer.weapon=nil; tick(); assert(#notices==0, "ordinary weapon switching closes silently")
+    now=now+0.2; ZPBotBoostEditor:Open()
+    now=now+5.1; hooks.Think.ZPBotBoostEditor()
+    assert(#notices==1 and notices[1]==language.GetPhrase("zombieplague.weaponmenutimeout"))
+    local count=requests; tick(); assert(#notices==1 and requests==count)
 `));
 
 test("new boosts guide all three points, offer Save when complete, then target Test and End from the same tool", () => run(setup + `
@@ -336,25 +428,25 @@ test("weapon actions stay themed and focused through polling while closing or pe
     viewer.admin=true; open(); tick(); viewer.weapon=nil; tick(); assert(sent[5]==11)
 `));
 
-test("F4 only equips the tool for normal admins and its menu uses addon palettes without opening Derma", () => run(setup + `
+test("F4 equips the tool and opens its action choices with addon palettes and no Derma window", () => run(setup + `
     GetGlobalBool=function() return true end; game={SinglePlayer=function() return false end}
     include("sh_admin_config.lua"); include("sh_server_cvars.lua"); include("sh_bot_metrics_protocol.lua"); include("cl_admin_menu.lua"); include("cl_admin_menu_hud.lua")
     local original=ZPThemes:GetTheme()
     local palette={Accent=Color(10,200,180),Surface=Color(20,25,30),Panel=Color(35,40,45),Text=Color(240,235,230),Muted=Color(120,125,130)}
     ZPThemes:RegisterTheme("boost-addon",{Name="Boost test",Palette=palette,CreateWeaponMenu=original.CreateWeaponMenu,PaintPlayerHUD=original.PaintPlayerHUD})
     ZPThemes:UseTheme("boost-addon"); ScrW=function() return 520 end; ScrH=function() return 480 end
-    ZPAdminMenu:Open(); ZPAdminMenu:Navigate("bots"); clickDerma("botboostequip"); assert(sent[5]==10 and not frame()); ack()
-    assert(not menuOpen()); press("Reload"); assert(menuOpen() and not frame())
+    ZPAdminMenu:Open(); ZPAdminMenu:Navigate("bots"); clickDerma("admintools"); clickDerma("botboostequip"); assert(sent[5]==10 and not frame()); ack()
+    assert(menuOpen() and not frame())
     local colored=false; draw.RoundedBox=function(_,_,_,_,_,color) if color==palette.Surface then colored=true end end
     screenText(); assert(colored); click("botboostclose"); assert(not menuOpen() and not frame())
 `));
 
-test("singleplayer forwards SWEP callbacks to the client and multiplayer server callbacks dispatch no duplicate actions", () => run(setup + `
+test("singleplayer and multiplayer SWEP callbacks never replay client editor actions", () => run(setup + `
     SERVER=true; CLIENT=false; local single=true; game={SinglePlayer=function() return single end}
     local calls={}; function tool:CallOnClient(method) calls[#calls+1]=method end
     tool:PrimaryAttack(); tool:SecondaryAttack(); tool:Reload()
-    assert(table.concat(calls,",")=="PrimaryAttack,SecondaryAttack,Reload")
-    single=false; tool:PrimaryAttack(); tool:SecondaryAttack(); tool:Reload(); assert(#calls==3)
+    assert(#calls==0)
+    single=false; tool:PrimaryAttack(); tool:SecondaryAttack(); tool:Reload(); assert(#calls==0)
 `));
 
 test("incomplete saves identify the missing role and polling recovers a timed-out draft without replaying New", () => run(setup + `

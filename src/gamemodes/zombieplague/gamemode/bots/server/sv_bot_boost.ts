@@ -10,12 +10,14 @@ interface Pair {
     Point: ZPBotBoostPoint; Support: ZPServerPlayer; Climber: ZPServerPlayer; Key: string; SupportKey: string; ClimberKey: string;
     Phase: ZPBotBoostPhase; Started: number; PhaseAt: number; LastJump: number; Issued: boolean; Launched: boolean; Position: Map<ZPServerPlayer, { Point: GLuaVector; Time: number }>;
     Experience: string;
+    Team: number;
 }
 export interface BoostControl { Goal: GLuaVector; Token: string; Steering?: BotSteering; }
 interface BoostContract { Cancel(ply: ZPServerPlayer): void; Control(ply: ZPServerPlayer, now: number): BoostControl | undefined; Save(): void; }
 export class BotBoostManager implements BoostContract {
     constructor(private reward?: (this: void, ply: ZPServerPlayer, component: string, amount: number) => void,
-        private trace?: (this: void, ply: ZPServerPlayer) => ExperienceTrace | undefined) {}
+        private trace?: (this: void, ply: ZPServerPlayer) => ExperienceTrace | undefined,
+        private event?: (this: void, ply: ZPServerPlayer, name: string) => void) {}
     readonly Store = new BotBoostStore();
     private pairs: Pair[] = [];
     private cooldown = new Map<string, number>();
@@ -42,12 +44,16 @@ export class BotBoostManager implements BoostContract {
     Invalidate(id: number): void { for (const pair of [...this.pairs]) if (pair.Point.ID === id) this.End(pair); }
     private End(pair: Pair, success?: boolean): void {
         const before = this.Store.Score(pair.Key);
+        this.event?.(pair.Climber, success === undefined ? "Boost:interrupted" : !pair.Issued ? "Boost:no_launch" : success ? "Boost:success" : "Boost:failure");
+        // Neutral cancellation also needs a retry fence, without fabricating a learned failure.
+        if (this.cooldown.size >= 128) { const first = [...this.cooldown.keys()][0]; if (first !== undefined) this.cooldown.delete(first); }
+        this.cooldown.set(pair.Team + ":" + pair.Point.ID, CurTime() + 5);
         this.pairs = this.pairs.filter(item => item !== pair);
         if (this.pairs.length === 0) this.Feedback = "ready";
         if (success !== undefined) {
             if (pair.Issued) { this.Store.Outcome(pair.Point, pair.Key, success); this.reward?.(pair.Climber, success ? "success" : "failure", success ? 1 : -1); }
             this.Feedback = success ? "success" : "failed";
-            const key = pair.Support.Team() + ":" + pair.Point.ID;
+            const key = pair.Team + ":" + pair.Point.ID;
             if (this.cooldown.size >= 128) { const first = [...this.cooldown.keys()][0]; if (first !== undefined) this.cooldown.delete(first); }
             this.cooldown.set(key, CurTime() + (success ? 5 : 15));
         }
@@ -89,11 +95,26 @@ export class BotBoostManager implements BoostContract {
             this.trace?.(climber)?.Record({ Kind: "start", Learner: "boost", Experience: experience, State: chosen.Key,
                 Stage: "boost:" + point.ID, Action: "climb", Reason: "pair_selected" });
             this.pairs.push({ Point: point, Support: chosen.Support, Climber: climber, Key: chosen.Key, SupportKey: chosen.SupportKey, ClimberKey: chosen.ClimberKey,
-                Experience: experience,
+                Experience: experience, Team: climber.Team(),
                 Phase: "assemble", Started: now, PhaseAt: now, LastJump: -Infinity, Issued: false, Launched: false, Position: new Map() });
+            this.event?.(climber, "Boost:started");
             this.Feedback = "testing"; this.TestFailure = undefined; return true;
         }
         return false;
+    }
+    Escape(climber: ZPServerPlayer, threat: GLuaVector, players: ZPServerPlayer[], now: number): boolean {
+        const position = climber.GetPos(), separation = Math.sqrt(position.DistToSqr(threat));
+        const choices = this.Store.Points().filter(point => geometry.vector(point.Base).DistToSqr(position) < 800 * 800 &&
+            geometry.vector(point.Base).DistToSqr(threat) > 200 * 200).map(point => {
+                const exit = geometry.vector(point.Exit), distance = Math.sqrt(exit.DistToSqr(threat));
+                const covered = util.TraceLine({ start: Vector(threat.x, threat.y, threat.z + 48), endpos: Vector(exit.x, exit.y, exit.z + 48),
+                    filter: player.GetAll() as ZPServerPlayer[], mask: MASK_SHOT }).Hit;
+                return { Point: point, Exit: exit, Useful: covered || distance >= separation + 80,
+                    Score: (covered ? 1 : 0) - Math.sqrt(position.DistToSqr(geometry.vector(point.Base))) / 1000 };
+            }).filter(choice => choice.Useful);
+        choices.sort((a, b) => b.Score - a.Score);
+        const chosen = choices.slice(0, 4).find(choice => geometry.validate(choice.Point) === undefined);
+        return chosen !== undefined && this.Start(climber, chosen.Exit, players, now, chosen.Point.ID);
     }
     Test(id: number, players: ZPServerPlayer[], now: number): boolean {
         this.TestFailure = undefined;

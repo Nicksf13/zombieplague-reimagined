@@ -10,8 +10,10 @@ interface ZPBotMemory {
 interface ZPBotSituation {
     Role: ZPBotRole; Health: number; Distance: number;
     Allies: number; Enemies: number; HasAlly: boolean;
+    RecentDamage?: boolean;
 }
 interface ZPBotStatus { ID: number; Profile: ZPBotProfile; Role: ZPBotRole; Action: ZPBotAction; Samples: number; }
+interface GLuaWeapon { HitDistance?: number; }
 interface ZPBotManager {
     Available(this: ZPBotManager): number;
     Attach(this: ZPBotManager, ply: ZPServerPlayer, profile?: ZPBotProfile): void;
@@ -69,6 +71,7 @@ declare namespace util {
 }
 /** @noSelf */
 declare namespace hook {
+    function Add(name: "PlayerFootstep", id: string, callback: (this: void, ply: ZPServerPlayer, position: GLuaVector, foot: number, sound: string, volume: number) => void): void;
     function Add(name: "DoPlayerDeath", id: string, callback: (this: void, ply: ZPServerPlayer, attacker: GLuaEntity, damage: GLuaDamageInfo) => void): void;
     function Add(name: "PostEntityTakeDamage", id: string, callback: (this: void, target: GLuaEntity, damage: GLuaDamageInfo, tookDamage: boolean) => void): void;
     function Add(name: "ZPInfectionEvent", id: string, callback: (this: void, target: ZPServerPlayer, attacker: ZPServerPlayer) => void): void;

@@ -28,7 +28,7 @@ test("melee pursuit includes vertical reach instead of dodging underneath an ele
         assert(goal==target, action.." must keep the human's real elevation")
     end
     local nearby=Vector(40,0,0)
-    assert(motor.destination(bot,{EnemyPosition=nearby,Visible=true},"attack","aggressive")~=nearby)
+    assert(motor.destination(bot,{EnemyPosition=nearby,Visible=true},"attack","aggressive")==nearby)
     local retreat=motor.destination(bot,{EnemyPosition=Vector(20,0,200),Visible=true},"retreat","aggressive")
     assert(retreat.x<0 and retreat.z==0, "intentional retreat remains local")
 `));
@@ -89,7 +89,7 @@ test("route memory preserves only the last observed position during a stair deto
     local senses=perception:Observe(bot,players,now+5,navigator:IsFollowing())
     assert(not senses.Visible and senses.EnemyPosition.x==0 and senses.EnemyPosition.z==200)
     senses.AllyPosition=Vector(1000,0,0)
-    assert(motor.destination(bot,senses,"group","aggressive")==senses.EnemyPosition)
+    assert(motor.destination(bot,senses,"group","aggressive")==senses.AllyPosition)
     assert(not perception:Observe(bot,players,now+21,true).Target)
 `));
 

@@ -49,7 +49,9 @@ export class BotGroundTraversal implements GroundContract {
         const passage = this.passage;
         if (!passage) return;
         const position = ply.GetPos();
-        if (!passage.Crossing && position.DistToSqr(passage.Align) <= tolerance * tolerance) passage.Crossing = true;
+        const dx = position.x - passage.Align.x, dy = position.y - passage.Align.y;
+        // Nav surfaces can sit slightly below the actual floor; planar alignment must remain reachable.
+        if (!passage.Crossing && dx * dx + dy * dy <= tolerance * tolerance && Math.abs(position.z - passage.Align.z) <= 24) passage.Crossing = true;
         const target = passage.Crossing ? passage.Enter : passage.Align;
         return { Target: target, SpeedLimit: Math.min(speed, Math.max(8, Math.sqrt(position.DistToSqr(target)) / 0.25)),
             Phase: passage.Crossing ? "cross" : "align" };

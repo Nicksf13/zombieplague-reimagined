@@ -3,14 +3,14 @@ import type { ExperienceEnd, ExperienceTrace, Intervention } from "./sv_bot_expe
 const { learningAllowed } = include("sv_bot_learning_gate.lua") as typeof import("./sv_bot_learning_gate");
 const { BotBehaviorLearner, profiles, actions, isProfile, context } = include("sv_bot_behavior.lua") as typeof import("./sv_bot_behavior");
 export { profiles, actions, isProfile, context };
-const advanceHealth = 0.65;
-const healthyZombie = (situation: ZPBotSituation): boolean => situation.Role === "zombie" && situation.Health >= advanceHealth;
+const disadvantaged = (situation: ZPBotSituation): boolean => situation.Enemies > situation.Allies + 1 || situation.RecentDamage === true;
+const canReposition = (situation: ZPBotSituation): boolean => situation.Role !== "zombie" || situation.Health < 0.35 ||
+    (disadvantaged(situation) && situation.Distance > 95);
 interface RetreatAttempt { Seen: number; Observed: number; FirstHit?: number; LastHit?: number; }
 interface Episode {
     ID: string; Components: Record<string, number>; Intervention?: Intervention; Executed?: boolean;
     Context: string; Role: ZPBotRole; Profile: ZPBotProfile; LearnBehavior: boolean; Action: ZPBotAction; Reward: number; Started: number;
     Retreat?: RetreatAttempt;
-    Health: number; SevereFailure?: boolean;
 }
 // A small contextual bandit changes tactical preferences, never aim, damage or class stats.
 export class BotBrain {
@@ -51,12 +51,12 @@ export class BotBrain {
     Evaluate(situation: ZPBotSituation, action: ZPBotAction): ZPBotScore {
         const score: ZPBotScore = { Profile: 0, Health: 0, Threat: 0, Distance: 0, Cohesion: 0, Learned: 0, Total: 0, Samples: 0, Eligible: true };
         if (action === "group" && !situation.HasAlly) { score.Cohesion = -100; score.Total = -100; score.Eligible = false; return score; }
-        if (action === "retreat" && situation.Role === "zombie" && (this.observed < this.retreatBlockedUntil || healthyZombie(situation))) {
+        if (action === "retreat" && (this.observed < this.retreatBlockedUntil || !canReposition(situation))) {
             score.Threat = -100; score.Total = -100; score.Eligible = false; return score;
         }
         const profile = this.profile, zombie = situation.Role === "zombie";
         const low = situation.Health < 0.35, outnumbered = situation.Enemies > situation.Allies + 1;
-        const advancing = healthyZombie(situation);
+        const advancing = zombie && situation.Health >= 0.65 && !disadvantaged(situation);
         score.Profile = action === "attack" ? (zombie ? 0.6 : 0.3) : action === "defend" ? (zombie ? 0.1 : 0.45) : 0.05;
         if (action === "attack") {
             score.Profile += profile === "aggressive" ? 0.35 : 0;
@@ -64,6 +64,7 @@ export class BotBrain {
             if (!zombie && situation.Distance > 650) score.Distance += 0.2;
             if (low) score.Health -= 0.35;
             if (advancing) score.Health += 0.3;
+            if (zombie && situation.RecentDamage && situation.Distance > 180) score.Threat -= 0.35;
         }
         if (action === "defend") {
             if (profile === "defensive") score.Profile += 0.35;
@@ -73,6 +74,8 @@ export class BotBrain {
             if (advancing) score.Health -= 0.9;
             if (low) score.Health += 0.8;
             if (outnumbered) score.Threat += advancing ? 0.15 : 0.45;
+            if (situation.RecentDamage) score.Threat += 0.45;
+            if (zombie && outnumbered && situation.Distance > 180) score.Threat += 0.4;
             // Attribute combined predicates to their first matching signal, preserving the rule's total.
             if (profile === "cautious") {
                 if (low) score.Health += 0.4;
@@ -109,14 +112,14 @@ export class BotBrain {
         const key = context(situation);
         const retreat = this.episode;
         if (retreat?.Retreat) {
-            if (healthyZombie(situation) || situation.Role !== "zombie") this.Finish();
+            if (!canReposition(situation)) this.Finish();
             else if (this.ContinueRetreat(true, now, situation.Health)) {
                 this.Inspect(situation, true, now - retreat.Started); return "retreat";
             }
         }
         // Keep a decision briefly to avoid oscillating between attack and flight every tick.
         if (this.episode && this.episode.Context === key && now - this.episode.Started < 2 &&
-            (this.episode.Action !== "group" || situation.HasAlly) && (this.episode.Action !== "retreat" || !healthyZombie(situation))) {
+            (this.episode.Action !== "group" || situation.HasAlly) && (this.episode.Action !== "retreat" || canReposition(situation))) {
             this.Inspect(situation, true, now - this.episode.Started); return this.episode.Action;
         }
         this.Finish();
@@ -132,14 +135,14 @@ export class BotBrain {
             if (scores[action].Eligible && scores[action].Total > scores[best].Total) best = action;
         this.reason = behavior.Reason === "profile" && this.memory.Experience[key + ":" + best] ? "learned" : behavior.Reason;
         if (exploring && !exploreProfile) {
-            const possible = actions.filter(action => scores[action].Eligible && (action !== "retreat" || !healthyZombie(situation)));
+            const possible = actions.filter(action => scores[action].Eligible);
             best = possible[math.random(1, possible.length) - 1] ?? best;
             this.reason = "explore";
         }
         this.episode = { ID: this.trace?.NewID("tactical") ?? this.memory.ID + ":tactical:" + ++this.sequence, Components: {},
-            Context: key, Role: situation.Role, Profile: this.profile, LearnBehavior: !exploring || exploreProfile, Action: best, Reward: 0, Started: now, Health: Math.max(0, Math.min(1, situation.Health)) };
+            Context: key, Role: situation.Role, Profile: this.profile, LearnBehavior: !exploring || exploreProfile, Action: best, Reward: 0, Started: now };
         this.trace?.Record({ Kind: "start", Learner: "tactical", Experience: this.episode.ID, State: key, Action: best, Reason: this.reason });
-        if (situation.Role === "zombie" && best === "retreat") this.episode.Retreat = { Seen: now, Observed: now };
+        if (best === "retreat") this.episode.Retreat = { Seen: now, Observed: now };
         this.Inspect(situation, false, 0, scores);
         return best;
     }
@@ -172,14 +175,13 @@ export class BotBrain {
             attempt.LastHit = now;
         }
     }
-    Escaped(): void {
-        if (this.episode?.Action === "retreat" && this.episode.Role === "human") this.Reward(0.15, "escape");
+    Escaped(confirmed = false): void {
+        if (confirmed && this.episode?.Action === "retreat" && this.episode.Role === "human") this.Reward(0.15, "escape");
     }
     ContinueRetreat(visible: boolean, now: number, health?: number): boolean {
         this.observed = now;
         const episode = this.episode, attempt = episode?.Retreat;
         if (!episode || !attempt) return false;
-        if (health !== undefined && health >= advanceHealth) { this.Finish(); return false; }
         // An unobserved pause cannot establish that an escape worked.
         if (now - attempt.Observed > 0.75 || now < attempt.Observed) { this.Finish(); return false; }
         attempt.Observed = now;
@@ -187,9 +189,10 @@ export class BotBrain {
         const underFire = attempt.FirstHit !== undefined && attempt.LastHit !== undefined &&
             attempt.LastHit - attempt.FirstHit >= 2 && now - attempt.LastHit <= 1.5;
         if (!underFire && !visible && now - Math.max(attempt.Seen, attempt.LastHit ?? episode.Started) >= 3) {
-            this.Reward(0.15, "escape"); this.Finish(); return false;
+            // Disengagement ends a zombie reposition. Safety alone is not progress toward infection.
+            if (episode.Role === "zombie") { this.Finish("reposition_complete"); this.retreatBlockedUntil = now + 4; return false; }
         }
-        if (underFire || now - episode.Started >= 8) {
+        if ((underFire && episode.Role === "zombie") || now - episode.Started >= 8) {
             this.FailRetreat(now); this.Finish(); return false;
         }
         return true;
@@ -197,9 +200,8 @@ export class BotBrain {
     Reset(reason = "reset"): void { this.Finish(reason, "interrupted"); this.retreatBlockedUntil = 0; }
     private FailRetreat(now: number): void {
         const episode = this.episode; if (!episode?.Retreat) return;
-        episode.SevereFailure = episode.Health >= 0.35;
-        this.Reward(-(0.6 + episode.Health * 1.4), "retreat_failure");
-        this.retreatBlockedUntil = now + (episode.SevereFailure ? 12 : 6);
+        this.Reward(-0.25, "retreat_failure");
+        this.retreatBlockedUntil = now + 3;
     }
     Death(): void {
         this.Reward(-1, "death"); this.FailRetreat(CurTime()); this.Finish("death", "failure");
@@ -222,7 +224,7 @@ export class BotBrain {
                     State: episode.Context, Action: episode.Profile, Reason: "profile_outcome", Total: episode.Reward,
                     Before: profileBefore, After: this.memory.Behaviors?.[episode.Context]?.[episode.Profile]?.Value ?? 0, Updated: true });
             }
-            after += (episode.SevereFailure ? 0.6 : 0.2) * (Math.max(-1, Math.min(1, episode.Reward)) - before);
+            after += 0.2 * (Math.max(-1, Math.min(1, episode.Reward)) - before);
             this.memory.Experience[key] = { Value: after, Samples: Math.min(10000, (previous?.Samples ?? 0) + 1) }; this.changed = true;
         }
         this.trace?.Record({ Kind: "finalize", Learner: "tactical", Experience: episode.ID, State: episode.Context, Action: episode.Action,

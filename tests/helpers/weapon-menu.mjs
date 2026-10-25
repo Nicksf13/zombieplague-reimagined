@@ -74,6 +74,7 @@ include("sh_weapon_menu_protocol.lua")
 local createdFonts={}
 include("sh_bot_motion_protocol.lua")
 include("sh_bot_place_protocol.lua")
+include("sh_bot_safe_protocol.lua")
 surface={CreateFont=function(name,data) createdFonts[name]=data end}
 include("cl_theme_manager.lua")
 include("cl_menu_controls.lua")

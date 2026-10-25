@@ -4,18 +4,19 @@ export const actions: readonly ZPBotAction[] = ["attack", "defend", "retreat", "
 export const isProfile = (value: unknown): value is ZPBotProfile => profiles.some(profile => profile === value);
 
 export function context(situation: ZPBotSituation): string {
-    return situation.Role + ":" + (situation.Health < 0.35 ? "low" : "healthy") + ":" +
+    return "v2:" + situation.Role + ":" + (situation.Health < 0.35 ? "low" : "healthy") + ":" +
         (situation.Enemies > situation.Allies + 1 ? "outnumbered" : "balanced") + ":" +
-        (situation.Distance < 180 ? "close" : situation.Distance < 650 ? "mid" : "far");
+        (situation.Distance < 180 ? "close" : situation.Distance < 650 ? "mid" : "far") + ":" + (situation.RecentDamage ? "pressured" : "quiet");
 }
 
 const record = (value: unknown): Record<string, unknown> | undefined =>
     typeof value === "object" && value !== null ? value as Record<string, unknown> : undefined;
 export function parseBehaviors(value: unknown): ZPBotBehaviorMemory | undefined {
     const data = record(value), result: ZPBotBehaviorMemory = {};
-    if (!data || Object.keys(data).length > 24) return;
+    if (!data || Object.keys(data).length > 72) return;
     for (const [key, value] of pairs(data)) {
         const entries = record(value), parts = key.split(":");
+        if (parts[0] === "v2") { parts.shift(); if (!["quiet", "pressured"].includes(parts.pop() ?? "")) return; }
         if (parts.length !== 4 || !["human", "zombie"].includes(parts[0] ?? "") ||
             !["low", "healthy"].includes(parts[1] ?? "") || !["outnumbered", "balanced"].includes(parts[2] ?? "") ||
             !["close", "mid", "far"].includes(parts[3] ?? "") || !entries || Object.keys(entries).length > 4) return;

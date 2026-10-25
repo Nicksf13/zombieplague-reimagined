@@ -124,7 +124,7 @@ declare function Angle(this: void, p: number, y: number, r: number): GLuaAngle;
 /** @noSelf */
 declare namespace ents { function Create(name: "zp_antidote_grenade" | "zp_infection_grenade"): ZPGrenade; }
 interface GLuaTraceOptions { start: GLuaVector; endpos: GLuaVector; filter: GLuaEntity | GLuaEntity[]; mask: number; mins?: GLuaVector; maxs?: GLuaVector; }
-interface GLuaTrace { Entity: GLuaEntity; Hit: boolean; HitSky?: boolean; HitPos: GLuaVector; HitNormal?: GLuaVector; }
+interface GLuaTrace { Entity: GLuaEntity; Hit: boolean; HitWorld?: boolean; HitSky?: boolean; HitPos: GLuaVector; HitNormal?: GLuaVector; Fraction?: number; StartSolid?: boolean; AllSolid?: boolean; }
 /** @noSelf */
 declare namespace util { function TraceLine(options: GLuaTraceOptions): GLuaTrace; function TraceHull(options: GLuaTraceOptions): GLuaTrace; }
 /** @noSelf */

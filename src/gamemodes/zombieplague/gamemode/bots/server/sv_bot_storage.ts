@@ -11,10 +11,16 @@ export function parseBotMemories(value: unknown, isProfile: typeof profileValida
     for (let index = 1; index <= Object.keys(bots).length; index++) {
         const bot = record(bots[index]), experience = record(bot?.Experience);
         if (!bot || !number(bot.ID, 1, 64) || bot.ID % 1 !== 0 || seen[bot.ID] || !isProfile(bot.Profile) ||
-            !experience || Object.keys(experience).length > 96) return;
+            !experience || Object.keys(experience).length > 288) return;
         const estimates: ZPBotMemory["Experience"] = {};
         for (const [key, value] of pairs(experience)) {
             const estimate = record(value), parts = key.split(":");
+            if (parts[0] === "v2") {
+                parts.shift();
+                const action = parts.pop();
+                if (!["quiet", "pressured"].includes(parts.pop() ?? "") || action === undefined) return;
+                parts.push(action);
+            }
             if (parts.length !== 5 || !["human", "zombie"].includes(parts[0] ?? "") ||
                 !["low", "healthy"].includes(parts[1] ?? "") || !["outnumbered", "balanced"].includes(parts[2] ?? "") ||
                 !["close", "mid", "far"].includes(parts[3] ?? "") || !["attack", "defend", "retreat", "group"].includes(parts[4] ?? "") ||

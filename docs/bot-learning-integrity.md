@@ -18,7 +18,7 @@ Finalization uses these outcomes:
 | Outcome | Meaning |
 | --- | --- |
 | `success` | A checkpoint/goal or a grounded exit from water was observed. |
-| `failure` | Attributed fall, observed stall failure, or confirmed damage to an executed pursuit jump. |
+| `failure` | Attributed fall, observed stall failure, or another known movement failure; coincident bullet exposure is diagnostic only. |
 | `interrupted` | No sufficiently known terminal result; no automatic negative update. |
 | `superseded` | Another controller prevented evaluating the selected action. |
 | `observed` | A local interval with a known intermediate result; positive crossing progress remains pending. |
@@ -46,7 +46,7 @@ External horizontal speed above 150% of class run speed, observation gaps,
 teleport-sized displacement, foreign movement controllers, physics changes and
 role/lifecycle boundaries invalidate causality. Hostile player damage also fences
 fall attribution because its displacement cannot safely be inferred from damage
-alone. Confirmed jump exposure is retained separately.
+alone. Observed jump exposure is retained as telemetry without inventing failed traversal.
 
 These are conservative observations, not a complete causal physics model.
 Unobserved pushes, map scripts and unusual physics still need engine tests. If
@@ -88,7 +88,7 @@ bot is cleared. Command records are coalesced to at most five per second.
 | Tactical profile | The same episode cannot update the profile either. Randomly forced actions retain their existing profile-credit guard. |
 | Local movement | Compatible traversal remains the implementation of the chosen movement. Actual braking, unsafe-support refusal, unavailable sprint, expired jump input, traffic, boost input or command gating supersedes the local attempt neutrally. |
 | Passage cost | Requires a known stage result; unassigned falls and externally substituted movements do not invent a passage failure. |
-| Place selection | Foreign movement ends unresolved visits neutrally. Already observed find/escape outcomes remain valid. Ordinary visits still learn their own place outcomes. |
+| Place selection | Foreign movement ends unresolved visits neutrally. Already observed find/escape and executed damage outcomes remain valid. Ordinary visits still learn their own place outcomes. |
 | Cooperative boost | Own executed boost attempts keep their existing outcome contract. Command gating cancels the pair neutrally; traffic still refuses busy pairs. |
 
 Scope changes and death clear active causal references. Confirmed consequences
@@ -136,7 +136,7 @@ The saved knowledge schema and file locations remain compatible. There is no
 automatic migration, reset, retrospective relabeling or claim that old estimates
 are clean. Old action/profile values and passage costs may contain the previous
 attribution errors. Old statistics remain available and use their old reward
-fingerprint; new attempts use `integrity-v2` and include drain/realism flags, bot
+fingerprint; current attempts use `objectives-v3` and include drain/realism flags, bot
 count and tick interval in their recorded settings.
 
 Before implementation, all 802 files under the installed bot data directory were
@@ -167,3 +167,7 @@ Relevant regression files are `tests/bot-learning-integrity.test.mjs`,
 place tests also run in the complete suite. There is no measured Garry's Mod
 comparison yet. Follow the separate engine procedure to validate real callback
 timing, causal observations and navigation outcomes.
+
+The current [decision and evaluation guide](bot-objectives.md) documents versioned
+tactical, movement and place contexts, sound clues and activity exports. Historical
+2026-10-18 validation counts above describe the earlier build.

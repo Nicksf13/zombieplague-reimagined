@@ -38,7 +38,8 @@ test("perception retains a last known position without following hidden targets 
     wall=true; target.position=Vector(900,0,0)
     snapshot=senses:Observe(bot,players,now+1)
     assert(not snapshot.Visible and snapshot.EnemyPosition.x==400)
-    assert(not senses:Observe(bot,players,now+4).Target)
+    assert(senses:Observe(bot,players,now+4).Target)
+    assert(not senses:Observe(bot,players,now+13).Target)
     wall=false; target.team=TEAM_HUMANS
     snapshot=senses:Observe(bot,players,now+5); assert(not snapshot.Target and snapshot.Allies==0 and snapshot.AllyPosition)
     target.team=TEAM_ZOMBIES; target.position=Vector(-500,0,0)
@@ -114,6 +115,7 @@ test("human bots reload and select only existing weapons while zombies chase and
     bot.weapon.clip=0
     local cmd=command(); bots:Command(bot,cmd); assert(cmd.buttons & IN_RELOAD~=0 and cmd.buttons & IN_ATTACK==0)
     local loadedWeapon=newWeapon(12); bot.weapons[2]=loadedWeapon
+    target.position=Vector(200,0,0); now=11.3; bots:Update()
     bots:Command(bot,cmd); assert(cmd.selected==loadedWeapon)
     bot.team=TEAM_ZOMBIES; target.team=TEAM_HUMANS; bot.weapon=newWeapon(-1); bot.weapons={bot.weapon}
     now=12; bots:Update(); bots:Command(bot,cmd)
@@ -137,7 +139,7 @@ test("learning credits actual damage and infection to the original role, then su
     hooks.ZPInfectionEvent.ZPAdaptiveBots(bot,target)
     assert(bots:GetStatus(bot).Samples==0 and bots:GetStatus(bot).Role=="zombie")
     bots:Save(); local saved=sharedMemory(1,"human","HumanDefault")
-    assert(saved.Experience["human:healthy:balanced:mid:attack"].Value<0)
+    assert(saved.Experience["v2:human:healthy:balanced:mid:quiet:attack"].Value<0)
     bots:Remove(bot); local replacement=newPlayer(TEAM_HUMANS,0)
     bots:Attach(replacement)
     assert(bots:GetStatus(replacement).ID==1 and bots:GetStatus(replacement).Samples==1)
@@ -185,5 +187,5 @@ test("shutdown flushes an unfinished combat episode before persisting it", () =>
     assert(bots:GetStatus(bot).Samples==0)
     hooks.ShutDown.ZPAdaptiveBots()
     local saved=sharedMemory(1,"human","HumanDefault")
-    assert(bots:GetStatus(bot).Samples==1 and saved.Experience["human:healthy:balanced:mid:attack"].Samples==1)
+    assert(bots:GetStatus(bot).Samples==1 and saved.Experience["v2:human:healthy:balanced:mid:quiet:attack"].Samples==1)
 `));

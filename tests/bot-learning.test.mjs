@@ -87,7 +87,7 @@ test("learning survives reload and failed writes retry without replacing the las
     local store=construct(Store,definitions.isProfile); assert(#store:Load()==0)
     assert(store:Save({bot:GetMemory()})); local first=files[path]
     local again=construct(Store,definitions.isProfile); local loaded=again:Load()
-    assert(#loaded==1 and loaded[1].Experience["human:healthy:balanced:mid:attack"].Samples==1)
+    assert(#loaded==1 and loaded[1].Experience["v2:human:healthy:balanced:mid:quiet:attack"].Samples==1)
     failWrite=true
     assert(not again:Save(loaded) and files[path..".bak.txt"]==first)
     assert(not again:Save(loaded) and files[path..".bak.txt"]==first)

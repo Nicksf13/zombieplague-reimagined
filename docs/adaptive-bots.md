@@ -2,10 +2,14 @@
 
 AI bots use individual personalities and learn tactical, shelter and locomotion
 preferences from their own outcomes. They run entirely on the server, with no
-external service, native module, neural network, or player recording. Available
+external service, native module, or neural network. Available
 movements, aiming and tactical actions are programmed; separate learners adjust
 action preferences and traversal costs. Better performance must be measured in
 actual matches.
+
+Superadmins can optionally [record bot incidents](bot-recording.md) from the
+administrative menu. Recording is disabled by default and serves diagnostics;
+its observations are never supplied to bot policy or learning.
 
 ## Using the bots
 
@@ -37,6 +41,8 @@ first four new identities cover all four profiles. Existing `/bot` and
 All profiles can attack, defend, retreat or group. Role, health, perceived enemy
 numbers and nearby allies influence priorities. Zombies normally close to melee
 range; human bots use the existing class/loadout weapons and reload empty clips.
+The [weapon handling guide](bot-weapons.md) describes reserve-aware reloads,
+urgent switches, equipment confirmation and withdrawal when ammunition runs out.
 Small identity-specific differences affect reaction time, aim error and decision
 scores. Class stats, damage, health and ammunition obey normal gamemode rules.
 
@@ -52,7 +58,7 @@ learned on one map influence decisions on another. A human class never inherits
 a zombie class's failures. Metrics, navigation passages, movement estimates and
 shelter records remain map-specific because they describe local observations or
 geometry. Within the tactical scope, context contains role, health below/above 35%, numerical
-disadvantage, and close/medium/far range. Profiles provide initial action scores;
+disadvantage, close/medium/far range and recent hostile damage. Profiles provide initial action scores;
 learned values contribute to those scores. A separate contextual learner weighs
 the four profiles for that same bot. Successful profiles gain priority, failed
 profiles lose it, and switching the active profile preserves action experience.
@@ -62,13 +68,14 @@ or a grouping destination disappears. About 8% of eligible decisions explore
 either another profile or another action, divided evenly between the two.
 Low-health decisions do not explore randomly.
 
-At 65% health or higher, zombies (including Nemesis) cannot select retreat:
-the action is ineligible even with favorable saved preferences. Attack receives
-+0.3 from health. Grouping cannot send a healthy zombie toward an ally farther
-from a visible human, and close melee dodges use 20 units instead of the ranged
-100-unit offset. Healing past the advance threshold
-interrupts a held retreat. Below 35%, the existing escape priorities remain.
-These scoring changes apply to existing experience without deleting saved data.
+Healthy zombies can reposition when perceived numerical disadvantage or recent
+hostile damage makes direct pressure unfavorable. Health alone cannot prohibit
+that choice. Balanced, healthy zombies keep advancing; those already in melee
+range normally attack. Repositioning chooses bounded, reachable lateral routes,
+validated cover or a known ally. Losing contact ends a zombie reposition after
+three observed seconds, without a positive safety reward, followed by four
+seconds of renewed pressure before another retreat. See [the decision and
+evaluation guide](bot-objectives.md) for the complete arbitration contract.
 
 Damage dealt gives credit proportional to the victim's maximum health; damage
 received gives a proportional penalty. Death, infection, combat victory and
@@ -84,44 +91,36 @@ meaningful feedback. For example, 100 damage during retreat costs -0.2 for a
 20,000-HP Nemesis, instead of the normal -0.005. Each hit remains capped at -1,
 episodes at +/-2, and learned targets at +/-1. This changes feedback only, not
 actual health or damage. Humans and other zombie actions retain normal scaling.
-Zombie retreat is evaluated as one attempt, keeping its original context until
-the outcome is known instead of splitting it into two-second decisions. Losing
-sight alone is not success: the zombie must spend three consecutive seconds with
-no visible enemy and no damage from human players to earn +0.15. Human damage
-restarts this interval even if the shooter is hidden. During confirmation, the
-zombie keeps withdrawing from the last known enemy position rather than switching
-straight back to pursuit. Humans retain their existing +0.15 loss-of-sight reward.
+Retreat attempts preserve their original tactical context across visibility loss.
+Humans continue escaping from the remembered threat. A human escape requires
+three continuously observed seconds with no visible enemy, no recent hostile
+damage, a grounded position over 320 units from the known threat and geometric
+cover. A sighting disappearing alone gives no reward. Cover visits have their
+own stricter arrival and sustained-protection outcome.
 
-Two seconds of sustained human fire (hits no more than 1.5 seconds apart) makes a
-zombie retreat fail. An attempt also fails if it has not established safety within
-eight seconds. Failure adds `-(0.6 + 1.4 * starting health fraction)` to its damage
-feedback. Death during retreat also records failure, on top of the ordinary
-death penalty. Attempts started at 35% health or higher use a 0.6 action-estimate
-update rate and a 12-second retreat cooldown; critical attempts retain the 0.2
-update rate and a six-second cooldown. Rewards remain bounded. This causes
-immediate reconsideration even with old favorable retreat
-experience or learning disabled. The existing decision graph marks retreat
-ineligible during this cooldown. A single shot or simultaneous shotgun pellets
-cannot trigger the sustained-fire condition by themselves. Healing to 65% still
-interrupts retreat. Freeze, death, role/class changes and AI shutdown reset pending
-attempts and cooldowns; gaps over 0.75 seconds cannot earn escape credit. No saved
-experience or persistence format changes are required.
+Two seconds of sustained human fire can end an unproductive zombie reposition.
+All retreat attempts have an eight-second deadline. Known failure costs -0.25,
+uses the ordinary 0.2 update rate and fences another retreat for three seconds;
+there is no additional health-based severe-failure multiplier. Freeze, lifecycle
+changes and AI shutdown clear pending execution. Observation gaps cannot prove
+safety. New tactical contexts are versioned so these outcomes do not reuse old
+retreat estimates indiscriminately.
 
 The tactical learner is a small contextual bandit. It cannot invent tactics or
 train aiming. A separate [locomotion learner](bot-locomotion.md) evaluates safe
 movement combinations and learns which navmesh passages are difficult.
 Cooperation includes grouping and [validated passage negotiation](bot-traffic.md).
 Defensive movement maintains distance and dodges, with occasional
-[shelter selection and hiding-place investigation](bot-shelters.md). Deliberate
-special class ability use and extra-item purchases are future extensions.
+[shelter selection and hiding-place investigation](bot-shelters.md). Human bots
+can make [extra-ammo purchase decisions](bot-weapons.md#extra-ammo-purchase-decisions)
+based on weapon exhaustion, observed pressure and available packs. Deliberate
+special class ability use and other extra-item purchases are future extensions.
 
-Applied hostile ranged damage of at least 8% of a health reference capped at
-1,000 HP (minimum 20 damage) within 0.8 seconds can trigger a defensive face turn.
-For 0.65 seconds the bot turns about 120 degrees away and looks down, using the
-normal view-turn speed, while preserving its movement direction. It does not fire
-away from its target. A two-second cooldown prevents permanent turning. This is
-an ordinary pose change; it does not alter hitgroups, damage or collision, and its
-effect on headshots depends on the model and engine. Traversal aim retains priority.
+Applied ranged damage can request a brief orientation toward an already observed
+threat, for at most 0.35 seconds with a three-second cooldown. It never retrieves
+a hidden attacker's current position. Visible combat aim and retreat keep priority;
+there is no automatic 120-degree turn away, look-down pose or unconditional
+attack suspension. Movement and normal line-of-fire checks remain active.
 
 ## Persistence and ownership
 
@@ -166,8 +165,8 @@ learning in memory without overwriting the invalid source. Repair/restore the
 file while the server is stopped, then restart. A corrupt shared file is never
 replaced by a legacy reimport; local metrics can still be saved independently.
 The shared schema limits input to 16 MiB, 1,024 role/class/variant contexts,
-64 identities per context, 96 action estimates per identity and bounded samples
-and numeric ranges. An optional `Behaviors` member holds up to 24 combat contexts
+64 identities per context, 288 action estimates per identity (96 legacy plus 192 versioned) and bounded samples
+and numeric ranges. An optional `Behaviors` member holds up to 72 combat contexts (24 legacy plus 48 versioned)
 with at most four profile estimates each. Older version 3 files remain valid and
 initialize these estimates without changing existing action experience. Map
 metrics retain their separate 512 KiB limit and contain empty behavior tables.
@@ -181,7 +180,7 @@ network limits, persistence contracts and engine validation steps.
 
 Bots recognize visible participants within 1,800 units and a forward field of
 view, with close-range awareness. Last known enemy positions normally expire
-after three seconds; following a navmesh route extends this to at most twenty
+after twelve seconds; following a navmesh route extends this to at most twenty
 seconds after the last sighting. Hidden movement never updates that position.
 Unreachable targets are ignored for five seconds so other visible enemies can
 be selected. Shooting rechecks line of sight each

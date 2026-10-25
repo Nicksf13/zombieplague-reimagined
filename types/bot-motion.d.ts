@@ -1,4 +1,4 @@
-type ZPBotMove = "forward" | "back" | "left" | "right" | "diagonalleft" | "diagonalright" | "jump" | "jumpleft" | "jumpright" | "duck" | "duckleft" | "duckright" | "sprint" | "swim" | "climb";
+type ZPBotMove = "forward" | "back" | "left" | "right" | "diagonalleft" | "diagonalright" | "jump" | "jumpleft" | "jumpright" | "duck" | "duckleft" | "duckright" | "sprint" | "swim" | "climb" | "jumpduck";
 type ZPBotMoveMode = "ground" | "air" | "water" | "ladder";
 type ZPBotNavReason = "ready" | "missing" | "connection" | "height" | "fall" | "landing" | "obstacle" | "stalled" | "budget" | "ground" | "occupied";
 type ZPBotNavPhase = "route" | "align" | "cross" | "land";

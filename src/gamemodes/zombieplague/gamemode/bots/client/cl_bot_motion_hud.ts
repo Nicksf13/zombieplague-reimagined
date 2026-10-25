@@ -7,7 +7,8 @@ function actionName(action: ZPBotMove): string {
     const jump = phrase("jump"), duck = phrase("duck");
     const names: Record<ZPBotMove, string> = { forward: "↑", back: "↓", left: "←", right: "→", diagonalleft: "↖", diagonalright: "↗",
         jump: "↑+" + jump, jumpleft: "↖+" + jump, jumpright: "↗+" + jump, duck: "↑+" + duck, duckleft: "↖+" + duck,
-        duckright: "↗+" + duck, sprint: "↑+" + phrase("sprint"), swim: "↑+" + phrase("water"), climb: "↑+" + phrase("ladder") };
+        duckright: "↗+" + duck, sprint: "↑+" + phrase("sprint"), swim: "↑+" + phrase("water"), climb: "↑+" + phrase("ladder"),
+        jumpduck: "↑+" + jump + "+" + duck };
     return names[action];
 }
 export function navigationLines(detail: ZPBotNavigationDiagnostic): string[] {
@@ -68,9 +69,10 @@ export function paint(row: ZPBotDiagnostic, width: number, palette: ZPThemePalet
         text(binding.Text, x + 5, 236, keyWidth - 8, pressed ? palette.Surface : palette.Muted);
     });
     text(phrase("preferences"), 12, 266, width - 24, palette.Muted);
+    const rowHeight = Math.min(20, Math.floor(110 / Math.ceil(ZPBotMotionProtocol.Actions.length / 3)));
     ZPBotMotionProtocol.Actions.forEach((action, index) => {
         const column = index % 3, line = Math.floor(index / 3), cellWidth = (width - 24) / 3;
-        const x = 12 + column * cellWidth, y = 288 + line * 20, value = data.Values[index] ?? 0;
+        const x = 12 + column * cellWidth, y = 288 + line * rowHeight, value = data.Values[index] ?? 0;
         text(actionName(action), x, y, cellWidth - 12, action === data.Action ? palette.Accent : palette.Text);
         draw.RoundedBox(0, x, y + 16, cellWidth - 12, 2, palette.Surface);
         const magnitude = Math.abs(value) * (cellWidth - 12) / 2, center = x + (cellWidth - 12) / 2;
