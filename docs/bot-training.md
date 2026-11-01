@@ -27,6 +27,12 @@ countdowns, and uses 0.1-second preparation/restart/intermission delays. Round
 duration remains configured normally. The map stays active after the usual round
 limit so training can continue.
 
+Automatic training does not spawn Nemesis rounds. Tactical memory is scoped by
+role, class and variant, so ordinary zombie training is not direct Nemesis combat
+training. Quiet survival at an arbitrary location does not earn a shelter reward;
+positive shelter credit requires an observed escape after arrival. A marked point
+is a destination hint and cannot add missing NavMesh connections.
+
 AI decisions and learning are enabled for the session; their previous convar values
 are restored when training is disabled. Normal round timing convars are never
 rewritten. Existing per-bot learning and shared cross-map persistence continue to

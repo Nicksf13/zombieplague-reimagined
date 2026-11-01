@@ -62,6 +62,9 @@ server-authoritative detection, and in-game overview generation.
 The [administrator round controls guide](admin-rounds.md) documents manual starts,
 scoreboard role selection, eligibility rules, and the network boundary.
 
+The [player statistics guide](player-statistics.md) documents per-map and all-map
+rankings, exclusive roles, the server toggle, and replaceable persistence backends.
+
 A raiz de `src/gamemodes/zombieplague/gamemode/` contém somente os pontos de
 entrada `init.ts`, `cl_init.ts` e `shared.ts`. Os demais fontes estão agrupados
 por domínio. Cada pacote contém `shared/`, `server/` e/ou `client/`, criando apenas

@@ -43,6 +43,7 @@ PLAYER.GetAuxGravity = function (this: ZPServerPlayer): number {
 };
 PLAYER.SetNemesis = function (this: ZPServerPlayer, Nemesis: boolean): void {
     this.Nemesis = Nemesis;
+    hook.Call("ZPPlayerRoleChanged", GAMEMODE, this);
     net.Start("SendNemesis");
     net.WriteString(PlayerManager.GetPlayerID(this));
     net.WriteBool(Nemesis);
@@ -53,6 +54,7 @@ PLAYER.IsNemesis = function (this: ZPServerPlayer): boolean | undefined {
 };
 PLAYER.SetSurvivor = function (this: ZPServerPlayer, Survivor: boolean): void {
     this.Survivor = Survivor;
+    hook.Call("ZPPlayerRoleChanged", GAMEMODE, this);
     net.Start("SendSurvivor");
     net.WriteString(PlayerManager.GetPlayerID(this));
     net.WriteBool(Survivor);

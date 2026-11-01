@@ -1,7 +1,7 @@
 export {};
 const { ready, targets } = include("sv_spectator_rules.lua") as typeof import("../../player/server/sv_spectator_rules");
 const rounds = RoundManager as ZPServerRoundManager;
-GM.PlayerCanHearPlayersVoice = function (listener, talker): boolean {
+function voiceAllowed(this: void, listener: ZPServerPlayer, talker: ZPServerPlayer): boolean {
     if (!rounds.IsPlayingRound())
         return true;
     if (rounds.IsRealisticMod())
@@ -11,6 +11,16 @@ GM.PlayerCanHearPlayersVoice = function (listener, talker): boolean {
     if (!cvars.Bool("zp_voice_all", true) && listener.Team() !== talker.Team())
         return false;
     return cvars.Bool("zp_can_hear_death", true) || listener.Alive() === talker.Alive();
+}
+GM.PlayerCanHearPlayersVoice = function (listener, talker): LuaMultiReturn<[boolean, boolean]> {
+    if (!IsValid(listener) || !IsValid(talker) || !voiceAllowed(listener, talker))
+        return $multi(false, false);
+    if (!cvars.Bool("zp_voice_local", true))
+        return $multi(true, false);
+    const configured = cvars.Number("zp_voice_radius", 1000);
+    const radius = Number.isFinite(configured) ? Math.max(64, Math.min(32768, configured)) : 1000;
+    // The second engine return enables positional audio and distance attenuation.
+    return $multi(listener.GetPos().DistToSqr(talker.GetPos()) <= radius * radius, true);
 };
 GM.PlayerCanSeePlayersChat = function (_text, teamTalk, listener, talker): boolean {
     if (!rounds.IsPlayingRound())

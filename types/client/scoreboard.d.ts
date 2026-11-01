@@ -61,6 +61,7 @@ interface ZPScoreboardState {
     readonly Width: number;
     readonly Height: number;
     readonly Teams: readonly ZPScoreboardTeam[];
+    readonly Results: { readonly Humans: number; readonly Zombies: number; readonly Draws: number; };
 }
 interface ZPScoreboardActions {
     TransformPlayer(this: ZPScoreboardActions, id: number, role: ZPAdminPlayerRole): void;

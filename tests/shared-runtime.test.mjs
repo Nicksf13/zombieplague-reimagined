@@ -258,7 +258,7 @@ const serverSetup = `
         "sv_player.lua", "sv_localization.lua", "sv_message.lua", "sv_classmanager.lua",
         "sv_roundmanager.lua", "sv_eventmanager.lua", "sv_player_participation.lua", "sv_infectionmanager.lua",
         "sv_weaponmanager.lua", "sv_weapon_menu.lua", "sv_class_menu_apply.lua", "sv_class_menu.lua", "sv_extraitems.lua", "sv_extra_menu.lua", "sv_particlemanager.lua",
-        "sv_votemap.lua", "sv_map_nominations.lua", "sv_mapmanager.lua", "sv_map_environment.lua", "sv_radar.lua", "sv_spectator_overview.lua", "sv_decoy.lua", "sv_admin_settings.lua", "sv_admin_rounds.lua", "sv_bank.lua", "sv_bots.lua", "sv_server_cvars.lua", "sv_dance.lua"
+        "sv_votemap.lua", "sv_map_nominations.lua", "sv_mapmanager.lua", "sv_map_environment.lua", "sv_radar.lua", "sv_spectator_overview.lua", "sv_decoy.lua", "sv_admin_settings.lua", "sv_admin_rounds.lua", "sv_bank.lua", "sv_statistics.lua", "sv_bots.lua", "sv_server_cvars.lua", "sv_dance.lua"
     }
     for _, name in ipairs(expectedServerIncludes) do
         legacyIncludes[name] = function() assert(BOT_MODE == true) end
@@ -359,7 +359,7 @@ test("server init preserves include order, client downloads and network registra
     for _, name in ipairs(expectedServerIncludes) do expectedIncludes[#expectedIncludes + 1] = name end
     assert(table.concat(includeOrder, ",") == table.concat(expectedIncludes, ","))
     local expectedClientFiles = {
-        "shared.lua", "sh_bank.lua", "sh_roundmanager.lua", "sh_player.lua", "sh_playermanager.lua",
+        "shared.lua", "sh_statistics.lua", "sh_statistics_weapons.lua", "cl_statistics.lua", "cl_statistics_hud.lua", "sh_bank.lua", "sh_roundmanager.lua", "sh_player.lua", "sh_playermanager.lua",
         "cl_hud.lua", "cl_theme_manager.lua", "cl_menu_controls.lua", "cl_theme_hud.lua", "cl_player_hud.lua",
         "cl_data.lua", "cl_message.lua", "cl_player.lua", "cl_special_aura.lua", "sh_dance.lua", "cl_dance.lua", "cl_dance_camera.lua", "sh_emotes.lua", "cl_emote_wheel.lua", "cl_emote_wheel_hud.lua", "cl_nightvision.lua", "cl_roundmanager.lua",
         "cl_particlemanager.lua", "cl_keymanager.lua", "cl_key_input.lua", "cl_scoreboard.lua", "cl_scoreboard_hud.lua",

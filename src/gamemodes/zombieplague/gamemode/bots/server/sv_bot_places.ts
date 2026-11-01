@@ -74,31 +74,37 @@ export class BotPlaces implements PlacesContract {
             ply.GetPos().DistToSqr(visit.Point.Position) < 400 * 400 && !visit.Found) {
             visit.Found = true; this.Reward(visit, 0.8, "find"); this.learning.Event(visit.Point.Key, "Finds");
         }
-        const eligible = this.role === "human" ? !senses.Visible || action === "defend" || action === "retreat" : !senses.EnemyPosition || action === "retreat";
-        const threat = senses.EnemyPosition;
+        const authoredShelter = this.role === "human" && (visit?.Point.SafeID !== undefined ||
+            (_G.ZPBotSafePoints?.Points() ?? []).some(point => point.Role === "human" || point.Role === "both"));
+        const eligible = this.role === "human" ? !senses.Visible || action === "defend" || action === "retreat" || (authoredShelter && (!visit || visit.Point.SafeID !== undefined)) :
+            !senses.EnemyPosition || action === "retreat";
+        const threat = senses.EnemyPosition ?? senses.Contact?.Position;
         const closeThreat = threat && ply.GetPos().DistToSqr(threat) < 160 * 160;
-        const compromised = visit && closeThreat && threat && (visit.Arrived !== undefined || !this.Protected(ply, visit.Point.Position, threat));
-        const exposed = visit?.Arrived !== undefined && threat && senses.Visible && !this.Protected(ply, visit.Point.Position, threat);
+        const protectedDestination = visit && threat ? this.Protected(ply, visit.Point.Position, threat) : false;
+        const compromised = visit && threat && (visit.Point.Position.DistToSqr(threat) < 200 * 200 ||
+            (closeThreat && (visit.Arrived !== undefined || !protectedDestination)) || (this.role === "human" && !protectedDestination));
+        const exposed = visit?.Arrived !== undefined && threat && senses.Visible && !protectedDestination;
         if (!eligible || compromised || exposed || visit?.Exit) { this.End(now); return; }
         if (visit && visit.Arrived === undefined && now - visit.Started > 25) { this.Failed(); return; }
-        const urgent = senses.EnemyPosition !== undefined && (action === "retreat" || (this.role === "human" && (senses.RecentDamage || !senses.Visible)));
+        const urgent = threat !== undefined && (action === "retreat" || (this.role === "human" && (senses.RecentDamage || !senses.Visible)));
         if (!visit && (now >= this.nextChoice || (urgent && now >= this.nextUrgent)) && ply.WaterLevel() < 2 && ply.GetMoveType() !== MOVETYPE_LADDER) {
             if (urgent) this.nextUrgent = now + 1;
             this.nextChoice = now + math.random(8, 14);
             const chance = this.role === "human" ? humanChance[this.profile] : this.profile === "aggressive" ? 40 : 30;
-            if (!urgent && this.role === "human" && math.random(1, 100) > chance) return;
             const clue = senses.Sound?.Position ?? (this.lastHuman && now - this.lastHuman.Time < 45 ? this.lastHuman.Position : undefined);
             const candidates = this.catalog.Points(ply, physics(ply), now).filter(point => (this.cooldown.get(point.Key) ?? 0) <= now && this.catalog.Available(point, this.role, this.owner, now))
                 .map(point => ({ Point: point, Score: (point.SafeID !== undefined ? 0.9 : point.Native ? 0.6 : 0.3) - Math.min(0.4, point.Distance / 4000) + this.learning.Score(point.Key) +
                     (clue && point.Position.DistToSqr(clue) < 400 * 400 ? 0.25 : 0) + math.random(0, 20) / 100 }));
-            candidates.sort((a, b) => b.Score - a.Score);
+            // Validate marked human destinations before automatic corners can consume the bounded shortlist.
+            candidates.sort((a, b) => this.role === "human" && (a.Point.SafeID !== undefined) !== (b.Point.SafeID !== undefined) ?
+                a.Point.SafeID !== undefined ? -1 : 1 : b.Score - a.Score);
             const choices: { Point: BotPlacePoint; Duck: boolean; Score: number }[] = [];
             for (const candidate of candidates.slice(0, 6)) {
                 const point = candidate.Point, valid = this.catalog.Validate(ply, point, this.role === "human"); if (!valid) continue;
-                if (senses.EnemyPosition && (point.Position.DistToSqr(senses.EnemyPosition) < 200 * 200 || !this.Protected(ply, point.Position, senses.EnemyPosition))) continue;
+                if (threat && (point.Position.DistToSqr(threat) < 200 * 200 || !this.Protected(ply, point.Position, threat))) continue;
                 let exposure = 0;
-                if (senses.EnemyPosition) {
-                    const origin = ply.GetPos(), threat = senses.EnemyPosition;
+                if (threat) {
+                    const origin = ply.GetPos();
                     const dx = point.Position.x - origin.x, dy = point.Position.y - origin.y, length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
                     const along = ((threat.x - origin.x) * dx + (threat.y - origin.y) * dy) / (length * length);
                     const crossing = Vector(origin.x + dx * Math.max(0, Math.min(1, along)), origin.y + dy * Math.max(0, Math.min(1, along)), origin.z);
@@ -109,7 +115,11 @@ export class BotPlaces implements PlacesContract {
                 choices.push({ Point: point, Duck: valid.Duck, Score: candidate.Score + valid.Cover * 0.1 - exposure });
             }
             choices.sort((a, b) => b.Score - a.Score);
-            const chosen = choices[urgent ? 0 : math.random(1, Math.min(3, Math.max(1, choices.length))) - 1];
+            const authored = this.role === "human" ? choices.filter(choice => choice.Point.SafeID !== undefined) : [];
+            if (this.role === "human" && senses.Visible && action !== "defend" && action !== "retreat" && authored.length === 0) return;
+            if (!urgent && this.role === "human" && authored.length === 0 && math.random(1, 100) > chance) return;
+            const preferred = authored.length > 0 ? authored : choices;
+            const chosen = preferred[urgent ? 0 : math.random(1, Math.min(3, Math.max(1, preferred.length))) - 1];
             if (!chosen) return;
             this.reason = clue && chosen.Point.Position.DistToSqr(clue) < 400 * 400 ? "clue" : this.learning.Score(chosen.Point.Key) > 0.05 ? "learned" : "profile";
             visit = { ID: this.trace?.NewID("place") ?? "place:" + this.owner + ":" + now, Point: chosen.Point, Started: now, Observed: now, Position: Vector(ply.GetPos().x, ply.GetPos().y, ply.GetPos().z), Until: 0, Duck: chosen.Duck, Reward: 0, Components: {}, Danger: senses.Visible ? now : -Infinity, Escaped: false, Found: false, Exit: false };

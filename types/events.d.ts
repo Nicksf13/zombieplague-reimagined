@@ -33,7 +33,7 @@ interface ZPGameMode {
     PlayerShouldTakeDamage(this: ZPGameMode, ply: ZPServerPlayer, attacker: GLuaEntity): boolean;
     AllowPlayerPickup(this: ZPGameMode, ply: ZPServerPlayer, item: GLuaEntity): boolean;
     PlayerDeathSound(this: ZPGameMode): boolean;
-    PlayerCanHearPlayersVoice(this: ZPGameMode, listener: ZPServerPlayer, talker: ZPServerPlayer): boolean;
+    PlayerCanHearPlayersVoice(this: ZPGameMode, listener: ZPServerPlayer, talker: ZPServerPlayer): LuaMultiReturn<[boolean, boolean]>;
     PlayerCanSeePlayersChat(this: ZPGameMode, text: string, team: boolean, listener: ZPServerPlayer, talker: ZPServerPlayer): boolean;
     PlayerSpawn(this: ZPGameMode, ply: ZPServerPlayer): void;
     PlayerDeathThink(this: ZPGameMode, ply: ZPServerPlayer): boolean;

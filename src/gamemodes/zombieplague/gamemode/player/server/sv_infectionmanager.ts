@@ -1,8 +1,9 @@
 export class InfectionManager implements ZPInfectionManager {
-    Infect(target: ZPServerPlayer, attacker: ZPServerPlayer): void {
+    Infect(target: ZPServerPlayer, attacker: ZPServerPlayer, inflictor?: GLuaEntity): void {
         if (cvars.Bool("zp_ap_zombies", false) && target !== attacker) {
             attacker.GiveAmmoPacks(cvars.Number("zp_ap_zombies_total", 1));
         }
+        hook.Call("ZPPreInfectionEvent", GAMEMODE, target, attacker, inflictor);
         target.Infect();
         const infect = attacker.GetZombieClass().InfectionFunction;
         if (infect)
@@ -22,6 +23,7 @@ export class InfectionManager implements ZPInfectionManager {
             hook.Call("ZPLastHumanEvent");
     }
     Cure(target: ZPServerPlayer, attacker: ZPServerPlayer): void {
+        hook.Call("ZPPreCureEvent", GAMEMODE, target, attacker);
         target.Cure();
         attacker.AddFrags(1);
         if (!RoundManager.IsRealisticMod()) {

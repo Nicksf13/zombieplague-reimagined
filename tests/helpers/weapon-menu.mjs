@@ -179,7 +179,20 @@ end}
 vgui.GetKeyboardFocus=function() return vgui.focus end
 local function paintAll()
     for _,panel in ipairs(panels) do
-        if not panel.removed and panel.visible~=false and panel.Paint then panel:Paint(panel.w,panel.h) end
+        if not panel.removed and panel.visible~=false and panel.Paint then
+            local originalDraw=draw.DrawText
+            draw.DrawText=function(text,font,x,y,...)
+                if text=="X" and panel.kind=="DButton" and panel.w<=40 and panel.h<=40 then
+                    surface.SetFont(font)
+                    local textWidth,textHeight=surface.GetTextSize(text)
+                    assert(math.abs(x+textWidth/2-panel.w/2)<0.01,"Close glyph must be horizontally centered")
+                    assert(math.abs(y+textHeight/2-panel.h/2)<0.01,"Close glyph must be vertically centered")
+                end
+                return originalDraw(text,font,x,y,...)
+            end
+            panel:Paint(panel.w,panel.h)
+            draw.DrawText=originalDraw
+        end
     end
 end
 `;

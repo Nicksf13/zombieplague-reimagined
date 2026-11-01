@@ -17,6 +17,7 @@ manager.ExtraRounds = 0;
 manager.PlayersToReward = { [TEAM_HUMANS]: [], [TEAM_ZOMBIES]: [] };
 include("sv_round_players.lua");
 include("sv_round_defaults.lua");
+include("sv_round_results.lua");
 include("sv_round_lifecycle.lua");
 manager.SearchRounds = function (): void {
     this.AddDefaultRounds();

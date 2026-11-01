@@ -52,7 +52,7 @@ test("server settings navigate all categories and label controls with friendly a
     ZPAdminMenu:Open(); ZPAdminMenu:Navigate("settings")
     local buttons={}
     for _,child in ipairs(frame().children[3].children) do if child.kind=="DButton" then buttons[#buttons+1]=child end end
-    assert(#buttons==13)
+    assert(#buttons==14)
     buttons[4]:DoClick(); assert(ZPAdminMenu:GetState().Page=="cvars" and requests==1)
     replyCvars()
     local labels=live("DLabel"); local found=false
@@ -73,6 +73,26 @@ test("radar activation exposes all three modes through themed native controls", 
         assert(combos[1].Paint and combos[1].OnMenuOpened,"Radar activation must use themed combo helpers")
         ZPAdminMenu:SetCvar(field("radar","zp_radar_mode"),"1")
         assert(ZPAdminMenu:GetState().Cvars.Dirty)
+        ZPAdminMenu:Close()
+    end
+`));
+
+test("proximity voice settings use themed native inputs in every standard theme", () => run(setup + `
+    for _,theme in ipairs({"classic","hl2","cs16"}) do
+        ZPThemes:UseTheme(theme); now=now+1; open("communication"); replyCvars()
+        local radius
+        for _,input in ipairs(live("DTextEntry")) do if input:GetValue()=="1000" then radius=input end end
+        assert(radius and radius.Paint and radius.placeholder=="1000")
+        radius:Paint(radius.w,radius.h)
+        assert(radius.entryColors[1]==ZPThemes:GetTheme().Palette.Text)
+        local localIndex=field("communication","zp_voice_local")
+        ZPAdminMenu:SetCvar(localIndex,"0")
+        radius:SetText("1500"); radius:OnChange()
+        local state=ZPAdminMenu:GetState().Cvars
+        assert(state.Dirty and state.Values[localIndex+1]=="0")
+        assert(state.Values[field("communication","zp_voice_radius")+1]=="1500")
+        paintAll()
+        ZPAdminMenu:SetCvar(localIndex,"1"); radius:SetText("1000"); radius:OnChange()
         ZPAdminMenu:Close()
     end
 `));

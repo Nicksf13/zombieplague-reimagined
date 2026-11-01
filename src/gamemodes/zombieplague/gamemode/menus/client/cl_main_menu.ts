@@ -17,6 +17,7 @@ export class MainMenuController implements ZPMainMenuController {
     }
 
     Open(): void {
+        GAMEMODE?.PlayerStatisticsMenu?.Close();
         _G.ZPMapVoteMenu?.Close();
         _G.ZPExtraMenu?.Close();
         _G.ZPClassMenu?.Close();

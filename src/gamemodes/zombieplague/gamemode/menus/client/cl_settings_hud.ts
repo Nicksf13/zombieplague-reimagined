@@ -29,7 +29,7 @@ export class SettingsHUD implements ZPSettingsPresentation {
             this.Text("zombieplague.settingstitle", "DermaLarge", 24, 48);
         };
         const [width, height] = frame.GetSize();
-        this.Button(frame, "X", width - 52, 18, 30, 30, () => actions.Close());
+        ZPMenuControls.CloseButton(this.Button(frame, "X", width - 52, 18, 30, 30, () => actions.Close()), this.palette, this.square);
         this.Button(frame, "zombieplague.settingsback", 24, height - 40, 160, 28, () => actions.Back());
         frame.MakePopup();
         frame.SetKeyboardInputEnabled(false);

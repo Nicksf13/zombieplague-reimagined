@@ -117,6 +117,8 @@ ConvarManager.CreateConVar("zp_zombie_screen_filter", 1, 8, "cvar used to set if
 ConvarManager.CreateConVar("zp_admin_human_model", 0, 8, "cvar used to set if admin will receive a special human player model.");
 ConvarManager.CreateConVar("zp_admin_zombie_model", 0, 8, "cvar used to set if admin will receive a special zombie player model.");
 ConvarManager.CreateConVar("zp_voice_all", 1, 8, "cvar used to set if players will hear other team players.");
+ConvarManager.CreateConVar("zp_voice_local", 1, 8, "Enable positional proximity voice chat.");
+ConvarManager.CreateConVar("zp_voice_radius", 1000, 8, "Maximum proximity voice distance in map units (64-32768).");
 ConvarManager.CreateConVar("zp_can_hear_death", 0, 8, "cvar used to set if players will hear death players");
 ConvarManager.CreateConVar("zp_chat_all", 1, 8, "cvar used to set if players will read other team players.");
 ConvarManager.CreateConVar("zp_can_see_death", 0, 8, "cvar used to set if players will read death players");

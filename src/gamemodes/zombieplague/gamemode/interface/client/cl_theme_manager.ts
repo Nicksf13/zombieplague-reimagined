@@ -35,6 +35,7 @@ export class ThemeManager implements ZPThemeManager {
         if (ZPWeaponMenu.GetState().Presentation !== id)
             ZPWeaponMenu.UsePresentation(id);
         if (changed) {
+            GAMEMODE?.PlayerStatisticsMenu?.Rebuild();
             ZPMainMenu.Rebuild();
             _G.ZPClassMenu?.Rebuild();
             _G.ZPExtraMenu?.Rebuild();

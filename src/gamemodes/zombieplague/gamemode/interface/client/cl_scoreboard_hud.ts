@@ -29,6 +29,7 @@ export class ScoreboardHUD implements ZPScoreboardPresentation {
             this.Text(language.GetPhrase("zombieplague.scoreboardtitle"), "DermaLarge", 24, 46, this.palette.Text);
             const count = this.state?.Teams.reduce((total, group) => total + group.Players.length, 0) ?? 0;
             this.Text(language.GetPhrase("zombieplague.scoreboardplayers") + ": " + count, "DermaDefault", width - 122, 54, this.palette.Muted);
+            this.PaintResults(width);
             this.Text(language.GetPhrase("zombieplague.scoreboardcontrols"), "DermaDefault", 24, height - 26, this.palette.Muted);
         };
         frame.MakePopup();
@@ -58,8 +59,8 @@ export class ScoreboardHUD implements ZPScoreboardPresentation {
         const [width, height] = frame.GetSize();
         const content = vgui.Create("DScrollPanel", frame);
         this.content = content;
-        content.SetPos(24, 96);
-        content.SetSize(width - 48, height - 136);
+        content.SetPos(24, 132);
+        content.SetSize(width - 48, height - 172);
         const rowWidth = width - 68, rowHeight = this.style === "cs16" ? 28 : 34;
         let y = 0;
         for (const group of state.Teams) {
@@ -86,6 +87,25 @@ export class ScoreboardHUD implements ZPScoreboardPresentation {
         if (y === 0)
             this.Cell(content, () => language.GetPhrase("zombieplague.scoreboardempty"), 0, rowWidth, 30, this.palette.Muted, false);
         frame.SetKeyboardInputEnabled(false);
+    }
+
+    private PaintResults(width: number): void {
+        const results = this.state?.Results;
+        const columns = [
+            { Label: "scoreboardhumanwins", Value: results?.Humans ?? 0 },
+            { Label: "scoreboardzombiewins", Value: results?.Zombies ?? 0 },
+            { Label: "scoreboarddraws", Value: results?.Draws ?? 0 },
+        ];
+        const size = (width - 64) / 3;
+        columns.forEach((column, index) => {
+            const x = 24 + index * (size + 8), value = tostring(column.Value);
+            draw.RoundedBox(this.Radius(), x, 86, size, 32, this.palette.Panel);
+            surface.SetFont("Trebuchet18");
+            const [valueWidth] = surface.GetTextSize(value);
+            this.Text(value, "Trebuchet18", x + size - valueWidth - 10, 92, this.palette.Accent);
+            const label = ZPMenuControls.FitText(language.GetPhrase("zombieplague." + column.Label), size - valueWidth - 30);
+            this.Text(label, "DermaDefault", x + 10, 94, this.palette.Text);
+        });
     }
 
     private Columns(width: number): { X: number; Width: number; }[] {

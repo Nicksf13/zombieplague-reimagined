@@ -57,6 +57,7 @@ test("client initialization and saved F4 bindings cannot install the old menu ho
 
 test("server managers keep gameplay hooks without registering menu commands or receivers", () => run(`
     GM = {}
+    function SetGlobalInt() end
     include("sv_classmanager.lua")
     include("sv_weaponmanager.lua")
     include("sv_extraitems.lua")

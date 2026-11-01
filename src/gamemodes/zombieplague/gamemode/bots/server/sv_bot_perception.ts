@@ -2,6 +2,7 @@ export interface BotSenses {
     Target?: ZPServerPlayer; EnemyPosition?: GLuaVector; AimPosition?: GLuaVector;
     AllyPosition?: GLuaVector; Visible: boolean; Allies: number; Enemies: number;
     Sound?: import("./sv_bot_hearing").SoundClue;
+    Contact?: import("./sv_bot_contacts").AlliedContact;
     RecentDamage?: boolean; KnownEnemies?: number;
     KnownAllies?: ZPServerPlayer[];
 }

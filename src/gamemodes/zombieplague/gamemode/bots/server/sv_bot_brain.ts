@@ -5,7 +5,7 @@ const { BotBehaviorLearner, profiles, actions, isProfile, context } = include("s
 export { profiles, actions, isProfile, context };
 const disadvantaged = (situation: ZPBotSituation): boolean => situation.Enemies > situation.Allies + 1 || situation.RecentDamage === true;
 const canReposition = (situation: ZPBotSituation): boolean => situation.Role !== "zombie" || situation.Health < 0.35 ||
-    (disadvantaged(situation) && situation.Distance > 95);
+    (situation.Variant !== "nemesis" && disadvantaged(situation) && situation.Distance > 95);
 interface RetreatAttempt { Seen: number; Observed: number; FirstHit?: number; LastHit?: number; }
 interface Episode {
     ID: string; Components: Record<string, number>; Intervention?: Intervention; Executed?: boolean;
@@ -50,7 +50,8 @@ export class BotBrain {
 
     Evaluate(situation: ZPBotSituation, action: ZPBotAction): ZPBotScore {
         const score: ZPBotScore = { Profile: 0, Health: 0, Threat: 0, Distance: 0, Cohesion: 0, Learned: 0, Total: 0, Samples: 0, Eligible: true };
-        if (action === "group" && !situation.HasAlly) { score.Cohesion = -100; score.Total = -100; score.Eligible = false; return score; }
+        const pressing = situation.Role === "zombie" && situation.Variant === "nemesis" && situation.Health >= 0.35;
+        if (action === "group" && (!situation.HasAlly || pressing)) { score.Cohesion = -100; score.Total = -100; score.Eligible = false; return score; }
         if (action === "retreat" && (this.observed < this.retreatBlockedUntil || !canReposition(situation))) {
             score.Threat = -100; score.Total = -100; score.Eligible = false; return score;
         }
@@ -60,11 +61,13 @@ export class BotBrain {
         score.Profile = action === "attack" ? (zombie ? 0.6 : 0.3) : action === "defend" ? (zombie ? 0.1 : 0.45) : 0.05;
         if (action === "attack") {
             score.Profile += profile === "aggressive" ? 0.35 : 0;
+            // Numerical disadvantage is expected for the Nemesis; pressure should not send it back to allies.
+            if (pressing) score.Profile += 0.9;
             if (zombie && situation.Distance > 250 && !outnumbered) score.Distance += 0.4;
             if (!zombie && situation.Distance > 650) score.Distance += 0.2;
             if (low) score.Health -= 0.35;
             if (advancing) score.Health += 0.3;
-            if (zombie && situation.RecentDamage && situation.Distance > 180) score.Threat -= 0.35;
+            if (zombie && !pressing && situation.RecentDamage && situation.Distance > 180) score.Threat -= 0.35;
         }
         if (action === "defend") {
             if (profile === "defensive") score.Profile += 0.35;

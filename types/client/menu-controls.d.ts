@@ -15,6 +15,8 @@ interface ZPThemedComboBox extends ZPMenuControlLabel {
     OnMenuOpened?: (this: ZPThemedComboBox, menu: ZPMenuControlPopup) => void;
 }
 interface ZPMenuControls {
+    CloseButton(this: void, button: GLuaPanel, palette: ZPThemePalette, square: boolean): void;
+    FitText(this: void, text: string, width: number, font?: string): string;
     Menu(this: void, menu: GLuaPanel, palette: ZPThemePalette, radius: number): void;
     MenuOption(this: void, option: ZPMenuControlLabel, palette: ZPThemePalette, selected?: (this: void) => boolean): void;
     ScrollPanel(this: void, panel: ZPMenuScrollPanel, palette: ZPThemePalette, square: boolean): void;

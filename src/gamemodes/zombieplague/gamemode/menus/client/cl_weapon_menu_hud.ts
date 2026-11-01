@@ -56,7 +56,7 @@ class WeaponMenuHUD implements ZPWeaponMenuPresentation {
         // Keyboard input belongs to the menu while it is open, including search.
         frame.SetKeyboardInputEnabled(true);
         const [width] = frame.GetSize();
-        this.Button(frame, "X", width - 52, 18, 30, 30, () => this.actions?.Close());
+        ZPMenuControls.CloseButton(this.Button(frame, "X", width - 52, 18, 30, 30, () => this.actions?.Close()), this.palette, this.style === "cs16");
         const [, height] = frame.GetSize(), filtersY = height < 400 ? 76 : 106;
         this.search = vgui.Create("DTextEntry", frame);
         ZPMenuControls.TextEntry(this.search, this.palette, this.style === "cs16");
@@ -193,7 +193,7 @@ const palettes: Record<"classic" | "hl2" | "cs16", ZPThemePalette> = {
         Text: Color(230, 230, 214), Muted: Color(181, 190, 165) },
 };
 for (const id of ["classic", "hl2", "cs16"] as const) {
-    ZPThemes.RegisterTheme(id, { Name: "zombieplague.theme" + id, Palette: palettes[id],
+    ZPThemes.RegisterTheme(id, { Name: "zombieplague.theme" + id, Palette: palettes[id], Square: id === "cs16",
         CreateWeaponMenu: () => new WeaponMenuHUD(id, palettes[id]),
         CreateMainMenu: () => ZPCreateMainMenuHUD(palettes[id], id === "cs16"),
         CreateScoreboard: () => ZPCreateScoreboardHUD(palettes[id], id),

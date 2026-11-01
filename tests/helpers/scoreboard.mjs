@@ -1,6 +1,9 @@
 // Client Players include distinct connection IDs even when bots share SteamID64.
 export const scoreboardSetup = `
 GM={}
+local scoreboardGlobals={}
+function GetGlobalInt(key,fallback) return scoreboardGlobals[key] or fallback end
+function SetGlobalInt(key,value) scoreboardGlobals[key]=value end
 ROUND_WAITING_PLAYERS,ROUND_STARTING_NEW_ROUND,ROUND_ENDING,ROUND_RESTARTING,ROUND_VOTEMAP,ROUND_CHANGING_MAP=0,1,3,4,5,6
 RoundManager={state=ROUND_STARTING_NEW_ROUND,GetRoundState=function(self) return self.state end}
 local players={}

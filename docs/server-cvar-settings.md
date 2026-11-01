@@ -1,7 +1,7 @@
 # Server cvar settings
 
 Open **Main menu → Administration → Server settings** to choose a category. The
-catalog covers all 104 built-in server cvars: 97 declared through `ConvarManager`
+catalog covers all 120 built-in server cvars: 113 declared through `ConvarManager`
 and seven registered directly. Engine cvars and third-party addon settings are
 outside this catalog. Each field shows its translated name and exact cvar name.
 
@@ -243,12 +243,30 @@ Defaults below are declaration defaults, not current server values.
 | Setting | Cvar | Default | Control | Application |
 | --- | --- | --- | --- | --- |
 | Global text chat | `zp_chat_all` | `1` | toggle | live |
-| Global voice chat | `zp_voice_all` | `1` | toggle | live |
+| Cross-team voice chat | `zp_voice_all` | `1` | toggle | live |
+| Proximity voice chat | `zp_voice_local` | `1` | toggle | live |
+| Voice range (map units) | `zp_voice_radius` | `1000` | number | live |
 | Allow hearing dead players | `zp_can_hear_death` | `0` | toggle | live |
 | Allow reading dead players' chat | `zp_can_see_death` | `0` | toggle | live |
 | Spectate teammates only | `zp_spectate_team_only` | `1` | toggle | event |
 | Human admin model | `zp_admin_human_model` | `0` | toggle | spawn |
 | Zombie admin model | `zp_admin_zombie_model` | `0` | toggle | spawn |
+
+Proximity voice is enabled by default in every round phase. Eligible listeners
+within `zp_voice_radius` hear positional audio with native distance attenuation;
+players outside that radius cannot hear it. The server checks squared player
+positions without tracing walls. The radius is bounded to 64-32768 map units;
+non-finite console values use the default of 1000. This also applies to eligible
+dead players and spectators, using their player entity positions.
+
+Existing team, realistic-mode, and dead-player permissions still decide who may
+hear whom. `zp_voice_all` controls cross-team permission rather than distance.
+Setting `zp_voice_local 0` restores the previous non-positional voice behavior
+while keeping those permissions. Both new options are archived and available
+under the server settings' communication category, with changes applied live.
+The engine's second [PlayerCanHearPlayersVoice return value](https://wiki.facepunch.com/gmod/GM:PlayerCanHearPlayersVoice)
+enables 3D audio. Direction, volume attenuation, and microphone playback still
+require a multiplayer test in Garry's Mod.
 
 ### Bot AI and training
 
@@ -256,6 +274,9 @@ Defaults below are declaration defaults, not current server values.
 | --- | --- | --- | --- | --- |
 | Train AI | `zp_bot_training` | `0` | toggle | live |
 | Enable bot AI | `zp_bot_ai_enabled` | `1` | toggle | live |
+| Allied bot contact radius (0: off) | `zp_bot_contact_radius` | `900` | number, 0–32768 map units | live |
+| Bot gunshot hearing radius (0: off) | `zp_bot_hearing_gunshot_radius` | `1400` | number, 0–32768 map units | live |
+| Bot footstep hearing radius (0: off) | `zp_bot_hearing_footstep_radius` | `380` | number, 0–32768 map units | live |
 | Enable bot learning | `zp_bot_learning` | `1` | toggle | live |
 | Frozen evaluation (no learning or exploration) | `zp_bot_evaluation` | `0` | toggle | live |
 | Learning attribution diagnostics | `zp_bot_learning_trace` | `0` | toggle | live |

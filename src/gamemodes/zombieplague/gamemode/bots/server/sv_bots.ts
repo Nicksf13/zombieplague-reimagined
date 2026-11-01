@@ -22,6 +22,9 @@ ConvarManager.CreateConVar("zp_bot_stats_days", 90, 8, "Days of descriptive hour
 ConvarManager.CreateConVar("zp_bot_training", 0, 8, "Train AI bots with human spectators and minimal round delays");
 ConvarManager.CreateConVar("zp_bot_training_count", 2, 8, "Number of training bots, between 2 and 64, limited by available server slots");
 ConvarManager.CreateConVar("zp_bot_ai_enabled", 1, 8, "Enable decisions for managed AI bots");
+ConvarManager.CreateConVar("zp_bot_contact_radius", 900, 8, "Allied bot sighting report radius in map units (0 disables, maximum 32768)");
+ConvarManager.CreateConVar("zp_bot_hearing_gunshot_radius", 1400, 8, "Bot gunshot hearing radius in map units (0 disables, maximum 32768)");
+ConvarManager.CreateConVar("zp_bot_hearing_footstep_radius", 380, 8, "Bot footstep hearing radius in map units (0 disables, maximum 32768)");
 ConvarManager.CreateConVar("zp_bot_learning", 1, 8, "Learn tactical preferences from managed bots' combat outcomes");
 ConvarManager.CreateConVar("zp_bot_learning_trace", 0, 8, "Log bounded learning attribution diagnostics to the server console");
 ConvarManager.CreateConVar("zp_bot_learning_trace_bot", 0, 8, "Diagnostic bot identity filter; zero includes every managed bot");

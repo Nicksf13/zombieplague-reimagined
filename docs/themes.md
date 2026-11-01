@@ -58,6 +58,19 @@ Prévias simuladas: [Clássico](previews/settings-classic.svg),
 
 ### HUD e placar
 
+The scoreboard header shows human wins, zombie wins, and draws for the current
+map session. Completed normal and special rounds each contribute one team result;
+manual restarts and abandoned rounds do not. Preparing a new round, cleaning up
+the map, and prolonging its rotation preserve these totals. Loading a map resets
+them, including reloading the same map. They are independent of player statistics
+and its server toggle.
+
+The server replicates `ZPHumanRoundWins`, `ZPZombieRoundWins`, and `ZPRoundDraws`
+through engine global integers, including to late joiners. Presentations receive
+these counts in `ZPScoreboardState.Results` as `Humans`, `Zombies`, and `Draws`.
+The standard presentation uses the active palette and geometry; addon scoreboards
+can display the same snapshot. Counts refresh without rebuilding the player list.
+
 | Fonte em `interface/client/` | Responsabilidade |
 | --- | --- |
 | `cl_hud.ts` | Registro de informações e helpers públicos do HUD. |

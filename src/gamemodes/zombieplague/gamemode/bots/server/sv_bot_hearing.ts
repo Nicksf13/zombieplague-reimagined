@@ -7,6 +7,11 @@ export class BotHearing implements HearingContract {
     private sequence = 0;
     private budgetAt = -1;
     private budget = 0;
+    private Radius(category: SoundClue["Category"]): number {
+        const fallback = category === "gunshot" ? 1400 : 380;
+        const value = cvars.Number("zp_bot_hearing_" + (category === "gunshot" ? "gunshot" : "footstep") + "_radius", fallback);
+        return Number.isFinite(value) ? Math.max(0, Math.min(32768, value)) : fallback;
+    }
     Emit(source: GLuaEntity, position: GLuaVector, category: SoundClue["Category"], now: number): void {
         if (![position.x, position.y, position.z, now].every(value => Number.isFinite(value))) return;
         const bucket = Math.floor(now * 5);
@@ -19,13 +24,14 @@ export class BotHearing implements HearingContract {
     Listen(ply: ZPServerPlayer, now: number): SoundClue | undefined {
         let best: SoundClue | undefined;
         const eye = ply.EyePos();
+        const ranges = { gunshot: this.Radius("gunshot"), footstep: this.Radius("footstep") };
         const audible = this.events.filter(event => event.Source !== ply && now >= event.Time && now - event.Time < (event.Category === "gunshot" ? 6 : 2) &&
-            eye.DistToSqr(event.Position) <= (event.Category === "gunshot" ? 1400 : 380) ** 2);
+            ranges[event.Category] > 0 && eye.DistToSqr(event.Position) <= ranges[event.Category] ** 2);
         audible.sort((a, b) => b.Time - a.Time);
         for (const event of audible.slice(0, 2)) {
             const gun = event.Category === "gunshot", age = now - event.Time, life = gun ? 6 : 2;
             if (event.Source === ply || age < 0 || age >= life) continue;
-            const distance = Math.sqrt(eye.DistToSqr(event.Position)), range = gun ? 1400 : 380;
+            const distance = Math.sqrt(eye.DistToSqr(event.Position)), range = ranges[event.Category];
             if (distance > range) continue;
             // One coarse geometry test is not an acoustic simulation. Walls shorten range and lower certainty.
             const occluded = util.TraceLine({ start: eye, endpos: event.Position, filter: player.GetAll() as ZPServerPlayer[], mask: MASK_SHOT }).Hit;

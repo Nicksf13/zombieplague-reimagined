@@ -9,12 +9,12 @@ const inventory = await serverCvarInventory();
 const luaString = value => JSON.stringify(value.replaceAll("\\", "/"));
 
 test("server settings cover every actual server cvar and preserve its registered default", () => {
-    assert.equal(inventory.length, 114);
-    assert.equal(inventory.filter(row => row.Managed).length, 107);
+    assert.equal(inventory.length, 120);
+    assert.equal(inventory.filter(row => row.Managed).length, 113);
     const expected = inventory.map(row => `[${luaString(row.Name)}]=${luaString(row.Default)}`).join(",");
     run(setup + `
         local expected={${expected}}; local seen,categories={},{}
-        assert(#ZPServerCvars.Categories==13 and #ZPServerCvars.Entries==114)
+        assert(#ZPServerCvars.Categories==14 and #ZPServerCvars.Entries==120)
         for _,category in ipairs(ZPServerCvars.Categories) do
             assert(not categories[category.ID] and #ZPServerCvars.ForCategory(category.ID)>0)
             categories[category.ID]=true
@@ -41,7 +41,16 @@ test("typed cvar validation rejects commands, non-finite values and invalid mode
     for _,value in ipairs({"nan","inf","1e3","-1","1;quit","1..2","."}) do accepts("zp_breath_recover",value,nil) end
     accepts("zp_breath_recover"," .25 ","0.25")
     accepts("zp_min_players","2.5",nil); accepts("zp_min_players","0",nil)
+    accepts("zp_voice_local","1","1"); accepts("zp_voice_local","2",nil)
+    accepts("zp_voice_radius","64","64"); accepts("zp_voice_radius","32768","32768")
+    for _,value in ipairs({"0","63","32769","1000.5","nan","inf"}) do accepts("zp_voice_radius",value,nil) end
     accepts("zp_first_zombie_reward_mode","3",nil); accepts("zp_first_zombie_reward_mode","2","2")
+    accepts("zp_bot_contact_radius","0","0"); accepts("zp_bot_contact_radius","32768","32768")
+    for _,value in ipairs({"-1","32769","900.5","nan","inf"}) do accepts("zp_bot_contact_radius",value,nil) end
+    for _,name in ipairs({"zp_bot_hearing_gunshot_radius","zp_bot_hearing_footstep_radius"}) do
+        accepts(name,"0","0"); accepts(name,"32768","32768")
+        for _,value in ipairs({"-1","32769","380.5","nan","inf"}) do accepts(name,value,nil) end
+    end
     accepts("zp_bot_stats_sample","0.01",nil); accepts("zp_bot_stats_sample","11",nil)
     accepts("zp_bot_stats_utc_offset","-180","-180")
     accepts("zp_bot_stats_scenario","trial-01.a","trial-01.a")

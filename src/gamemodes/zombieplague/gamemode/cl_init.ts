@@ -18,6 +18,7 @@ include("cl_extra_menu.lua");
 include("cl_extra_menu_hud.lua");
 include("cl_main_menu.lua");
 include("cl_main_menu_hud.lua");
+include("cl_statistics.lua");
 include("cl_admin_menu.lua");
 include("cl_admin_menu_hud.lua");
 include("cl_bot_boost.lua");

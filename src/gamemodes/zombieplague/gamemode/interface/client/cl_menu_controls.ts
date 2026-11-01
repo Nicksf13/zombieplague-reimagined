@@ -10,6 +10,29 @@ function background(this: void, panel: GLuaPanel, palette: ZPThemePalette, squar
 
 // Keep native editing, selection and menu lifetime. Only presentation is replaced.
 _G.ZPMenuControls = {
+    CloseButton(this: void, button, palette, square): void {
+        button.SetText("");
+        button.Paint = (width, height) => {
+            const highlighted = button.IsEnabled() && button.IsHovered();
+            draw.RoundedBox(square ? 0 : 4, 0, 0, width, height, highlighted ? palette.Accent : palette.Panel);
+            surface.SetFont("Trebuchet18");
+            const [textWidth, textHeight] = surface.GetTextSize("X");
+            draw.DrawText("X", "Trebuchet18", (width - textWidth) / 2, (height - textHeight) / 2,
+                !button.IsEnabled() ? palette.Muted : highlighted ? Color(12, 18, 22) : palette.Text, TEXT_ALIGN_LEFT);
+        };
+    },
+    FitText(this: void, text, width, font = "DermaDefault"): string {
+        surface.SetFont(font);
+        if (surface.GetTextSize(text)[0] <= width) return text;
+        let end = text.length;
+        while (end > 0) {
+            end--;
+            while (end > 0 && text.charCodeAt(end) >= 128 && text.charCodeAt(end) < 192) end--;
+            const candidate = text.substring(0, end) + "…";
+            if (surface.GetTextSize(candidate)[0] <= width) return candidate;
+        }
+        return "…";
+    },
     Menu(this: void, menu, palette, radius): void {
         menu.Paint = (width, height) => {
             draw.RoundedBox(radius, 0, 0, width, height, palette.Muted);

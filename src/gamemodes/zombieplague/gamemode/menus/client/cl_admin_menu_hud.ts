@@ -77,7 +77,7 @@ export class AdminMenuHUD implements ZPAdminPresentation {
             state.Page === "botadd" ? "zombieplague.botmetricsadd" :
             state.Page === "bots" ? "zombieplague.adminbots" : "zombieplague.adminenvironment", 20, width - 100, 66);
         title.SetPos(24, 16); title.SetFont("Trebuchet24");
-        this.Button(frame, "X", width - 62, 22, 38, () => actions.Close(), true);
+        ZPMenuControls.CloseButton(this.Button(frame, "X", width - 62, 22, 38, () => actions.Close(), true), this.palette, this.square);
         const content = vgui.Create("DScrollPanel", frame);
         content.SetPos(24, 96); content.SetSize(width - 48, height - 210);
         const rowWidth = width - 68;
