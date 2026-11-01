@@ -29,6 +29,7 @@ interface ZPPlayerHUDState {
     readonly Ammo?: ZPPlayerHUDAmmo;
 }
 interface ZPThemeDefinition {
+    readonly Square?: boolean;
     readonly Name: string;
     readonly Palette: ZPThemePalette;
     readonly CreateWeaponMenu: ZPWeaponMenuPresentationFactory;

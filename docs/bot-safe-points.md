@@ -25,11 +25,14 @@ the marker. A separate placement preview follows the floor under the crosshair;
 the server still performs final validation. The weapon screen and HUD use the
 active theme, including addon palettes. The editor creates no Derma window.
 
-These points are shelter suggestions, not commands to camp or guarantees of
-safety. Humans consider them while seeking cover; zombies can use them as cover
-or investigation destinations between pursuits. The existing shelter policy
-controls choice probability, holding duration, danger responses and learning.
-Combat can take priority. No enemy locations are revealed by marking a point.
+These points are shelter suggestions, not guarantees of safety. Humans prioritize
+valid marked shelters over automatic hiding spots and bypass the quiet personality
+lottery for those destinations. They can continue firing at a visible enemy while
+moving toward protected marked cover. Travel requests running, subject to stamina,
+obstacles and precision traversal. Zombies can use points as cover or investigation
+destinations between pursuits; ordinary pursuit still takes priority. Holding
+duration, reservations, cooldowns, danger responses and outcome learning remain
+bounded by the shelter policy. Marking a point reveals no enemy locations.
 
 ## Placement and use
 
@@ -40,11 +43,15 @@ floor normal of at least 0.7, a containing navigation area within 24 vertical
 units, and room for the administrator's standing or crouching hull. Blocked and
 underwater navigation areas are rejected. Points must be at least 32 units apart.
 
-The catalog adds matching-role points to its existing bounded search of nearby
-connected navigation areas. Authored candidates receive a preference and may
-qualify without native hiding flags or two nearby walls. Each bot still checks
-its own hull, floor, usable exit, class traversal limits and known threats.
-Final path feasibility remains the navigator's responsibility. Missing or
+The catalog discovers up to 32 matching-role points directly on their own nav
+floors, within 4000 map units of the bot. Marked destinations no longer depend
+on the 48-area automatic hiding-spot search reaching their floor. They enter the
+32-candidate output first; nearby native hiding flags share their reservation.
+Authored candidates may qualify without native hiding flags or two nearby walls.
+Before selection, each shortlisted point receives hull, floor, usable-exit,
+class-aware path and known-threat checks. A complete or budget-limited partial
+route can qualify; an exhausted disconnected approach cannot. Partial routes
+remain provisional and the navigator must continue them physically. Missing or
 poorly connected navmesh still needs repair. These are destination hints and do
 not create navigation links or teach a jump.
 

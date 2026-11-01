@@ -9,6 +9,7 @@ interface ZPBotMemory {
 }
 interface ZPBotSituation {
     Role: ZPBotRole; Health: number; Distance: number;
+    Variant?: ZPBotScope["Variant"];
     Allies: number; Enemies: number; HasAlly: boolean;
     RecentDamage?: boolean;
 }

@@ -7,6 +7,38 @@ const setup = clientSetup + panelsSetup + `
 surface={SetFont=function() end,GetTextSize=function(value) return #tostring(value)*7,16 end}
 ` + scoreboardSetup;
 
+test("scoreboard reads replicated round totals for late joiners and paints live updates in all themes", () => run(setup + `
+    local state=ZPScoreboard:GetState()
+    assert(state.Results.Humans==0 and state.Results.Zombies==0 and state.Results.Draws==0)
+    SetGlobalInt("ZPHumanRoundWins",3); SetGlobalInt("ZPZombieRoundWins",7); SetGlobalInt("ZPRoundDraws",2)
+    for _,theme in ipairs({"classic","hl2","cs16"}) do
+        ZPThemes:UseTheme(theme); GM:ScoreboardShow()
+        local snapshot=ZPScoreboard:GetState()
+        assert(snapshot.Results.Humans==3 and snapshot.Results.Zombies==7 and snapshot.Results.Draws==2)
+        snapshot.Results.Humans=99
+        assert(ZPScoreboard:GetState().Results.Humans==3)
+        local frame
+        for _,panel in ipairs(panels) do if panel.kind=="DFrame" and not panel.removed then frame=panel end end
+        local texts,boxes={},{}
+        draw.DrawText=function(value,font,x,y,color) texts[#texts+1]={value,x,y,color} end
+        draw.RoundedBox=function(radius,x,y,w,h,color) if y==86 then boxes[#boxes+1]={x,y,w,h,color,radius} end end
+        frame:Paint(frame.w,frame.h)
+        assert(#boxes==3 and boxes[1][5]==ZPThemes:GetTheme().Palette.Panel)
+        assert(boxes[1][6]==(theme=="cs16" and 0 or theme=="hl2" and 8 or 4))
+        local values={}
+        for _,entry in ipairs(texts) do if entry[3]==92 then values[#values+1]=entry[1] end end
+        assert(table.concat(values,",")=="3,7,2")
+        assert(frame.children[1].y>86+32)
+        local count=#panels
+        SetGlobalInt("ZPHumanRoundWins",4); timers.ScoreBoardUpdater[2]()
+        texts={}; frame:Paint(frame.w,frame.h)
+        local updated=false
+        for _,entry in ipairs(texts) do if entry[3]==92 and entry[1]=="4" then updated=true end end
+        assert(updated and #panels==count and requests==0)
+        GM:ScoreboardHide(); SetGlobalInt("ZPHumanRoundWins",3)
+    end
+`));
+
 test("right click offers admin roles before the round and revalidates stale selections", () => run(setup + `
     me.admin=true
     GM:ScoreboardShow()

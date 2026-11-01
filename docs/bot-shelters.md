@@ -18,9 +18,14 @@ Administrators can also add role-scoped shelter suggestions through
 **Bots > Tools > Safe points**. See [Authored safe points](bot-safe-points.md)
 for placement, storage and safety checks. These candidates participate in the
 same bounded search and visit policy, with an initial preference.
+Marked destinations within 4000 map units are discovered independently of the
+automatic search, then shortlisted and checked for a class-usable route. See
+[the zm_canals investigation](bot-contacts.md#zm_canals-shelter-investigation).
 
-Search visits at most 48 connected areas, examines 48 connections per area,
-queues at most 128 areas and returns at most 32 distinct point identities.
+Automatic search visits at most 48 connected areas, examines 48 connections per
+area, schedules at most 128 distinct areas and returns at most 32 point identities
+including marked destinations. Enqueued identities are deduplicated so converging
+connections do not consume the visit budget repeatedly.
 Points are keyed by area ID and coordinates rounded to 16-unit cells. Cache
 size is limited to 96 areas, with a sixty-second lifetime. Water, nav blockers,
 unsafe drops and climbs outside the active class capabilities are excluded.
@@ -38,10 +43,16 @@ perception supplies all enemy sightings and remembered positions.
 
 ## Variety and lifecycle
 
-Choice opportunities occur every 8–14 seconds. Human selection probabilities
-are 20% for aggressive, 35% cooperative, 65% defensive and 75% cautious bots.
-Zombies always consider an eligible investigation. Known-threat human escape and
-zombie repositioning bypass the quiet human lottery and retry at most once per
+Choice opportunities occur every 8–14 seconds. For automatic hiding spots, human
+selection probabilities are 20% for aggressive, 35% cooperative, 65% defensive
+and 75% cautious bots.
+Validated authored human shelters bypass this lottery and take priority over
+automatic spots, with learned preference still ranking destinations within that
+group. Marked cover can be selected or retained while attacking a visible enemy
+if the destination and approach pass the existing threat checks. Human shelter
+travel explicitly prefers sprinting; stamina and traversal restrictions still
+apply. Zombies always consider an eligible investigation. Known-threat human
+escape and zombie repositioning bypass the quiet human lottery and retry at most once per
 second; a failed quiet opportunity does not delay urgent cover. Selection randomizes
 among the top three valid candidates; learned preference contributes at most
 0.35 in either direction. A recent human sighting can bias a zombie's search

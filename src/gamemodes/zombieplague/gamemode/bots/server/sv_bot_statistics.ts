@@ -56,6 +56,8 @@ export class BotStatistics implements StatisticsContract {
             Settings: analysis.canonical({ Timeout: setting("timeout", 30, 1, 600), Sample: setting("sample", 0.5, 0.1, 1), StuckSpeed: setting("stuck_speed", 5, 0, 100),
                 Drain: cvars.Number("zp_run_drain", 1), DrainEnabled: cvars.Bool("zp_run_should_drain", false), Realistic: cvars.Bool("zp_realistic_mode", false),
                 Bots: player.GetBots().length, Tick: engine.TickInterval(),
+                ContactRadius: cvars.Number("zp_bot_contact_radius", 900), GunshotRadius: cvars.Number("zp_bot_hearing_gunshot_radius", 1400),
+                FootstepRadius: cvars.Number("zp_bot_hearing_footstep_radius", 380),
                 FrozenExploration: evaluation, Opponent: GetConVar("zp_bot_stats_opponent")?.GetString() ?? "uncontrolled",
                 Seed: "engine_rng_uncontrolled" }),
             Opponents: opponents.length === 0 ? "" : util.SHA256(opponents.map(other => this.opponent?.(other) ?? (other.IsBot() ? "bot:" : "human:") + (other.IsZombie() ? "zombie" : "human") + ":" + other.GetMaxHealth()).sort().join("\n")),

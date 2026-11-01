@@ -63,6 +63,7 @@ PLAYER.Infect = function (this: ZPServerPlayer, SilentInfection?: boolean): void
         this.SetScreenFilter(Color(255, 0, 0, 2));
     }
     if (_G.ZPClassMenu) hook.Call("ZPClassSelectionReady", GAMEMODE, this);
+    hook.Call("ZPPlayerRoleChanged", GAMEMODE, this);
 };
 PLAYER.MakeHuman = function (this: ZPServerPlayer): void {
     const nextClass = this.GetNextHumanClass();
@@ -140,6 +141,7 @@ PLAYER.MakeHuman = function (this: ZPServerPlayer): void {
         this.SetScreenFilter(undefined);
     }
     if (_G.ZPClassMenu) hook.Call("ZPClassSelectionReady", GAMEMODE, this);
+    hook.Call("ZPPlayerRoleChanged", GAMEMODE, this);
 };
 PLAYER.Cure = function (this: ZPServerPlayer): void {
     this.MakeHuman();

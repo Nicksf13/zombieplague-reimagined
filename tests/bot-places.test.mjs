@@ -21,7 +21,7 @@ test("authored safe points respect role, connected nav floors, geometry and leas
     newArea(3,900)
     local function authored(ply)
         local result={}; for _,point in ipairs(catalog:Points(ply,include("sv_bot_motion_physics.lua").physics(ply),now)) do
-            if point.SafeID then result[#result+1]=point end
+            if point.SafeID and catalog:Validate(ply,point) then result[#result+1]=point end
         end; return result
     end
     local human=authored(bot); assert(#human==1 and human[1].SafeID==1)

@@ -32,7 +32,9 @@ export class ScoreboardController implements ZPScoreboardController {
                 a.Name < b.Name ? -1 : a.Name > b.Name ? 1 : a.ID - b.ID);
             return { ID: group.ID, Label: group.Label, Players: entries };
         });
-        return { Open: this.opened, Theme: ZPThemes.GetActiveID(), Width: ScrW(), Height: ScrH(), Teams: teams };
+        return { Open: this.opened, Theme: ZPThemes.GetActiveID(), Width: ScrW(), Height: ScrH(), Teams: teams,
+            Results: { Humans: GetGlobalInt("ZPHumanRoundWins", 0), Zombies: GetGlobalInt("ZPZombieRoundWins", 0),
+                Draws: GetGlobalInt("ZPRoundDraws", 0) } };
     }
 
     Show(): void {

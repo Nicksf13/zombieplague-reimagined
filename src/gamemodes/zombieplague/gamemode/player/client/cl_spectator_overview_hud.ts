@@ -23,10 +23,7 @@ export class SpectatorOverviewHUD implements ZPSpectatorOverviewPresentation {
         };
         const close = vgui.Create("DButton", frame);
         close.SetText(""); close.SetPos(width - 48, 12); close.SetSize(32, 32);
-        close.Paint = (w, h) => {
-            draw.RoundedBox(this.square ? 0 : 4, 0, 0, w, h, close.IsHovered() ? this.palette.Accent : this.palette.Panel);
-            draw.DrawText("X", "Trebuchet18", 10, 5, close.IsHovered() ? Color(12, 18, 22) : this.palette.Text, TEXT_ALIGN_LEFT);
-        };
+        ZPMenuControls.CloseButton(close, this.palette, this.square);
         close.DoClick = () => actions.Follow(0);
         let layer: number | undefined;
         const combo = vgui.Create("DComboBox", frame) as ZPMenuComboBox<number>;

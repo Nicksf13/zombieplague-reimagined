@@ -31,9 +31,17 @@ engine availability was inferred from a passing simulation.
 1. `BotPerception` supplies visible enemies/allies and static visual memory. Normal
    memory expires after 12 seconds; an active route can retain it for at most 20.
    Hidden motion does not update the snapshot.
+   Nearby same-role bots can also receive short-lived firsthand sighting reports.
+   Reports remain separate from visual memory and never establish a visible target.
+   See [allied contacts and configuration](bot-contacts.md).
 2. `BotBrain` selects attack, defend, retreat or group in a role/class/variant
    context. `pressured` and `quiet` contexts differ. Short held decisions and
    bounded retreat attempts prevent command-by-command oscillation.
+   Nemesis decisions explicitly receive the variant: at 35% health or above,
+   numerical disadvantage and recent damage do not permit retreat or regrouping
+   away from a visible opponent, and attack receives a stronger prior. Below that
+   threshold, bounded repositioning remains available. Ordinary zombie eligibility
+   and saved learning are preserved.
 3. `BotObjectives` owns destination persistence and investigation memory. A
    withdrawal goal lasts up to 2.5 seconds, with earlier reconsideration for a
    changed threat, arrival or two seconds without progress. Zombie lateral
@@ -81,10 +89,17 @@ The [footstep hook](https://wiki.facepunch.com/gmod/GM:PlayerFootstep) supplies 
 event position/volume; [bullet events](https://wiki.facepunch.com/gmod/Structures/Bullet)
 describe firing rather than revealing a hidden target.
 
-| Clue | Nominal range | Lifetime | Unoccluded horizontal grid |
+| Clue | Default range | Lifetime | Unoccluded horizontal grid |
 | --- | ---: | ---: | ---: |
 | Gunshot | 1,400 units | 6 seconds | 96 units |
 | Footstep | 380 units | 2 seconds | 48 units |
+
+`zp_bot_hearing_gunshot_radius` and `zp_bot_hearing_footstep_radius` change the
+respective range live (0–32768 map units); zero disables that sound category.
+Both are available under **Administration > Server settings > Bots** with native
+translations and the existing themed numeric controls. Runtime values are bounded
+and non-finite values use the defaults above. Existing investigations retain only
+their original short-lived snapshot; changing a range does not reveal an emitter.
 
 Clues contain a copied perceived position, event time, category, expiry and
 confidence. They contain no player identity, allegiance or target confirmation.

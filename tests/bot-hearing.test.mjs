@@ -60,3 +60,35 @@ test("a heard region becomes a navigable investigation and never a confirmed fir
     assert(plan.Goal and plan.Goal.x>0 and not plan.Senses.Visible and not plan.Senses.Target)
     assert(cmd.buttons & IN_ATTACK==0)
 `));
+
+test("gunshot and footstep hearing radii can change live or be disabled independently", () => run(setup + `
+    values.zp_bot_hearing_gunshot_radius=200
+    hearing:Emit(source,Vector(300,0,64),"gunshot",now)
+    assert(not hearing:Listen(bot,now))
+    values.zp_bot_hearing_gunshot_radius=500
+    assert(hearing:Listen(bot,now).Category=="gunshot")
+    values.zp_bot_hearing_gunshot_radius=0
+    assert(not hearing:Listen(bot,now))
+    hearing:Emit(source,Vector(300,0,64),"footstep",now)
+    assert(hearing:Listen(bot,now).Category=="footstep","disabling gunshots preserves footsteps")
+    values.zp_bot_hearing_footstep_radius=200
+    assert(not hearing:Listen(bot,now))
+    values.zp_bot_hearing_footstep_radius=500
+    assert(hearing:Listen(bot,now).Category=="footstep")
+    values.zp_bot_hearing_footstep_radius=0
+    assert(not hearing:Listen(bot,now))
+`));
+
+test("configured hearing still attenuates walls, caps extreme ranges and rejects invalid console values", () => run(setup + `
+    hearing:Emit(source,Vector(800,0,64),"gunshot",now); wall=true
+    assert(not hearing:Listen(bot,now))
+    values.zp_bot_hearing_gunshot_radius=2000
+    assert(hearing:Listen(bot,now),"walls shorten the configured radius to 45 percent")
+    wall=false; values.zp_bot_hearing_gunshot_radius=-1
+    assert(not hearing:Listen(bot,now))
+    values.zp_bot_hearing_gunshot_radius=0/0
+    assert(hearing:Listen(bot,now),"NaN uses the finite default")
+    hearing:Reset(); hearing:Emit(source,Vector(32769,0,64),"gunshot",now)
+    values.zp_bot_hearing_gunshot_radius=1e9
+    assert(not hearing:Listen(bot,now),"the live console cannot bypass the radius ceiling")
+`));

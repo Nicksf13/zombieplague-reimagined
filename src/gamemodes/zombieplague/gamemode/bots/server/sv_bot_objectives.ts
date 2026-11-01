@@ -3,7 +3,7 @@ import type { DestinationRequest } from "./sv_bot_motor";
 const routing = include("sv_bot_pathfinding.lua") as typeof import("./sv_bot_pathfinding");
 const { physics } = include("sv_bot_motion_physics.lua") as typeof import("./sv_bot_motion_physics");
 interface Goal { Position: GLuaVector; Threat: GLuaVector; Until: number; Best: number; Progress: number; }
-interface Investigation { Position: GLuaVector; Key: string; Until: number; }
+interface Investigation { Position: GLuaVector; Key: string; Started: number; Until: number; Source: "visual" | "contact" | "sound"; }
 export interface ObjectiveIntent { Goal?: GLuaVector; Mode: string; Key: string; }
 interface ObjectivesContract { Reset(): void; Resolve(ply: ZPServerPlayer, senses: BotSenses, action: ZPBotAction, request: DestinationRequest, now: number): ObjectiveIntent; }
 /** Owns destination persistence; navigation and cooperative controllers still own physical execution. */
@@ -72,14 +72,20 @@ export class BotObjectives implements ObjectivesContract {
         }
         this.withdrawal = undefined;
         if (ply.IsZombie() && !senses.Visible && action !== "retreat") {
-            const clue = senses.Sound;
-            const point = threat ?? clue?.Position;
-            const key = threat ? this.MemoryKey(threat) : clue ? "sound:" + clue.ID : "";
+            const clue = senses.Sound, contact = senses.Contact;
+            const point = threat ?? contact?.Position ?? clue?.Position;
+            const source = threat ? "visual" : contact ? "contact" : "sound";
+            const key = threat ? this.MemoryKey(threat) : contact ? this.MemoryKey(contact.Position) : clue ? "sound:" + clue.ID : "";
+            if (this.investigation?.Source === "contact") {
+                if (!contact || !point || source !== "contact" || this.investigation.Position.DistToSqr(point) > 160 * 160) this.investigation = undefined;
+                else this.investigation.Until = Math.min(this.investigation.Started + 12, contact.Expires);
+            }
             if (!this.investigation && point && (this.visits.get(key) ?? 0) <= now) {
                 const area = navmesh.IsLoaded() ? navmesh.GetNearestNavArea(point, false, 300, false, true) : undefined;
                 if (area && area.IsValid() && !area.IsBlocked(-2) && !area.IsUnderwater()) {
-                    this.investigation = { Position: area.GetClosestPointOnArea(point), Key: key, Until: Math.min(now + 12, threat ? now + 12 : clue?.Expires ?? now) };
-                    this.event?.("Investigation:" + (threat ? "visual" : "sound") + ":started");
+                    this.investigation = { Position: area.GetClosestPointOnArea(point), Key: key, Source: source, Started: now,
+                        Until: Math.min(now + 12, threat ? now + 12 : contact?.Expires ?? clue?.Expires ?? now) };
+                    this.event?.("Investigation:" + source + ":started");
                 }
             }
             const search = this.investigation;

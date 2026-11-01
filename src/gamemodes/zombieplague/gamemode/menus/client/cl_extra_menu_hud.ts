@@ -40,7 +40,7 @@ class ExtraMenuHUD implements ZPExtraMenuPresentation {
             if (this.state?.Snapshot?.Truncated) draw.DrawText(phrase("extramenutruncated"), "DermaDefault", 20, h - 22, this.palette.Muted, TEXT_ALIGN_LEFT);
         };
         const [w, h] = frame.GetSize();
-        this.Button(frame, "X", w - 50, 14, 30, () => actions.Close());
+        ZPMenuControls.CloseButton(this.Button(frame, "X", w - 50, 14, 30, () => actions.Close()), this.palette, this.square);
         this.scroll = vgui.Create("DScrollPanel", frame); this.scroll.SetPos(20, 116); this.scroll.SetSize(w - 40, Math.max(32, h - 218));
         this.feedback = vgui.Create("DLabel", frame); this.feedback.SetPos(20, h - 96); this.feedback.SetSize(w - 40, 38);
         this.feedback.SetWrap(true); this.feedback.SetColor(this.palette.Muted);

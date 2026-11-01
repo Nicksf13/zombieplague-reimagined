@@ -4,6 +4,7 @@ import type { Intervention, MovementRequest } from "./sv_bot_experience_trace";
 import type { MotorExecution } from "./sv_bot_execution";
 const { drive } = include("sv_bot_precision_support.lua") as typeof import("./sv_bot_precision_support");
 const { weapons } = include("sv_bot_weapons.lua") as typeof import("./sv_bot_weapons");
+const { visibleSurface } = include("sv_bot_breakables.lua") as typeof import("./sv_bot_breakables");
 export function resetWeapons(ply: ZPServerPlayer): void { weapons.Reset(ply); }
 export interface BotPlan {
     Senses: BotSenses; Steering: BotSteering; Action: ZPBotAction; ReadyAt: number; Updated: number;
@@ -14,6 +15,7 @@ export interface BotPlan {
     JumpIssued?: boolean; Wait?: boolean;
     WithdrawForAmmo?: boolean;
     LastVisibleAt?: number;
+    Breakable?: import("./sv_bot_breakables").BreakableTarget;
     DecisionID?: string; MotionID?: string; StageID?: string; Requested?: MovementRequest; Interventions?: Intervention[];
 }
 const ranges: Record<ZPBotProfile, number> = { aggressive: 240, cooperative: 430, defensive: 550, cautious: 700 };
@@ -26,7 +28,7 @@ function meleeDistance(weapon: GLuaWeapon): number {
 export function request(ply: ZPServerPlayer, senses: BotSenses, action: ZPBotAction, profile: ZPBotProfile): DestinationRequest {
     const interventions: Intervention[] = [];
     const result = (goal: GLuaVector | undefined, move: string): DestinationRequest => ({ Goal: goal, Move: move, Interventions: interventions });
-    const position = ply.GetPos(), enemy = senses.EnemyPosition;
+    const position = ply.GetPos(), enemy = senses.EnemyPosition ?? (ply.IsHuman() ? senses.Contact?.Position : undefined);
     const ammunition = ply.IsHuman() ? weapons.Assess(ply, senses) : undefined;
     if (enemy && ammunition?.Withdraw) {
         const dx = enemy.x - position.x, dy = enemy.y - position.y, distance = Math.max(1, Math.sqrt(dx * dx + dy * dy));
@@ -79,7 +81,9 @@ export function apply(ply: ZPServerPlayer, command: GLuaUserCommand, plan: BotPl
     if (defensive) interventions.push({ Controller: "damage_guard", Reason: "orient_to_observed_threat", Tactical: true, Motion: false });
     const origin = ply.EyePos();
     const pick = plan.Steering.Pick, moveTarget = plan.Steering.Position;
-    const aim = pick?.Aim ?? (plan.Senses.Visible ? plan.Senses.AimPosition : undefined) ?? plan.Look ?? defensive ?? (moveTarget ? Vector(moveTarget.x, moveTarget.y, origin.z) : undefined);
+    const clearing = combat && !plan.Senses.Visible && plan.Breakable && !interventions.some(value => value.Controller === "traffic" || value.Controller === "boost") ?
+        visibleSurface(ply, plan.Breakable.Entity) : undefined;
+    const aim = clearing ?? pick?.Aim ?? (plan.Senses.Visible ? plan.Senses.AimPosition : undefined) ?? plan.Look ?? defensive ?? (moveTarget ? Vector(moveTarget.x, moveTarget.y, origin.z) : undefined);
     let angles = ply.EyeAngles();
     if (aim) {
         const dx = aim.x - origin.x, dy = aim.y - origin.y, dz = aim.z - origin.z;
@@ -160,6 +164,18 @@ export function apply(ply: ZPServerPlayer, command: GLuaUserCommand, plan: BotPl
     if (!IsValid(weapon)) attackGate = "invalid_weapon";
     if (!ply.IsHuman() && IsValid(weapon) && weapon.GetMaxClip1() > 0 && weapon.Clip1() === 0) {
         buttons += IN_RELOAD; attackGate = "reload"; return finish();
+    }
+    if (plan.Breakable) {
+        attackGate = "breakable_unavailable";
+        if (clearing && IsValid(weapon)) {
+            const direction = angles.Forward(), dx = clearing.x - origin.x, dy = clearing.y - origin.y, dz = clearing.z - origin.z;
+            const distance = Math.max(1, Math.sqrt(dx * dx + dy * dy + dz * dz));
+            const aligned = (dx * direction.x + dy * direction.y + dz * direction.z) / distance > 0.985;
+            attackGate = CurTime() < plan.ReadyAt ? "reaction_wait" : !aligned ? "aim_alignment" : !ranged && distance > meleeDistance(weapon) ? "outside_melee_envelope" :
+                Math.floor(CurTime() * 12) % 2 !== 0 ? "alternating_press" : "issued_breakable";
+            if (attackGate === "issued_breakable") buttons += IN_ATTACK;
+        }
+        return finish();
     }
     if (IsValid(weapon) && plan.Senses.Visible && CurTime() >= plan.ReadyAt && plan.Senses.AimPosition && plan.Senses.Target) {
         const target = plan.Senses.Target;

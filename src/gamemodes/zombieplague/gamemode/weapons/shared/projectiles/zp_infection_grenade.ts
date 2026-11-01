@@ -17,7 +17,7 @@ ENT.Explode = function (): void {
         for (const human of rounds.GetAliveHumans()) {
             if (this.Visible(human) && this.GetPos().DistToSqr(human.GetPos()) <= 20000 && !human.IsSurvivor()) {
                 if (!rounds.LastHuman() && !rounds.IsSpecialRound())
-                    InfectionManager.Infect(human, owner);
+                    InfectionManager.Infect(human, owner, this);
                 else
                     human.TakeDamage(10000, owner, this);
             }

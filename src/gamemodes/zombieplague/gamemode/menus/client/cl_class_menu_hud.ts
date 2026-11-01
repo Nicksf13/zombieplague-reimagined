@@ -41,7 +41,7 @@ class ClassMenuHUD implements ZPClassMenuPresentation {
             draw.DrawText(language.GetPhrase(this.state?.Feedback ?? "zombieplague.classclass"), "DermaDefault", 20, h - 24, this.palette.Muted, TEXT_ALIGN_LEFT);
         };
         const [w, h] = frame.GetSize();
-        this.Button(frame, "X", w - 50, 14, 30, () => actions.Close());
+        ZPMenuControls.CloseButton(this.Button(frame, "X", w - 50, 14, 30, () => actions.Close()), this.palette, this.square);
         for (const [index, kind] of (["human", "zombie"] as const).entries()) {
             this.tabs[kind] = this.Button(frame, phrase(kind === "human" ? "scoreboardtitlehumans" : "scoreboardtitlezombies"),
                 20 + index * ((w - 50) / 2 + 10), 66, (w - 50) / 2, () => actions.SetKind(kind), () => this.state?.Kind === kind);

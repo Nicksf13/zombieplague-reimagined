@@ -7,15 +7,30 @@ interface CatalogContract { Points(ply: ZPServerPlayer, physics: MotionPhysics, 
 export class BotPlaceCatalog implements CatalogContract {
     private cache = new Map<number, { Until: number; Points: GLuaVector[] }>();
     private leases = new Map<string, { Owner: number; Until: number }>();
+    private Authored(ply: ZPServerPlayer): BotPlacePoint[] {
+        const result: BotPlacePoint[] = [];
+        for (const point of (_G.ZPBotSafePoints?.Points() ?? []).slice(0, 32)) {
+            if (point.Role !== "both" && point.Role !== (ply.IsZombie() ? "zombie" : "human")) continue;
+            const position = Vector(point.Position[0] ?? 0, point.Position[1] ?? 0, point.Position[2] ?? 0);
+            const distance = Math.sqrt(ply.GetPos().DistToSqr(position));
+            if (distance < 80 || distance > 4000) continue;
+            const area = routing.floorArea(position, 80, 24);
+            if (!area || !area.Contains(position) || area.IsBlocked(-2) || area.IsUnderwater()) continue;
+            result.push({ Key: "safe:" + point.ID + ":" + [position.x, position.y, position.z].join("."),
+                Position: position, Area: area, Distance: distance, Native: false, SafeID: point.ID });
+        }
+        return result;
+    }
     Points(ply: ZPServerPlayer, physics: MotionPhysics, now: number): BotPlacePoint[] {
         if (!navmesh.IsLoaded()) return [];
         const start = routing.floorArea(ply.GetPos(), 200); if (!start) return [];
-        const queue = [{ Area: start, Distance: 0 }], seen = new Set<number>(), keys = new Set<string>(), result: BotPlacePoint[] = [];
-        const authored = (_G.ZPBotSafePoints?.Points() ?? []).filter(point => point.Role === "both" || point.Role === (ply.IsZombie() ? "zombie" : "human"));
+        // Marked destinations are explicit map knowledge, independent of the local automatic search budget.
+        const result = this.Authored(ply), keys = new Set(result.map(point => point.Key));
+        const queue = [{ Area: start, Distance: 0 }], seen = new Set<number>([start.GetID()]);
         let fallback = 0;
-        for (let visited = 0; visited < 48 && queue.length > 0 && result.length < 32; visited++) {
-            const current = queue.shift(); if (!current || seen.has(current.Area.GetID())) continue;
-            const area = current.Area; seen.add(area.GetID());
+        for (let visited = 0; visited < 48 && queue.length > 0; visited++) {
+            const current = queue.shift(); if (!current) break;
+            const area = current.Area;
             if (area.IsBlocked(-2) || area.IsUnderwater() || current.Distance > 1800) continue;
             let cached = this.cache.get(area.GetID());
             if (!cached || cached.Until < now) {
@@ -24,27 +39,22 @@ export class BotPlaceCatalog implements CatalogContract {
             }
             const native = cached.Points.length > 0;
             const automatic = native ? cached.Points : fallback++ < 8 ? [area.GetClosestPointOnArea(Vector(area.GetCenter().x + 96, area.GetCenter().y + 96, area.GetCenter().z))] : [];
-            const points: { Position: GLuaVector; SafeID?: number; Native: boolean }[] = authored.map(point => ({
-                Position: Vector(point.Position[0] ?? 0, point.Position[1] ?? 0, point.Position[2] ?? 0), SafeID: point.ID, Native: false
-            }));
-            points.push(...automatic.map(point => ({ Position: point, Native: native })));
-            for (const entry of points) {
-                const point = entry.Position;
+            for (const point of automatic) {
                 if (result.length >= 32) break;
                 if (!area.Contains(point) || Math.abs(area.GetClosestPointOnArea(point).z - point.z) > 24 || ply.GetPos().DistToSqr(point) < 80 * 80) continue;
                 // Native hiding flags at a marked destination must share its reservation.
-                if (result.some(other => (entry.SafeID !== undefined || other.SafeID !== undefined) && other.Position.DistToSqr(point) < 32 * 32)) continue;
-                const key = entry.SafeID !== undefined ? "safe:" + entry.SafeID + ":" + [point.x, point.y, point.z].join(".") :
-                    "v2:" + area.GetID() + ":" + [point.x, point.y, point.z].map(value => Math.round(value / 16)).join(".");
-                if (keys.has(key)) continue; keys.add(key);
+                if (result.some(other => other.SafeID !== undefined && other.Position.DistToSqr(point) < 32 * 32)) continue;
+                const key = "v2:" + area.GetID() + ":" + [point.x, point.y, point.z].map(value => Math.round(value / 16)).join(".");
+                if (keys.has(key)) continue;
+                keys.add(key);
                 result.push({ Key: key,
-                    Position: Vector(point.x, point.y, point.z), Area: area, Distance: current.Distance, Native: entry.Native, SafeID: entry.SafeID });
+                    Position: Vector(point.x, point.y, point.z), Area: area, Distance: current.Distance, Native: native });
             }
             for (const step of routing.connections(area).slice(0, 48)) {
-                const other = step.Area; if (!other || seen.has(other.GetID()) || queue.length >= 128) continue;
+                const other = step.Area; if (!other || seen.has(other.GetID()) || seen.size >= 128) continue;
                 const height = area.ComputeAdjacentConnectionHeightChange(other);
                 if (!step.Ladder && (height > Math.max(48, jumpReach(physics)) || !fallRisk(ply, -height, physics).Allowed)) continue;
-                queue.push({ Area: other, Distance: current.Distance + Math.sqrt(area.GetCenter().DistToSqr(other.GetCenter())) });
+                seen.add(other.GetID()); queue.push({ Area: other, Distance: current.Distance + Math.sqrt(area.GetCenter().DistToSqr(other.GetCenter())) });
             }
         }
         return result;
@@ -65,6 +75,11 @@ export class BotPlaceCatalog implements CatalogContract {
         if (standing.Hit && util.TraceHull({ start, endpos: start, filter, mask: MASK_PLAYERSOLID, mins: duckMins, maxs: duckMaxs }).Hit) return;
         if (!util.TraceLine({ start: Vector(position.x, position.y, position.z + 16), endpos: Vector(position.x, position.y, position.z - 24), filter, mask: MASK_PLAYERSOLID }).Hit) return;
         const state = physics(ply);
+        if (point.SafeID !== undefined) {
+            const route = routing.findPath(ply, position, state, () => 1);
+            // A partial path may continue after its frontier; an exhausted disconnected approach cannot.
+            if (route.Kind !== "complete" && route.Kind !== "partial") return;
+        }
         if (!routing.connections(point.Area).some(step => {
             const area = step.Area; if (!area || area.IsBlocked(-2) || area.IsUnderwater()) return false;
             const height = point.Area.ComputeAdjacentConnectionHeightChange(area);

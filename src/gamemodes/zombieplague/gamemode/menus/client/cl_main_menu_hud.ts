@@ -24,7 +24,7 @@ export class MainMenuHUD implements ZPMainMenuPresentation {
             draw.DrawText(language.GetPhrase("zombieplague.mainmenucontrols"), "DermaDefault", 24, height - 28, this.palette.Muted, TEXT_ALIGN_LEFT);
         };
         const [width] = frame.GetSize();
-        this.Button(frame, "X", width - 52, 18, 30, () => actions.Close());
+        ZPMenuControls.CloseButton(this.Button(frame, "X", width - 52, 18, 30, () => actions.Close()), this.palette, this.square);
         frame.MakePopup();
         this.Update(state);
     }

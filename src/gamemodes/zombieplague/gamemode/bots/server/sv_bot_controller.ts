@@ -27,6 +27,8 @@ const { BotDamageEvents, fallDamage } = include("sv_bot_damage_events.lua") as t
 const { physics } = include("sv_bot_motion_physics.lua") as typeof import("./sv_bot_motion_physics");
 const { BotObjectives } = include("sv_bot_objectives.lua") as typeof import("./sv_bot_objectives");
 const { BotHearing } = include("sv_bot_hearing.lua") as typeof import("./sv_bot_hearing");
+const { BotContacts } = include("sv_bot_contacts.lua") as typeof import("./sv_bot_contacts");
+const { BotBreaker } = include("sv_bot_breakables.lua") as typeof import("./sv_bot_breakables");
 const { BotJumpControl } = include("sv_bot_jump_control.lua") as typeof import("./sv_bot_jump_control");
 const { BotActivity } = include("sv_bot_activity.lua") as typeof import("./sv_bot_activity");
 interface ManagedBot {
@@ -35,6 +37,7 @@ interface ManagedBot {
     ID: number; Profile: ZPBotProfile; Role: ZPBotRole; Plan?: BotPlan; NextThink: number; Wander?: GLuaVector;
     Scope: ZPBotScope; Metrics: MetricsType; Motion: MotionType;
     Places: PlacesType;
+    Breaker: InstanceType<typeof BotBreaker>;
     Policy: string;
     Guard: GuardType;
     Execution: ExecutionType;
@@ -51,6 +54,7 @@ export class BotController implements ZPBotManager {
     });
     readonly Trace: InstanceType<typeof BotExperienceTrace> = new BotExperienceTrace(this.Statistics.Session);
     readonly Hearing = new BotHearing();
+    private contacts = new BotContacts();
     readonly Activity = new BotActivity(this.Statistics.Session, this.Statistics.Code);
     private damageEvents = new BotDamageEvents(this.Statistics.Session);
     private statisticsDeaths = new Set<ZPServerPlayer>();
@@ -74,6 +78,9 @@ export class BotController implements ZPBotManager {
             return { ID: bot.ID, Entity: bot.Player.EntIndex(), Scope: { ...bot.Scope }, Policy: bot.Policy,
                 NextThink: bot.NextThink, PlanAt: plan?.Updated, ReadyAt: plan?.ReadyAt, Action: plan?.Action,
                 Visible: plan?.Senses.Visible, Target: plan?.Senses.Target?.EntIndex(),
+                Breakable: plan?.Breakable?.Entity.EntIndex(),
+                Contact: plan?.Senses.Contact ? { Reporter: plan.Senses.Contact.Reporter, Time: plan.Senses.Contact.Time,
+                    Position: [plan.Senses.Contact.Position.x, plan.Senses.Contact.Position.y, plan.Senses.Contact.Position.z] } : undefined,
                 Enemy: enemy ? [enemy.x, enemy.y, enemy.z] : [], Goal: goal ? [goal.x, goal.y, goal.z] : [],
                 Steering: steering ? [steering.x, steering.y, steering.z] : [], Aim: aim ? [aim.x, aim.y, aim.z] : [],
                 Wait: plan?.Wait === true, Stuck: plan?.Steering.Stuck, Move: plan?.Steering.Pick?.Action,
@@ -111,6 +118,7 @@ export class BotController implements ZPBotManager {
         experience.Metrics.Reset();
         this.bots.push({ Player: ply, Brain: experience.Brain, Metrics: experience.Metrics, Scope: experience.Scope, Motion: experience.Motion,
             Navigation: new BotNavigator(), Perception: new BotPerception(),
+            Breaker: new BotBreaker(),
             Places: new BotPlaces(this.placeCatalog, experience.Places, id, profile, this.Trace.Channel(id, experience.Scope), name => this.Activity.Event(id, name), true), Policy: experience.Policy, Guard: new BotDamageGuard(id),
             Execution: new BotExecutionTracker(this.Trace.Channel(id, experience.Scope)),
             Objectives: new BotObjectives(name => this.Activity.Event(id, name)), Jumps: new BotJumpControl(),
@@ -127,6 +135,8 @@ export class BotController implements ZPBotManager {
         return bot ? { ID: bot.ID, Profile: bot.Brain.ActiveProfile(), Role: bot.Role, Action: bot.Plan?.Action ?? "defend", Samples: bot.Brain.Samples() } : undefined;
     }
     private Clear(bot: ManagedBot, reason = "reset_or_inactive"): void {
+        this.contacts.Remove(bot.Player);
+        bot.Breaker.Reset();
         motor.resetWeapons(bot.Player);
         bot.Objectives.Reset(); bot.Jumps.Reset(); delete bot.SafeSince;
         bot.Execution.Reset(CurTime());
@@ -175,12 +185,20 @@ export class BotController implements ZPBotManager {
         const playing = !benchmark && RoundManager.GetRoundState() === ROUND_PLAYING;
         // The infection countdown is unfrozen preparation: explore without combat decisions.
         const senses: BotSenses = playing ? bot.Perception.Observe(ply, players, now, bot.Navigation.IsFollowing()) : { Visible: false, Allies: 0, Enemies: 0 };
+        if (playing) this.contacts.Report(ply, senses, now);
         senses.RecentDamage = bot.Objectives.UnderFire(now);
         const sound = playing ? this.Hearing.Listen(ply, now) : undefined;
         if (sound) senses.Sound = sound;
         if (currentRole === "zombie" && bot.Objectives.Inspected(senses, now)) { delete senses.EnemyPosition; delete senses.AimPosition; delete senses.Target; }
+        if (playing && !senses.EnemyPosition) {
+            const contact = this.contacts.Listen(ply, players, now);
+            if (contact) {
+                senses.Contact = contact;
+                if (contact.ID !== bot.Plan?.Senses.Contact?.ID) this.Activity.Event(bot.ID, "Contact:received");
+            }
+        }
         const distance = senses.EnemyPosition ? Math.sqrt(ply.GetPos().DistToSqr(senses.EnemyPosition)) : Infinity;
-        let action = senses.Visible ? bot.Brain.Decide({ Role: currentRole, Health: ply.Health() / Math.max(1, ply.GetMaxHealth()),
+        let action = senses.Visible ? bot.Brain.Decide({ Role: currentRole, Variant: bot.Scope.Variant, Health: ply.Health() / Math.max(1, ply.GetMaxHealth()),
             Distance: distance, Allies: senses.Allies, Enemies: senses.Enemies, HasAlly: senses.AllyPosition !== undefined, RecentDamage: senses.RecentDamage }, now) : "group";
         if (!senses.Visible) {
             if (playing && bot.Brain.ContinueRetreat(false, now, ply.Health() / Math.max(1, ply.GetMaxHealth()))) action = "retreat";
@@ -210,10 +228,13 @@ export class BotController implements ZPBotManager {
             goal = bot.Wander;
         }
         const chasing = goal !== undefined && goal === senses.EnemyPosition;
+        const sprintPreferred = movementAction === "retreat" || (currentRole === "zombie" && (action === "attack" || (ply.IsNemesis() && chasing) ||
+            (objective.Mode === "investigate" && (senses.EnemyPosition !== undefined || senses.Contact !== undefined)))) ||
+            (currentRole === "human" && place !== undefined && !place.Holding);
         const intent = benchmark ? "benchmark:" + benchmark.x + ":" + benchmark.y + ":" + benchmark.z : place ? "place:" + place.Key : objective.Key + (goal === bot.Wander && goal ? ":" + goal.x + ":" + goal.y + ":" + goal.z : "");
         let boost = this.Boosts.Control(ply, now);
         if (boost) goal = boost.Goal;
-        let steering = boost?.Steering ?? (goal ? bot.Navigation.Steer(ply, goal, now, bot.Motion, movementAction === "retreat" || (currentRole === "zombie" && action === "attack"), boost ? "boost:" + boost.Token : intent,
+        let steering = boost?.Steering ?? (goal ? bot.Navigation.Steer(ply, goal, now, bot.Motion, sprintPreferred, boost ? "boost:" + boost.Token : intent,
             !boost && !place && chasing ? requested.ArrivalTolerance : undefined) :
             { Jump: false, Duck: false, Use: false, Stuck: false });
         const availablePeers = this.ManagedPlayers().filter(other => {
@@ -248,6 +269,13 @@ export class BotController implements ZPBotManager {
             senses.Visible = false; delete senses.Target; delete senses.AimPosition; delete senses.EnemyPosition;
         }
         if (steering.Unreachable && goal && goal === bot.Wander) { bot.Navigation.SearchFailed(goal, now); delete bot.Wander; }
+        const breaking = playing && !benchmark && !boost && !this.traffic.Control(ply, now) ? bot.Breaker.Resolve(ply, steering, senses, now) : undefined;
+        if (breaking) {
+            steering = breaking.Steering;
+            const intervention = { Controller: "breakable", Reason: "clear_route_obstruction", Tactical: true, Motion: true };
+            interventions.push(intervention); bot.Motion.Cancel("controller_substitution", false, intervention);
+            if (bot.Plan?.Breakable?.Entity !== breaking.Entity) this.Activity.Event(bot.ID, "Breakable:started");
+        }
         const sameContact = senses.Target !== undefined && senses.Target === bot.Plan?.Senses.Target;
         const recentContact = sameContact && now - (bot.Plan?.LastVisibleAt ?? -Infinity) <= 0.6;
         const acquired = senses.Visible && (!bot.Plan?.Senses.Visible || !sameContact) && !recentContact;
@@ -257,10 +285,11 @@ export class BotController implements ZPBotManager {
         for (const intervention of interventions) bot.Brain.Intervene(intervention);
         bot.Plan = { Senses: senses, Steering: steering, Action: action, Updated: now,
             WithdrawForAmmo: requested.Withdraw === true,
-            Wait: place?.Holding === true || (!!boost && !steering.Position),
+            Wait: place?.Holding === true || (!!boost && !steering.Position) || (!!breaking && !steering.Position),
             DecisionID: bot.Brain.ExperienceID(), MotionID: motionID, StageID: stageID, Interventions: interventions,
             Requested: { Goal: requested.Goal ? [requested.Goal.x, requested.Goal.y, requested.Goal.z] : [], Move: requested.Move, ...localRequest },
-            ReadyAt: acquired ? now + 0.2 + (bot.ID % 5) * 0.05 : bot.Plan?.ReadyAt ?? now + 0.2 };
+            ReadyAt: acquired || (breaking && bot.Plan?.Breakable?.Entity !== breaking.Entity) ? now + 0.2 + (bot.ID % 5) * 0.05 : bot.Plan?.ReadyAt ?? now + 0.2 };
+        if (breaking) bot.Plan.Breakable = { Entity: breaking.Entity, Aim: breaking.Aim };
         if (goal) bot.Plan.Goal = goal;
         if (lastVisibleAt !== undefined) bot.Plan.LastVisibleAt = lastVisibleAt;
         if (boost) bot.Plan.Boost = boost.Token;
@@ -279,7 +308,7 @@ export class BotController implements ZPBotManager {
 
     Update(): void {
         const evaluating = evaluationRequested();
-        const experiment = ["zp_bot_stats_scenario", "zp_bot_stats_difficulty", "zp_bot_stats_cohort", "zp_bot_stats_opponent", "zp_bot_stats_sample", "zp_bot_stats_timeout", "zp_bot_stats_stuck_speed", "zp_bot_learning", "zp_run_drain", "zp_run_should_drain", "zp_realistic_mode", "sv_gravity"]
+        const experiment = ["zp_bot_stats_scenario", "zp_bot_stats_difficulty", "zp_bot_stats_cohort", "zp_bot_stats_opponent", "zp_bot_stats_sample", "zp_bot_stats_timeout", "zp_bot_stats_stuck_speed", "zp_bot_learning", "zp_bot_contact_radius", "zp_bot_hearing_gunshot_radius", "zp_bot_hearing_footstep_radius", "zp_run_drain", "zp_run_should_drain", "zp_realistic_mode", "sv_gravity"]
             .map(name => { const value = GetConVar(name)?.GetString() ?? ""; return value.length + ":" + value; }).join("");
         if (evaluating !== this.evaluation || (this.experiment !== "" && experiment !== this.experiment)) {
             for (const bot of this.bots) this.Clear(bot);
@@ -295,6 +324,7 @@ export class BotController implements ZPBotManager {
         for (const bot of [...this.bots]) if (!IsValid(bot.Player)) this.Remove(bot.Player);
         if (!evaluating) this.benchmarks.clear();
         if (!cvars.Bool("zp_bot_ai_enabled", true) || (!this.CanMove() && this.benchmarks.size === 0)) {
+            this.contacts.Reset();
             for (const bot of this.bots) if (bot.Plan) this.Clear(bot);
             return;
         }
@@ -342,7 +372,12 @@ export class BotController implements ZPBotManager {
             if (tacticalInput && !execution.Interventions.some(value => value.Tactical)) bot.Brain.Executed(plan.DecisionID ?? "");
             const controlled = !execution.Interventions.some(value => value.Motion);
             if (controlled && (moving || plan.Wait) && plan.Goal) bot.Places.Executed(plan.Goal);
-            if (!controlled) { const intervention = execution.Interventions.find(value => value.Motion); bot.Motion.Cancel("controller_substitution", false, intervention); bot.Places.Intervene(intervention); }
+            if (!controlled) {
+                const intervention = execution.Interventions.find(value => value.Motion);
+                bot.Motion.Cancel("controller_substitution", false, intervention);
+                // Clearing a local obstruction temporarily implements the same shelter route.
+                if (intervention?.Controller !== "breakable") bot.Places.Intervene(intervention);
+            }
             bot.Execution.Command({ Decision: plan.DecisionID ?? "", Experience: motionID, Stage: plan.StageID ?? bot.Motion.Stage(), Action: plan.Action,
                 Requested: plan.Requested ?? { Goal: [], Move: plan.Steering.Pick?.Action ?? "none" } }, execution, CurTime());
             const state = physics(ply);
@@ -459,6 +494,7 @@ export class BotController implements ZPBotManager {
     }
     EndRound(result: ZPRoundEndReason): void {
         this.Hearing.Reset();
+        this.contacts.Reset();
         for (const bot of this.bots) {
             const won = bot.Role === "human" ? result === HUMANS_WIN : result === ZOMBIES_WIN;
             if (bot.Player.Alive() && bot.Plan?.Senses.Visible) {

@@ -4,6 +4,54 @@ import test from "node:test";
 import { run } from "./helpers/lua-runtime.mjs";
 import { books, locales, nativeLanguage } from "./helpers/native-localization.mjs";
 
+test("proximity voice controls and cross-team label are translated in all catalogs", () => {
+    for (const locale of locales) for (const suffix of ["scvoicelocal", "scvoiceradius", "cvarvoiceall"]) {
+        const key = "zombieplague." + suffix;
+        const phrase = books[locale][key];
+        assert(phrase?.trim(), `${locale}: ${key}`);
+        assert.deepEqual(phrase.match(/%[sdif]/g) ?? [], [], `${locale}: ${key}`);
+        if (locale !== "en" && locale !== "en-PT") assert.notEqual(phrase, books.en[key]);
+    }
+});
+
+test("scoreboard round result labels are translated in all catalogs without format parameters", () => {
+    for (const locale of locales) for (const suffix of ["humanwins", "zombiewins", "draws"]) {
+        const key = "zombieplague.scoreboard" + suffix;
+        const phrase = books[locale][key];
+        assert(phrase?.trim(), `${locale}: ${key}`);
+        assert.deepEqual(phrase.match(/%[sdif]/g) ?? [], [], `${locale}: ${key}`);
+        if (locale !== "en" && locale !== "en-PT") assert.notEqual(phrase, books.en[key]);
+    }
+});
+
+test("public player statistics are translated in every catalog with matching parameters", () => {
+    const keys = "title|description|general|help|position|disabled|unavailable|unranked|mine|enabled|refresh|kills|deaths|assists|damagedealt|damagetaken|armordamagedealt|armordamagetaken|infections|infected|cures|selfcures|cured|distance|alivetime|rounds|wins|survivedrounds|nemesiskills|survivorkills|firstzombieinfections|bestkills|bestdamage|bestinfections|bestsurvival".split("|");
+    for (const locale of locales) for (const key of keys) {
+        const phrase = books[locale]["zombieplague.pstats" + key];
+        assert(phrase?.trim(), `${locale}: pstats${key}`);
+        assert.deepEqual(phrase.match(/%[sdif]/g) ?? [], key === "position" ? ["%d", "%d", "%s"] : [], `${locale}: ${key}`);
+        if (key === "help" && locale !== "en" && locale !== "en-PT") assert.notEqual(phrase, books.en["zombieplague.pstats" + key]);
+    }
+});
+
+test("weapon statistics filters and combined totals are translated in all catalogs", () => {
+    for (const locale of locales) for (const suffix of ["allweapons", "unknownweapon", "weapontotal", "weapontotalvalue"]) {
+        const phrase = books[locale]["zombieplague.pstats" + suffix];
+        assert(phrase?.trim(), `${locale}: ${suffix}`);
+        const parameters = suffix === "weapontotal" ? ["%d", "%d"] : suffix === "weapontotalvalue" ? ["%s"] : [];
+        assert.deepEqual(phrase.match(/%[sdif]/g) ?? [], parameters, `${locale}: ${suffix}`);
+        if (locale !== "en" && locale !== "en-PT") assert.notEqual(phrase, books.en["zombieplague.pstats" + suffix]);
+    }
+});
+
+test("bot profile markers are localized in every catalog with one player-name parameter", () => {
+    for (const locale of locales) {
+        const phrase = books[locale]["zombieplague.pstatsbotplayer"];
+        assert(phrase?.trim(), locale);
+        assert.deepEqual(phrase.match(/%[sdif]/g) ?? [], ["%s"], locale);
+    }
+});
+
 test("safe point tools have complete translations including the distance precision parameter", () => {
     const keys = ["admintools", "bsafetitle", "bsafehelp", "bsafemark", "bsafeaim", "bsaferole", "bsafehuman", "bsafezombie",
         "bsafeboth", "bsafeempty", "bsafepoint", "bsafesaved", "bsafeinvalid", "bsafecapacity", "bsafestale", "bsafedelete", "bsaferefresh", "bsafeequip", "bsafetoolhint", "bsaferolehint", "bsafemenuhint", "bsafepointhint"];

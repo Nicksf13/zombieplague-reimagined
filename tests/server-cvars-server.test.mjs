@@ -61,6 +61,14 @@ local function confirm(group,revision,token,player,length)
 end
 `;
 
+test("only superadmins can disable public player statistics through server settings", () => run(setup + `
+    ply.superadmin=false
+    assert(request("playerstats",{{"zp_statistics_enabled","0"}})[5]==2 and #writes==0)
+    ply.superadmin=true
+    assert(request("playerstats",{{"zp_statistics_enabled","0"}})[5]==1)
+    assert(convars.zp_statistics_enabled.value=="0" and #reloads==0)
+`));
+
 test("administrators can change radar activation without reload and invalid modes cannot be saved", () => run(setup + `
     ply.superadmin=false
     assert(request("radar",{{"zp_radar_mode","1"}})[5]==1)
@@ -68,6 +76,16 @@ test("administrators can change radar activation without reload and invalid mode
     local revision=request("radar")[6]
     assert(request("radar",{{"zp_radar_mode","3"}},revision)[5]==2)
     assert(convars.zp_radar_mode.value=="1" and #writes==1)
+`));
+
+test("administrators can configure proximity voice live and invalid ranges reject the entire save", () => run(setup + `
+    ply.superadmin=false
+    assert(convars.zp_voice_local.value=="1" and convars.zp_voice_radius.value=="1000")
+    assert(request("communication",{{"zp_voice_local","0"},{"zp_voice_radius","1500"}})[5]==1)
+    assert(convars.zp_voice_local.value=="0" and convars.zp_voice_radius.value=="1500" and #reloads==0)
+    local revision=request("communication")[6]
+    assert(request("communication",{{"zp_voice_local","1"},{"zp_voice_radius","63"}},revision)[5]==2)
+    assert(convars.zp_voice_local.value=="0" and convars.zp_voice_radius.value=="1500" and #writes==2)
 `));
 
 test("administrators can toggle allied radar contacts live using the audited settings menu", () => run(setup + `

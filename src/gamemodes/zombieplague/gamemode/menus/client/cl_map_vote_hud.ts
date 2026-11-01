@@ -38,10 +38,7 @@ class MapVoteHUD implements ZPMapVotePresentation {
         const [w, h] = frame.GetSize();
         const close = vgui.Create("DButton", frame);
         close.SetText(""); close.SetPos(w - 50, 16); close.SetSize(30, 30);
-        close.Paint = (width, height) => {
-            draw.RoundedBox(this.square ? 0 : 4, 0, 0, width, height, close.IsHovered() ? this.palette.Accent : this.palette.Panel);
-            draw.DrawText("X", "Trebuchet18", 9, 5, close.IsHovered() ? Color(12, 18, 22) : this.palette.Text, TEXT_ALIGN_LEFT);
-        };
+        ZPMenuControls.CloseButton(close, this.palette, this.square);
         close.DoClick = () => actions.Close();
         const scroll = vgui.Create("DScrollPanel", frame);
         scroll.SetPos(20, 88); scroll.SetSize(w - 40, Math.max(40, h - 146));

@@ -20,7 +20,7 @@ hook.Add("ZPZombieInflictedDamageOnPlayer", "HandleZombieCausingDamage", (attack
         const amount = target.TakeArmorDamage(damage.GetDamage());
         damage.SetDamage(amount > 0 && (target.IsHuman() || (cvars.Bool("zp_friendly_fire", false) && target.IsZombie())) ? amount : 0);
         if (!RoundManager.IsSpecialRound() && !RoundManager.LastHuman() && !target.IsZombie() && amount > 0) {
-            InfectionManager.Infect(target, attacker);
+            InfectionManager.Infect(target, attacker, damage.GetInflictor());
             damage.SetDamage(0);
         }
     }
@@ -34,6 +34,7 @@ hook.Add("ZPHumanInflictedDamageOnPlayer", "HandleHumanCausingDamage", (attacker
     }
 });
 GM.EntityTakeDamage = function (target, damage): boolean | undefined {
+    if (target.IsPlayer()) hook.Call("ZPStatisticsDamageStarted", GAMEMODE, target, damage);
     const attacker = damage.GetAttacker();
     if (attacker.IsPlayer()) {
         if (!RoundManager.IsRealisticMod() && target.IsPlayer() && RoundManager.GetRoundState() !== ROUND_PLAYING)

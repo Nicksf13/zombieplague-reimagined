@@ -34,11 +34,13 @@ manager.CheckRoundEnd = function (): void {
     }
 };
 manager.WaitPlayers = function (): void {
+    this.Results.Cancel();
     endFreezeTime(this);
     timer.Destroy("ZombiePlagueTimer");
     this.SetRoundState(ROUND_WAITING_PLAYERS);
 };
 manager.Prepare = function (): boolean {
+    this.Results.Cancel();
     endFreezeTime(this);
     if (this.CountPlayersToPlay() < (cvars.Bool("zp_bot_training", false) ? 2 : cvars.Number("zp_min_players", 2)))
         return false;
@@ -140,12 +142,14 @@ manager.NewRound = function (): void {
     }
 };
 manager.RestartRound = function (): void {
+    this.Results.Cancel();
     endFreezeTime(this);
     this.SetTimer(cvars.Bool("zp_bot_training", false) ? 0.1 : cvars.Number("zp_newround_delay", 10), () => this.TryNewRound());
     this.SetRoundState(ROUND_RESTARTING);
     hook.Call("ZPRestartRound");
 };
 manager.EndRound = function (reason): void {
+    this.Results.Finish(reason);
     net.Start("SendRoundEnd");
     net.WriteInt(reason, 4);
     net.Broadcast();
@@ -178,5 +182,6 @@ manager.StartRound = function (round, selected): void {
     this.SetRound(this.GetRound() + 1);
     this.SetRoundState(ROUND_PLAYING);
     this.RoundPlaying = round;
+    this.Results.Begin();
     hook.Call("ZPNewRound", GAMEMODE, round, this.GetRound());
 };

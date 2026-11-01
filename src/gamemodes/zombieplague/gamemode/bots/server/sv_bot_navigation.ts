@@ -10,7 +10,7 @@ const { BotGroundTraversal } = include("sv_bot_ground.lua") as typeof import("./
 const { BotPrecisionTraversal } = include("sv_bot_precision.lua") as typeof import("./sv_bot_precision");
 const { fallRisk, diagnostic } = include("sv_bot_traversal.lua") as typeof import("./sv_bot_traversal");
 const { BotSearch } = include("sv_bot_search.lua") as typeof import("./sv_bot_search");
-export interface BotSteering { Position?: GLuaVector; Waypoint?: GLuaVector; Jump: boolean; Duck: boolean; Use: boolean; Stuck: boolean; Pick?: MoveOption; Unreachable?: boolean; Precision?: boolean; Blocker?: ZPServerPlayer; Controller?: string; Probe?: import("./sv_bot_motion_actions").BlockedProbe; SupportProbe?: import("./sv_bot_precision_support").BlockedSupport; }
+export interface BotSteering { Position?: GLuaVector; Waypoint?: GLuaVector; Jump: boolean; Duck: boolean; Use: boolean; Stuck: boolean; Pick?: MoveOption; Unreachable?: boolean; Precision?: boolean; Blocker?: ZPServerPlayer; Obstruction?: GLuaEntity; Controller?: string; Probe?: import("./sv_bot_motion_actions").BlockedProbe; SupportProbe?: import("./sv_bot_precision_support").BlockedSupport; }
 export class BotNavigator {
     private path: NavStep[] = [];
     private lastGoal: GLuaVector | undefined;
@@ -220,7 +220,10 @@ export class BotNavigator {
         this.expectedSpeed = Math.min(pick?.SpeedLimit ?? Infinity, pick?.Sprint ? state.Run : pick?.Duck ? state.Speed * ply.GetCrouchedWalkSpeed() : state.Speed);
         if (surface.Obstacle) {
             const trace = util.TraceHull({ start: position, endpos: target, filter: ply, mask: MASK_PLAYERSOLID, mins: Vector(-8, -8, 0), maxs: Vector(8, 8, 32) });
-            if (IsValid(trace.Entity)) result.Use = ["prop_door_rotating", "func_door", "func_door_rotating"].includes(trace.Entity.GetClass());
+            if (IsValid(trace.Entity)) {
+                result.Use = ["prop_door_rotating", "func_door", "func_door_rotating"].includes(trace.Entity.GetClass());
+                result.Obstruction = trace.Entity;
+            }
         }
         return result;
     }

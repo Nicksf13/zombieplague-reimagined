@@ -11,7 +11,13 @@ interface ZPRoundDefinition {
     RespawnFunction?(this: void, ply: ZPServerPlayer): boolean;
     OnDeathFunction?(this: void, ply: ZPServerPlayer): void;
 }
+interface ZPRoundResultsTracker {
+    Begin(this: ZPRoundResultsTracker): void;
+    Cancel(this: ZPRoundResultsTracker): void;
+    Finish(this: ZPRoundResultsTracker, reason: ZPRoundEndReason): void;
+}
 interface ZPServerRoundManager {
+    Results: ZPRoundResultsTracker;
     FreezeTimeActive: boolean;
     GetAlivePlayers(this: ZPServerRoundManager): ZPServerPlayer[];
     Rounds: Record<string, ZPRoundDefinition>;

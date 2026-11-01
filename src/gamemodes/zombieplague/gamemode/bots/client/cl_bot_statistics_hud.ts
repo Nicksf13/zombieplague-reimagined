@@ -26,7 +26,7 @@ export class BotStatisticsHUD implements StatisticsHUDContract {
         frame.SetSize(this.width, height); frame.Center(); frame.SetTitle(""); frame.ShowCloseButton(false); frame.SetDeleteOnClose(true);
         frame.Paint = (w, h) => draw.RoundedBox(this.square ? 0 : 6, 0, 0, w, h, this.palette.Surface);
         this.Label(frame, phrase("title"), 16, 38);
-        this.Button(frame, "X", this.width - 54, 10, 36, () => this.Destroy());
+        ZPMenuControls.CloseButton(this.Button(frame, "X", this.width - 54, 10, 36, () => this.Destroy()), this.palette, this.square);
         const spacing = (this.width - 48) / 3;
         const combo = (index: number, label: string): ZPMenuComboBox<string> => {
             const title = this.Label(frame, label, 56, 20); title.SetPos(20 + index * spacing, 56); title.SetSize(spacing - 8, 20);
@@ -88,13 +88,14 @@ export class BotStatisticsHUD implements StatisticsHUDContract {
         const label = vgui.Create("DLabel", parent); label.SetPos(20, y); label.SetSize(this.width - 100, height); label.SetWrap(true);
         label.SetFont("DermaDefault"); label.SetColor(this.palette.Text); label.SetText(text); this.labels.push(label); return label;
     }
-    private Button(parent: GLuaPanel, text: string, x: number, y: number, width: number, action: ZPAction): void {
+    private Button(parent: GLuaPanel, text: string, x: number, y: number, width: number, action: ZPAction): GLuaPanel {
         const button = parent.Add("DButton"); button.SetPos(x, y); button.SetSize(width, 34); button.SetText("");
         button.Paint = (w, h) => {
             draw.RoundedBox(this.square ? 0 : 4, 0, 0, w, h, this.palette.Panel);
             draw.DrawText(text, "DermaDefault", 10, 9, !button.IsEnabled() ? this.palette.Muted : button.IsHovered() ? this.palette.Accent : this.palette.Text, TEXT_ALIGN_LEFT);
         };
         button.DoClick = () => { if (button.IsEnabled()) action(); };
+        return button;
     }
     Render(data: ZPBotStatisticsReport, exported: boolean, query?: ZPBotStatisticsFilter): void {
         const bots = data.Bots ?? [...new Set(data.History.map(row => row.Bot))];

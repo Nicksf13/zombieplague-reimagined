@@ -122,7 +122,7 @@ interface ZPServerRoundManager {
     GetAliveZombies(this: ZPServerRoundManager): ZPServerPlayer[];
 }
 interface ZPInfectionManager {
-    Infect(this: ZPInfectionManager, target: ZPServerPlayer, attacker: ZPServerPlayer): void;
+    Infect(this: ZPInfectionManager, target: ZPServerPlayer, attacker: ZPServerPlayer, inflictor?: GLuaEntity): void;
     Cure(this: ZPInfectionManager, target: ZPServerPlayer, attacker: ZPServerPlayer): void;
 }
 declare const InfectionManager: ZPInfectionManager;
